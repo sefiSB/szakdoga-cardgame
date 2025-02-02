@@ -1,11 +1,20 @@
-import { useState } from 'react';
-import './App.css';
+import { useState } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import "./App.css";
+import Name from "./Name";
+import CreateOrJoin from "./CreateOrJoin";
 
 function App() {
+  const [username, setUsername] = useState(null);
+
   return (
-    <div className="App">
-      <button className="btn">Hello daisyUI</button>
-    </div>
+    <>
+      <Routes>
+      <Route path="/" element={<Name user={setUsername} />} />
+        <Route path="/username" element={<Name user={setUsername} />} />
+        <Route path="/createorjoin" element={<CreateOrJoin username={username}/>} />
+      </Routes>
+    </>
   );
 }
 
