@@ -1,4 +1,4 @@
-const initialState = {
+export let initialState = {
     user: null,
-    isAdmin,
+    isAdmin:false,
   };
