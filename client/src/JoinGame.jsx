@@ -1,6 +1,15 @@
+import { useState } from "react";
 import { initialState } from "./Store/store";
 
-function JoinGame() {
+
+
+function JoinGame({socket}) {
+  const [code,setCode] = useState("0000");
+  const sendCode = ()=>{
+    socket.emit("sendCode",{code:code});
+  }
+
+
   console.log("username" + initialState.user);
   return (
     <>
@@ -15,6 +24,9 @@ function JoinGame() {
               type="text"
               placeholder="Enter code here..."
               className="input input-bordered"
+              onChange={(e)=>{
+                setCode(e.target.value)
+              }}
             />
           </label>
 
@@ -23,7 +35,8 @@ function JoinGame() {
         <button
           className="btn btn-outline btn-primary"
           onClick={() => {
-            //itt kell majd egy check, majd az asztalhoz ültetés
+            sendCode()
+            console.log("asd")
           }}
         >Join</button>
       </div>
