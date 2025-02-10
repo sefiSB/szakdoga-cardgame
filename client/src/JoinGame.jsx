@@ -2,11 +2,10 @@ import { useState } from "react";
 import { initialState } from "./Store/store";
 
 
-
 function JoinGame({socket}) {
   const [code,setCode] = useState("0000");
   const sendCode = ()=>{
-    socket.emit("sendCode",{code:code});
+    socket.emit("sendCode",{code:code,user:initialState.user, isAdmin:initialState.isAdmin});
   }
 
 
