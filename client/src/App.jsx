@@ -20,7 +20,7 @@ function App() {
         <Route path="/username" element={<Name />} />
         <Route path="/createorjoin" element={<CreateOrJoin/>} />
         <Route path="/joingame" element={<JoinGame socket={socket} />}/>
-        <Route path="/newgame" element={<NewGame/>}/>
+        <Route path="/newgame" element={<NewGame socket={socket} />}/>
       </Routes>
     </>
   );

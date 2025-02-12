@@ -1,8 +1,26 @@
 import { useState } from "react";
 import { initialState } from "./Store/store";
+import { useEffect } from "react";
 
-function NewGame() {
+function NewGame({ socket }) {
   const [isCardsOnDesk, setIsCardsOnDesk] = useState(false);
+  const [gameName, setGameName] = useState("");
+  const [startingCards, setStartingCards] = useState(0);
+  const [revealedCards, setRevealedCards] = useState(0);
+  const [hiddenCards, setHiddenCards] = useState(0);
+
+  
+
+  const sendNewGame = () => {
+    socket.emit("newGame", {
+      gameName,
+      user: initialState.user,
+      startingCards,
+      isCardsOnDesk,
+      revealedCards,
+      hiddenCards,
+    });
+  };
 
   return (
     <>
@@ -16,6 +34,9 @@ function NewGame() {
             type="text"
             placeholder="Name"
             className="input input-bordered w-full max-w-xs"
+            onChange={(e) => {
+              setGameName(e.target.value);
+            }}
           />
           {/* <div className="label">
             <span className="label-text-alt">Bottom Left label</span>
@@ -32,6 +53,9 @@ function NewGame() {
             type="number"
             placeholder="Place a number here"
             className="input input-bordered w-full max-w-xs"
+            onChange={(e) => {
+              setStartingCards(e.target.value);
+            }}
           />
           {/* <div className="label">
             <span className="label-text-alt">Bottom Left label</span>
@@ -57,7 +81,6 @@ function NewGame() {
         {isCardsOnDesk ? (
           <>
             <div className="border p-5 rounded-3xl border-dashed border-orange-600">
-              
               <label className="form-control w-full max-w-xs ">
                 <div className="label">
                   <span className="label-text">
@@ -69,6 +92,9 @@ function NewGame() {
                   type="number"
                   placeholder="Place a number here"
                   className="input input-bordered w-full max-w-xs"
+                  onChange={(e) => {
+                    setRevealedCards(e.target.value);
+                  }}
                 />
                 {/* <div className="label">
             <span className="label-text-alt">Bottom Left label</span>
@@ -87,6 +113,9 @@ function NewGame() {
                   type="number"
                   placeholder="Place a number here"
                   className="input input-bordered w-full max-w-xs"
+                  onChange={(e) => {
+                    setHiddenCards(e.target.value);
+                  }}
                 />
                 {/* <div className="label">
             <span className="label-text-alt">Bottom Left label</span>
@@ -102,7 +131,8 @@ function NewGame() {
         <button
           className="btn btn-outline btn-primary"
           onClick={() => {
-            //itt kell majd egy check, majd az asztalhoz ültetés
+            sendNewGame();
+            //redirect to desk
           }}
         >
           Submit
