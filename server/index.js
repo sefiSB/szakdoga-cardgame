@@ -1,9 +1,10 @@
 const express = require("express");
-const app = express();
 const http = require("http");
 const {Server} = require("socket.io");
+const mysql = require("mysql");
 const cors = require("cors")
 
+const app = express();
 
 const lobbies = {
     "1234": {
@@ -41,6 +42,7 @@ const createCode = ()=>{
 }
 
 app.use(cors());
+app.use(express.json());
 const server = http.createServer(app);
 
 const io = new Server(server,{
@@ -49,6 +51,41 @@ const io = new Server(server,{
         methods:["GET","POST"]
     },
 });
+
+const db = mysql.createConnection({
+    host:"localhost",
+    user:"root",
+    password:"",
+    database:"test"
+
+});
+
+
+
+//GET REQUESTS
+app.get("/",(req,res)=>{
+    return res.json({message:"Hello World"});
+})
+
+app.get("/users",(req,res)=>{
+    const sql = "select * from users";
+    db.query(sql,(err,result)=>{
+        if(err) return res.json(err);
+        return res.json(result);
+    })
+})
+
+
+//POST REQUESTS
+app.post("/adduser",(req,res)=>{
+    console.log(req.body);
+    //const sql = `insert into users (username, email, password, created_at) values ('${req.body.username}','${req.body.email}','${req.body.password}',now())`;
+    /* db.query(sql,(err,result)=>{
+        if(err) return res.json(err);
+        return res.json(result);
+    }) */
+})
+
 
 io.on("connection",(socket)=>{
     console.log(`User connected: ${socket.id}`);

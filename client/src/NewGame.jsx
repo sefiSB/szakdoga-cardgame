@@ -8,8 +8,25 @@ function NewGame({ socket }) {
   const [startingCards, setStartingCards] = useState(0);
   const [revealedCards, setRevealedCards] = useState(0);
   const [hiddenCards, setHiddenCards] = useState(0);
-
-  
+  //csak teszt jelleggel
+  const postGame = async () => {
+    const response = await fetch("http://localhost:3001/adduser", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        gameName,
+        startingCards,
+        isCardsOnDesk,
+        revealedCards,
+        hiddenCards,
+      }),
+    });
+    const data = await response.json();
+    console.log(data);
+    console.log("asd")
+  };
 
   const sendNewGame = () => {
     socket.emit("newGame", {
@@ -131,7 +148,7 @@ function NewGame({ socket }) {
         <button
           className="btn btn-outline btn-primary"
           onClick={() => {
-            sendNewGame();
+            postGame();
             //redirect to desk
           }}
         >

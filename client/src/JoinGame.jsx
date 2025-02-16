@@ -13,6 +13,7 @@ function JoinGame({socket}) {
   }
 
 
+  
   useEffect(() => {
     // EZ SZTM NEM IS FOG KELLENI
     socket.on("updateLobby", (data) => {
