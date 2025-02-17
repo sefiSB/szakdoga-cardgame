@@ -60,7 +60,7 @@ function Login() {
           <input
             type="password"
             className="grow"
-            value="password"
+            placeholder="Password"
             onChange={(e) => {
               setPassword(e.target.value);
             }}

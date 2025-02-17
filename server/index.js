@@ -2,7 +2,8 @@ const express = require("express");
 const http = require("http");
 const {Server} = require("socket.io");
 const mysql = require("mysql");
-const cors = require("cors")
+const cors = require("cors");
+const { Sequelize } = require('sequelize');
 
 const app = express();
 
@@ -52,13 +53,13 @@ const io = new Server(server,{
     },
 });
 
-const db = mysql.createConnection({
+/* const db = mysql.createConnection({
     host:"localhost",
     user:"root",
     password:"",
     database:"test"
 
-});
+}); */
 
 
 
@@ -79,7 +80,7 @@ app.get("/users",(req,res)=>{
 //POST REQUESTS
 app.post("/adduser",(req,res)=>{
     console.log(req.body);
-    //const sql = `insert into users (username, email, password, created_at) values ('${req.body.username}','${req.body.email}','${req.body.password}',now())`;
+    const sql = `insert into users (username, email, password, created_at) values ('${req.body.username}','${req.body.email}','${req.body.password}',now())`;
     /* db.query(sql,(err,result)=>{
         if(err) return res.json(err);
         return res.json(result);
