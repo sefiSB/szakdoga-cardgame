@@ -2,12 +2,12 @@ import { useNavigate } from "react-router-dom";
 import { initialState } from "./Store/store";
 import { useState } from "react";
 
-function Login() {
+function Login({ socket }) {
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const postUser = async () => {
+  /* const postUser = async () => {
     const response = await fetch("http://localhost:3001/adduser", {
       method: "POST",
       headers: {
@@ -20,12 +20,24 @@ function Login() {
     });
     const data = await response.json();
     console.log(data);
-  };
+  }; */
+
+
+  const postUser = () => {
+    socket.emit("loginUser", {
+      name,
+      password,
+    })
+
+    socket.on("loginSuccess", (data) => {
+      
+    })
+  }
 
   return (
     <>
       <div className="flex flex-col justify-center items-center h-screen gap-4">
-        
+
         <label className="input input-bordered flex items-center gap-2">
           <svg
             xmlns="http://www.w3.org/2000/svg"

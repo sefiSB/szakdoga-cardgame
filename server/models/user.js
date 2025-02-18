@@ -10,11 +10,14 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      User.hasMany(Lobby,{
+      User.hasMany(models.Lobby,{
         foreignKey:"host_id"
       })
-      User.belongsToMany(Lobby,{
+      User.belongsToMany(models.Lobby,{
         through:"LobbyUsers"
+      })
+      User.hasMany(models.Preset,{
+        foreignKey:"user_id"
       })
     }
     toJSON() {

@@ -9,7 +9,7 @@ function NewGame({ socket }) {
   const [revealedCards, setRevealedCards] = useState(0);
   const [hiddenCards, setHiddenCards] = useState(0);
   //csak teszt jelleggel
-  const postGame = async () => {
+  /* const postGame = async () => {
     const response = await fetch("http://localhost:3001/adduser", {
       method: "POST",
       headers: {
@@ -26,7 +26,7 @@ function NewGame({ socket }) {
     const data = await response.json();
     console.log(data);
     console.log("asd")
-  };
+  }; */
 
   const sendNewGame = () => {
     socket.emit("newGame", {
@@ -36,6 +36,10 @@ function NewGame({ socket }) {
       isCardsOnDesk,
       revealedCards,
       hiddenCards,
+    });
+    
+    socket.on("updateLobby", (data) => {
+      console.log(data);
     });
   };
 
@@ -148,7 +152,8 @@ function NewGame({ socket }) {
         <button
           className="btn btn-outline btn-primary"
           onClick={() => {
-            postGame();
+            //postGame();
+            sendNewGame();
             //redirect to desk
           }}
         >

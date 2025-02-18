@@ -2,11 +2,34 @@ import { useNavigate } from "react-router-dom";
 import { initialState } from "./Store/store";
 import { useState } from "react";
 
-function Register() {
+function Register({ socket }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error,setError] = useState("");
   const navigate = useNavigate();
+
+  const postUser = () => {
+    socket.emit("addUser", {
+      name,
+      email,
+      password
+    })
+
+    socket.on("addUserSuccess", (data) => {
+      if (data) {
+        setError("User added successfully");
+        initialState.user_id = data.id;
+        setTimeout(() => navigate("/createorjoin"), 1000);
+      }
+      else {
+        setError("User already exists");
+      }
+    });
+
+    
+  };
+
 
   return (
     <>
@@ -64,7 +87,7 @@ function Register() {
           <input
             type="password"
             className="grow"
-            value="password"
+            placeholder="password"
             onChange={(e) => {
               setPassword(e.target.value);
             }}
@@ -74,20 +97,15 @@ function Register() {
           className="btn btn-outline btn-primary"
           onClick={() => {
             initialState.user = name;
-            setTimeout(() => navigate("/createorjoin"), 0);
+            initialState.email = email;
+            initialState.password = password;
+            postUser();
+
           }}
         >
           Sign up
         </button>
-        {/*  <input
-          type="text"
-          placeholder="Username"
-          className="input input-bordered input-primary w-full max-w-xs"
-          onChange={(e) => {
-            setName(e.target.value);
-          }}
-        />
-         */}
+        <p>{error}</p>
       </div>
     </>
   );

@@ -4,6 +4,7 @@ const {Server} = require("socket.io");
 const mysql = require("mysql");
 const cors = require("cors");
 const { Sequelize } = require('sequelize');
+const {User,Lobby,Preset} = require("./models");
 
 const app = express();
 
@@ -53,16 +54,9 @@ const io = new Server(server,{
     },
 });
 
-/* const db = mysql.createConnection({
-    host:"localhost",
-    user:"root",
-    password:"",
-    database:"test"
-
-}); */
 
 
-
+/* 
 //GET REQUESTS
 app.get("/",(req,res)=>{
     return res.json({message:"Hello World"});
@@ -75,7 +69,7 @@ app.get("/users",(req,res)=>{
         return res.json(result);
     })
 })
-
+ */
 
 //POST REQUESTS
 app.post("/adduser",(req,res)=>{
@@ -91,6 +85,23 @@ app.post("/adduser",(req,res)=>{
 io.on("connection",(socket)=>{
     console.log(`User connected: ${socket.id}`);
 
+    /* socket.on("loginUser",async (data)=>{
+        if()
+    }) */
+
+    socket.on("addUser",async (data)=>{
+        const user = await User.create({
+            username:data.name,
+            email:data.email,
+            password:data.password,
+        });
+        console.log(user);
+        io.to(socket.id).emit("userAdded",user);
+    });
+
+
+
+
     socket.on("sendCode",(data)=>{
         console.log(data);
         if(lobbies[data.code]){
@@ -104,7 +115,7 @@ io.on("connection",(socket)=>{
         }
     });
 
-    socket.on("newGame",(data)=>{
+    socket.on("newGame",async (data)=>{
         const code = createCode();
         lobbies[code] = {
             name: data.gameName,
@@ -119,6 +130,11 @@ io.on("connection",(socket)=>{
         };
         socket.join(code);
         console.log(lobbies);
+        const newLobby = await Lobby.create({
+            host_id:data.user.id,
+            code:code,
+            status:"waiting",
+        });
         io.to(code).emit("updateLobby", lobbies[code]);
     });
 })

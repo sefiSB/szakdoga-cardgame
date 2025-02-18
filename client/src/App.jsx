@@ -10,6 +10,7 @@ import Login from "./Login";
 import CreateOrJoin from "./CreateOrJoin";
 import JoinGame from "./JoinGame";
 import NewGame from "./NewGame";
+import Register from "./Register";
 
 
 
@@ -26,8 +27,9 @@ function App() {
   return (
     <>
       <Routes>
-      <Route path="/" element={<Login/>} />
-        <Route path="/username" element={<Login />} />
+      <Route path="/" element={<Login socket={socket}/>} />
+        <Route path="/username" element={<Login socket={socket}/>} />
+        <Route path="/register" element={<Register socket={socket}/>} />
         <Route path="/createorjoin" element={<CreateOrJoin/>} />
         <Route path="/joingame" element={<JoinGame socket={socket} />}/>
         <Route path="/newgame" element={<NewGame socket={socket} />}/>
