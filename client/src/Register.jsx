@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { initialState } from "./Store/store";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 function Register({ socket }) {
   const [name, setName] = useState("");
@@ -106,6 +107,8 @@ function Register({ socket }) {
           Sign up
         </button>
         <p>{error}</p>
+
+        <p>Already have an account? <Link className="link link-success" to="/login">Log in!</Link></p>
       </div>
     </>
   );

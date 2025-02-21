@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { initialState } from "./Store/store";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 function Login({ socket }) {
   const [name, setName] = useState("");
@@ -88,15 +89,10 @@ function Login({ socket }) {
         >
           Log in
         </button>
-        {/*  <input
-          type="text"
-          placeholder="Username"
-          className="input input-bordered input-primary w-full max-w-xs"
-          onChange={(e) => {
-            setName(e.target.value);
-          }}
-        />
-         */}
+
+        <p>Still don't have an account? <Link className="link link-success" to="/register">Sign up!</Link></p>
+        
+        
       </div>
     </>
   );

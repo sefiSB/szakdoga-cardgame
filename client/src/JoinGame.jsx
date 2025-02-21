@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { initialState } from "./Store/store";
 import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 
 function JoinGame({socket}) {
@@ -8,8 +9,13 @@ function JoinGame({socket}) {
   const [lobby, setLobby] = useState(null); // Tárolja a lobby állapotát
   const [error, setError] = useState(null); // Tárolja a hibát, ha van
 
+  const navigate = useNavigate();
+
   const sendCode = ()=>{
     socket.emit("sendCode",{code:code,user:initialState.user, isAdmin:initialState.isAdmin});
+    socket.on("codeError", (data) => {
+      setError("Invalid lobby code!");
+    });
   }
 
 
@@ -17,7 +23,12 @@ function JoinGame({socket}) {
   useEffect(() => {
     // EZ SZTM NEM IS FOG KELLENI
     socket.on("updateLobby", (data) => {
-      console.log("Lobby frissült:", data);
+      console.log("Lobby frissült:", data.players);
+      initialState.code = data.code;
+      setTimeout(() => {
+        navigate("/desk");
+      }),
+      setError(null); // Ha sikeres volt a csatlakozás, töröljük a hibát
       setLobby(data);
     });
 
@@ -63,6 +74,7 @@ function JoinGame({socket}) {
             console.log("asd")
           }}
         >Join</button>
+        {error && <div className="text-red-500">{error}</div>}
       </div>
     </>
   );

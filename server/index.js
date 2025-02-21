@@ -49,37 +49,13 @@ const server = http.createServer(app);
 
 const io = new Server(server,{
     cors:{
-        origin:"http://localhost:5173",
+        origin:"http://192.168.0.59:5173",
         methods:["GET","POST"]
     },
 });
 
 
 
-/* 
-//GET REQUESTS
-app.get("/",(req,res)=>{
-    return res.json({message:"Hello World"});
-})
-
-app.get("/users",(req,res)=>{
-    const sql = "select * from users";
-    db.query(sql,(err,result)=>{
-        if(err) return res.json(err);
-        return res.json(result);
-    })
-})
- */
-
-//POST REQUESTS
-app.post("/adduser",(req,res)=>{
-    console.log(req.body);
-    const sql = `insert into users (username, email, password, created_at) values ('${req.body.username}','${req.body.email}','${req.body.password}',now())`;
-    /* db.query(sql,(err,result)=>{
-        if(err) return res.json(err);
-        return res.json(result);
-    }) */
-})
 
 
 io.on("connection",(socket)=>{
@@ -99,7 +75,10 @@ io.on("connection",(socket)=>{
         io.to(socket.id).emit("userAdded",user);
     });
 
-
+    app.get("/users",async (req,res)=>{
+        const users = await User.findAll();
+        res.json(users);
+    });
 
 
     socket.on("sendCode",(data)=>{
@@ -137,8 +116,16 @@ io.on("connection",(socket)=>{
         });
         io.to(code).emit("updateLobby", lobbies[code]);
     });
+
+    socket.on("gameStart",(data)=>{
+        console.log(data.code);
+        //lobbies[data.code].state = "started";
+        io.to(data.code).emit("gameStart",lobbies[data.code]);
+    });
 })
 
-server.listen(3001,()=>{
+
+server.listen(3001,'0.0.0.0',()=>{
     console.log("SERVER IS RUNNING")
+    console.log(server.address().address+":"+server.address().port);
 })

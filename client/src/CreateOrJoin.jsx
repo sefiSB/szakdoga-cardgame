@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 function CreateOrJoin() {
   const navigate = useNavigate();
-  console.log("username" + initialState.user);
+  //console.log("username" + initialState.user);
   return (
     <>
       <div className="flex flex-col justify-center items-center h-screen gap-6">
