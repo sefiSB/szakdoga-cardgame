@@ -1,8 +1,7 @@
 {
   "scripts": {
     "start": "nodemon index.js",
-    "db": "npx sequelize db:migrate:undo:all && npx sequelize db:migrate --debug && npx sequelize db:seed:all --debug",
-    "host":
+    "db": "npx sequelize db:migrate:undo:all && npx sequelize db:migrate --debug && npx sequelize db:seed:all --debug"
   },
   "dependencies": {
     "cors": "^2.8.5",
