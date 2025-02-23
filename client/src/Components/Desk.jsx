@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { initialState } from "./Store/store";
+import { initialState } from "../Store/store";
+import cardNames from "../Utils/French";
 
 function Desk({ socket }) {
   const [data, setData] = useState(null);
@@ -8,7 +9,7 @@ function Desk({ socket }) {
     socket.emit("gameStart", { code: initialState.code });
 
     socket.on("gameStart", (response) => {
-      console.log("Game started, received data:", response);
+      console.log("Game started, received data:", response.players);
       setData(response);
     });
 
@@ -22,8 +23,10 @@ function Desk({ socket }) {
   }
 
   const currentPlayerId = initialState.user_id;
-  const otherPlayers = data.players.filter((p) => p.id !== currentPlayerId);
-  const totalPlayers = otherPlayers.length;
+  const players = data.players
+  const totalPlayers = players.length;
+
+
 
   return (
     <div className="relative w-[90vw] h-[80vh] bg-green-600 rounded-2xl mx-auto flex items-center justify-center bottom-0 mb-2">
@@ -33,7 +36,7 @@ function Desk({ socket }) {
       </div>
 
       {/* Játékosok elhelyezése */}
-      {otherPlayers.map((player, index) => {
+      {players.map((player, index) => {
         let positionStyle = {};
         if (index < totalPlayers / 2) {
           // Felső játékosok (elosztva)
@@ -51,6 +54,8 @@ function Desk({ socket }) {
             : { right: "2%", top: yPos }; // Jobb oldal
         }
 
+
+
         return (
           <div
             key={player.id}
@@ -58,6 +63,36 @@ function Desk({ socket }) {
             style={positionStyle}
           >
             <div className="bg-blue-500 p-2 rounded-md">{player.username}</div>
+            <div className="flex">
+
+              {
+                player.cards.onHand.map((card, index) => (
+                  <div
+                    key={index}
+                    className="bg-blue-500 m-1 rounded-md"
+                  >
+                    <img src={"/assets/cards/french/card_back.svg"} alt="" style={
+                      { width: "5vh" }
+                    } />
+                  </div>
+                ))}
+            </div>
+            <div className="flex">
+
+              {
+                player.cards.onTableVisible.map((card, index) => (
+                  <div
+                    key={index}
+                    className="bg-blue-500 m-1 rounded-md"
+                  >
+                    <img src={"/assets/cards/french/"+cardNames[card]} alt="" style={
+                      { width: "5vh" }
+                    } />
+                  </div>
+                ))}
+
+            </div>
+
           </div>
         );
       })}

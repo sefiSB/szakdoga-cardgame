@@ -1,4 +1,4 @@
-import { initialState } from "./Store/store";
+import { initialState } from "../Store/store";
 import { useNavigate } from "react-router-dom";
 
 function CreateOrJoin() {

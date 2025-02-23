@@ -5,14 +5,51 @@ const mysql = require("mysql");
 const cors = require("cors");
 const { Sequelize } = require('sequelize');
 const {User,Lobby,Preset} = require("./models");
+const { on } = require("events");
 
 const app = express();
+
+
+
+//////////TESTING//////////
+
+//////////TESTING//////////
+
+
 
 const lobbies = {
     "1234": {
         name: "Lobby 1234",
         code: "1234",
-        players: [{ id: "socketId1", username: "Alice" }],
+        players: [ 
+            { 
+                id: "socketId1", 
+                username: "Alice",
+                cards: {
+                    onHand: ["2 of clubs", "10 of clubs"],
+                    onTableVisible: ["2 of clubs", "10 of clubs"],
+                    onTableHidden: [],
+                }
+            },
+            { 
+                id: "socketId3", 
+                username: "Charlie",
+                cards: {
+                    onHand: ["3 of hearts", "5 of diamonds"],
+                    onTableVisible: ["3 of hearts", "5 of diamonds"],
+                    onTableHidden: [],
+                }
+            },
+            { 
+                id: "socketId4", 
+                username: "David",
+                cards: {
+                    onHand: ["7 of spades", "9 of spades"],
+                    onTableVisible: ["7 of spades", "9 of spades"],
+                    onTableHidden: [],
+                }
+            }
+        ],
         state: "waiting",
         decks: {
             drawDeck: [],
@@ -23,7 +60,26 @@ const lobbies = {
     "5678": {
         name: "Lobby 5678",
         code: "5678",
-        players: [{ id: "socketId2", username: "Bob" }],
+        players: [
+            { 
+                id: "socketId2", 
+                username: "Bob",
+                cards: {
+                    onHand: ["4 of clubs", "6 of clubs"],
+                    onTableVisible: ["4 of clubs", "6 of clubs"],
+                    onTableHidden: [],
+                }
+            },
+            { 
+                id: "socketId5", 
+                username: "Eve",
+                cards: {
+                    onHand: ["8 of hearts", "10 of hearts"],
+                    onTableVisible: ["8 of hearts", "10 of hearts"],
+                    onTableHidden: [],
+                }
+            }
+        ],
         state: "waiting",
         decks: {
             drawDeck: [],
@@ -49,7 +105,8 @@ const server = http.createServer(app);
 
 const io = new Server(server,{
     cors:{
-        origin:"http://192.168.0.59:5173",
+        //origin:"http://192.168.0.59:5173",
+        origin:"*",
         methods:["GET","POST"]
     },
 });
@@ -84,7 +141,11 @@ io.on("connection",(socket)=>{
     socket.on("sendCode",(data)=>{
         console.log(data);
         if(lobbies[data.code]){
-            lobbies[data.code].players.push({id:socket.id,username:data.user});
+            lobbies[data.code].players.push({id:socket.id,username:data.user,cards:{
+                onHand:[],
+                onTableVisible:[],
+                onTableHidden:[],
+            }});
             socket.join(data.code);
             io.to(data.code).emit("updateLobby",lobbies[data.code]);
             console.log(lobbies[data.code]);

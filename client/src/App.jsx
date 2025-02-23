@@ -6,12 +6,12 @@ import { initialState } from "./Store/store";
 
 const socket = io.connect("http://192.168.0.59:3001");
 
-import Login from "./Login";
-import CreateOrJoin from "./CreateOrJoin";
-import JoinGame from "./JoinGame";
-import NewGame from "./NewGame";
-import Register from "./Register";
-import Desk from "./Desk";
+import Login from "./Components/Login";
+import CreateOrJoin from "./Components/CreateOrJoin";
+import JoinGame from "./Components/JoinGame";
+import NewGame from "./Components/NewGame";
+import Register from "./Components/Register";
+import Desk from "./Components/Desk";
 
 
 

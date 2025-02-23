@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { initialState } from "./Store/store";
+import { initialState } from "../Store/store";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -12,7 +12,7 @@ function JoinGame({socket}) {
   const navigate = useNavigate();
 
   const sendCode = ()=>{
-    socket.emit("sendCode",{code:code,user:initialState.user, isAdmin:initialState.isAdmin});
+    socket.emit("sendCode",{code:code,user:initialState.user});
     socket.on("codeError", (data) => {
       setError("Invalid lobby code!");
     });

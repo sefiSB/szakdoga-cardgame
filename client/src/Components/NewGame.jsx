@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { initialState } from "./Store/store";
+import { initialState } from "../Store/store";
 import { useEffect } from "react";
 
 function NewGame({ socket }) {
