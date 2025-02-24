@@ -5,17 +5,35 @@ import cardNames from "../Utils/French";
 function Desk({ socket }) {
   const [data, setData] = useState(null);
 
+  const gameStart = async () => {
+    const response = await fetch("http://localhost:3001/gamestart", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        code: initialState.code,
+      }),
+    });
+    const data = await response.json();
+    console.log(data);
+    setData(data);
+  }
   useEffect(() => {
-    socket.emit("gameStart", { code: initialState.code });
+    gameStart();
+    
+
+    /* socket.emit("gameStart", { code: initialState.code });
 
     socket.on("gameStart", (response) => {
+      console.log("Kliens visszakapta az adatokat")
       console.log("Game started, received data:", response.players);
       setData(response);
     });
 
     return () => {
       socket.off("gameStart");
-    };
+    }; */
   }, [socket]);
 
   if (!data) {

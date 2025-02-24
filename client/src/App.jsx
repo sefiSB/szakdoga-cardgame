@@ -14,8 +14,6 @@ import Register from "./Components/Register";
 import Desk from "./Components/Desk";
 
 
-
-
 function App() {
   /* useEffect(() => {
     fetch('http://localhost:3001/users')
@@ -23,7 +21,6 @@ function App() {
     .then(data => console.log(data))
     .catch(err => console.log(err))
   }) */
-  
 
   return (
     <>

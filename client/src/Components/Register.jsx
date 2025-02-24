@@ -10,7 +10,27 @@ function Register({ socket }) {
   const [error,setError] = useState("");
   const navigate = useNavigate();
 
-  const postUser = () => {
+
+  const postUser = async () => {
+    console.log("asdasdasdsadasd")
+    const response = await fetch("http://localhost:3001/adduser", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name,
+        password,
+        email
+      }),
+    });
+    const data = await response.json();
+    initialState.user_id = data.id;
+    navigate("/createorjoin");
+    console.log(data);
+  };
+
+  /* const postUser = () => {
     socket.emit("addUser", {
       name,
       email,
@@ -29,7 +49,7 @@ function Register({ socket }) {
     });
 
     
-  };
+  }; */
 
 
   return (

@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { data, useNavigate } from "react-router-dom";
 import { initialState } from "../Store/store";
 import { useState } from "react";
 import { Link } from "react-router-dom";
@@ -8,8 +8,9 @@ function Login({ socket }) {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  /* const postUser = async () => {
-    const response = await fetch("http://localhost:3001/adduser", {
+
+  const validateUser = () => {
+    const response = fetch("http://localhost:3001/loginuser", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -18,13 +19,21 @@ function Login({ socket }) {
         name,
         password,
       }),
-    });
-    const data = await response.json();
-    console.log(data);
-  }; */
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.error) {
+          console.log(data.error);
+          alert("User not found");
+        } else {
+          initialState.user_id = data.id;
+          navigate("/createorjoin");
+        }
+      })
+  }
 
 
-  const postUser = () => {
+  /* const postUser = () => {
     socket.emit("loginUser", {
       name,
       password,
@@ -33,7 +42,8 @@ function Login({ socket }) {
     socket.on("loginSuccess", (data) => {
       
     })
-  }
+  } */
+
 
   return (
     <>
@@ -83,16 +93,15 @@ function Login({ socket }) {
           className="btn btn-outline btn-primary"
           onClick={() => {
             initialState.user = name;
-            postUser();
-            setTimeout(() => navigate("/createorjoin"), 0);
+            validateUser();
           }}
         >
           Log in
         </button>
 
         <p>Still don't have an account? <Link className="link link-success" to="/register">Sign up!</Link></p>
-        
-        
+
+
       </div>
     </>
   );

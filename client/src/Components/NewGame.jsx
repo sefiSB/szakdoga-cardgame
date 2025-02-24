@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { initialState } from "../Store/store";
 import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 function NewGame({ socket }) {
   const [isCardsOnDesk, setIsCardsOnDesk] = useState(false);
@@ -8,27 +9,37 @@ function NewGame({ socket }) {
   const [startingCards, setStartingCards] = useState(0);
   const [revealedCards, setRevealedCards] = useState(0);
   const [hiddenCards, setHiddenCards] = useState(0);
+
+  const navigate= useNavigate();
   //csak teszt jelleggel
-  /* const postGame = async () => {
-    const response = await fetch("http://localhost:3001/adduser", {
+  const postGame = async () => {
+    const response = await fetch("http://localhost:3001/addlobby", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        gameName,
-        startingCards,
-        isCardsOnDesk,
-        revealedCards,
-        hiddenCards,
+        gameName: gameName,
+        startingCards: startingCards,
+        isCardsOnDesk: isCardsOnDesk,
+        revealedCards: revealedCards,
+        hiddenCards: hiddenCards,
+        host_id: initialState.user_id,
       }),
     });
     const data = await response.json();
+    if(data.error){
+      alert("Game creation failed");
+    }
+    else{
+      initialState.code = data.code;
+      navigate("/desk");
+    }
     console.log(data);
     console.log("asd")
-  }; */
+  };
 
-  const sendNewGame = () => {
+  /* const sendNewGame = () => {
     socket.emit("newGame", {
       gameName,
       user: initialState.user,
@@ -41,7 +52,7 @@ function NewGame({ socket }) {
     socket.on("updateLobby", (data) => {
       console.log(data);
     });
-  };
+  }; */
 
   return (
     <>
@@ -153,7 +164,7 @@ function NewGame({ socket }) {
           className="btn btn-outline btn-primary"
           onClick={() => {
             //postGame();
-            sendNewGame();
+            postGame();
             //redirect to desk
           }}
         >

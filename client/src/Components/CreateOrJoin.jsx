@@ -9,7 +9,7 @@ function CreateOrJoin() {
       <div className="flex flex-col justify-center items-center h-screen gap-6">
         {/* Szöveg */}
         <h1 className="text-4xl font-bold">Welcome {initialState.user}</h1>
-
+ 
         {/* Gombok */}
         <div className="flex flex-col gap-4">
           <button className="btn btn-primary w-40" onClick={()=>{

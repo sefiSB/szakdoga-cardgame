@@ -11,12 +11,40 @@ function JoinGame({socket}) {
 
   const navigate = useNavigate();
 
-  const sendCode = ()=>{
+
+  const postCode = async () => {
+    const response = await fetch("http://localhost:3001/joinlobby", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        code: code,
+        user: initialState.user,
+        user_id: initialState.user_id,
+      }),
+    });
+    const data = await response.json();
+    if(data.error){
+      setError("Invalid lobby code!");
+      console.log("Invalid lobby code!");
+    }
+    else{
+      initialState.code = data.code;
+      navigate("/desk");
+    }
+    console.log(data);
+  }
+
+
+
+
+  /* const sendCode = ()=>{
     socket.emit("sendCode",{code:code,user:initialState.user});
     socket.on("codeError", (data) => {
       setError("Invalid lobby code!");
     });
-  }
+  } */
 
 
   
@@ -70,7 +98,7 @@ function JoinGame({socket}) {
         <button
           className="btn btn-outline btn-primary"
           onClick={() => {
-            sendCode()
+            postCode()
             console.log("asd")
           }}
         >Join</button>
