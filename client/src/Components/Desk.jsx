@@ -5,8 +5,10 @@ import cardNames from "../Utils/French";
 function Desk({ socket }) {
   const [data, setData] = useState(null);
 
+  
+
   const gameStart = async () => {
-    const response = await fetch("http://localhost:3001/gamestart", {
+    const response = await fetch("http://127.0.0.1:3001/gamestart", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -18,10 +20,18 @@ function Desk({ socket }) {
     const data = await response.json();
     console.log(data);
     setData(data);
+
+    
   }
   useEffect(() => {
     gameStart();
     
+    const handleLobbyUpdate = (updatedData) => {
+      console.log("Lobby updated:", updatedData);
+      setData(updatedData);
+    };
+  
+    socket.on("updateLobby", handleLobbyUpdate);
 
     /* socket.emit("gameStart", { code: initialState.code });
 

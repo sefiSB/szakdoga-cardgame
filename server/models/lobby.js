@@ -1,7 +1,5 @@
-'use strict';
-const {
-  Model
-} = require('sequelize');
+"use strict";
+const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class Lobby extends Model {
     /**
@@ -10,18 +8,22 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      Lobby.belongsTo(models.User),
-      Lobby.belongsToMany(models.User,{
-        through:"LobbyUsers"
-      })
+      // define association here
+      Lobby.hasMany(models.User, { foreignKey: "lobby_id" });
+      Lobby.hasOne(models.Host, {
+        foreignKey: "lobby_id",
+      });
     }
   }
-  Lobby.init({
-    code: DataTypes.STRING,
-    status: DataTypes.ENUM('waiting', 'ongoing', 'ended')
-  }, {
-    sequelize,
-    modelName: 'Lobby',
-  });
+  Lobby.init(
+    {
+      code: DataTypes.STRING,
+      status: DataTypes.ENUM("waiting", "ongoing", "ended"),
+    },
+    {
+      sequelize,
+      modelName: "Lobby",
+    }
+  );
   return Lobby;
 };

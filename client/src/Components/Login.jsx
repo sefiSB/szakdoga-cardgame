@@ -10,7 +10,7 @@ function Login({ socket }) {
 
 
   const validateUser = () => {
-    const response = fetch("http://localhost:3001/loginuser", {
+    const response = fetch("http://127.0.0.1:3001/loginuser", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

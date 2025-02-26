@@ -24,7 +24,7 @@ function NewGame({ socket }) {
         isCardsOnDesk: isCardsOnDesk,
         revealedCards: revealedCards,
         hiddenCards: hiddenCards,
-        host_id: initialState.user_id,
+        host: initialState.user_id,
       }),
     });
     const data = await response.json();

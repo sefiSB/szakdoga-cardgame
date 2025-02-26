@@ -4,7 +4,7 @@ import "./App.css";
 import io from 'socket.io-client';
 import { initialState } from "./Store/store";
 
-const socket = io.connect("http://192.168.0.59:3001");
+const socket = io.connect("http://127.0.0.1:3001");
 
 import Login from "./Components/Login";
 import CreateOrJoin from "./Components/CreateOrJoin";

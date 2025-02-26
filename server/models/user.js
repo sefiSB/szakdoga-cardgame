@@ -1,7 +1,5 @@
-'use strict';
-const {
-  Model
-} = require('sequelize');
+"use strict";
+const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
     /**
@@ -10,15 +8,17 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      User.hasMany(models.Lobby,{
-        foreignKey:"host_id"
-      })
-      User.belongsToMany(models.Lobby,{
-        through:"LobbyUsers"
-      })
-      User.hasMany(models.Preset,{
-        foreignKey:"user_id"
-      })
+      // define association here
+      User.belongsTo(models.Lobby, {
+        foreignKey: "lobby_id",
+        as: "lobby",
+      });
+      User.hasMany(models.Preset, {
+        foreignKey: "user_id",
+      });
+      User.hasOne(models.Host, {
+        foreignKey: "host_id",
+      });
     }
     toJSON() {
       const userData = this.get();
@@ -29,13 +29,16 @@ module.exports = (sequelize, DataTypes) => {
       return bcrypt.compareSync(password, this.password);
     }
   }
-  User.init({
-    username: DataTypes.STRING,
-    email: DataTypes.STRING,
-    password: DataTypes.STRING
-  }, {
-    sequelize,
-    modelName: 'User',
-  });
+  User.init(
+    {
+      username: DataTypes.STRING,
+      email: DataTypes.STRING,
+      password: DataTypes.STRING,
+    },
+    {
+      sequelize,
+      modelName: "User",
+    }
+  );
   return User;
 };

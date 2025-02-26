@@ -4,8 +4,11 @@ const { Server } = require("socket.io");
 const mysql = require("mysql");
 const cors = require("cors");
 const { Sequelize } = require('sequelize');
-const { User, Lobby, Preset } = require("./models");
+const { User, Lobby, Preset,Host } = require("./models");
 const { on } = require("events");
+const { platform } = require("os");
+const { initialState } = require("../client/src/Store/store");
+const user = require("./models/user");
 
 
 const app = express();
@@ -13,7 +16,7 @@ const app = express();
 
 
 //////////TESTING//////////
-
+//172.20.10.5
 //////////TESTING//////////
 
 
@@ -153,11 +156,13 @@ io.on("connection", (socket) => {
 
     app.post("/adduser", async (req, res) => {
         try {
+            console.log("Itt be kéne lépjen")
             const user = await User.create({
                 username: req.body.name,
                 email: req.body.email,
                 password: req.body.password,
             });
+            initialState.user_id = user.id;
             res.json(user);
         } catch (error) {
             res.status(500).json({ error: "Database error", details: error });
@@ -167,10 +172,28 @@ io.on("connection", (socket) => {
     app.post("/addlobby", async (req, res) => {
         try {
             const lobby = await Lobby.create({
-                host_id: req.body.host_id,
+                host: req.body.host,
                 code: createCode(),
                 status: "waiting",
             });
+            
+            const user = await User.findOne({
+                where: {
+                    id: req.body.host,
+                }
+            });
+            
+            user.update({lobby_id: lobby.id});
+
+            const host = await Host.create({
+                host_id: user.id,
+                lobby_id: lobby.id,
+            });
+
+            
+            /* user.lobby_id = lobby.id;
+            user.save(); */
+
             lobbies[lobby.code] = {
                 name: req.body.gameName,
                 code: lobby.code,
@@ -186,30 +209,53 @@ io.on("connection", (socket) => {
             res.json(lobby);
         } catch (error) {
             res.status(500).json({ error: "Database error", details: error });
+
+            console.log(error)  
         }
     });
 
     app.post("/joinlobby", async (req, res) => {
         //KELL HOZZÁ A KAPCSOLÓTÁBLA
         
-        /* try {
+        try {
             const lobby = await Lobby.findOne({
                 where: {
                     code: req.body.code,
                 }
             });
+            const user = await User.findOne({
+                where: {
+                    id: req.body.user_id,
+                }
+            });
+            user.update({lobby_id: lobby.id});
             if (lobby) {
-                lobbies[lobby.code] = {
-                    name: lobby.name,
-                    code: lobby.code,
-                    players: [],
-                    state: "waiting",
-                    decks: {
-                        drawDeck: [],
-                        throwDeck: [],
-                        onTable: [],
-                    },
-                };
+                if(lobbies[lobby.code]){
+                    lobbies[lobby.code].players.push({
+                        id: req.body.user_id, username: req.body.user, cards: {
+                            onHand: [],
+                            onTableVisible: [],
+                            onTableHidden: [],
+                        }
+                    });
+                    socket.join(lobby.code);
+                    io.to(lobby.code).emit("updateLobby", lobbies[lobby.code]);
+                }
+                else{
+                    lobbies[lobby.code] = {
+                        name: lobby.name,
+                        code: lobby.code,
+                        players: [],
+                        state: "waiting",
+                        decks: {
+                            drawDeck: [],
+                            throwDeck: [],
+                            onTable: [],
+                        },
+                    };
+                    socket.join(lobby.code);
+                    io.to(lobby.code).emit("updateLobby", lobbies[lobby.code]);
+                }
                 res.json(lobby);
             }
             else {
@@ -217,21 +263,8 @@ io.on("connection", (socket) => {
             }
         } catch (error) {
             res.status(500).json({ error: "Database error", details: error });
-        } */
+        }
 
-        if (lobbies[req.body.code]) {
-            lobbies[req.body.code].players.push({
-                id: req.body.user_id, username: req.body.user, cards: {
-                    onHand: [],
-                    onTableVisible: [],
-                    onTableHidden: [],
-                }
-            });
-            res.json( lobbies[req.body.code] );
-        }
-        else{
-            res.json({ error: "Invalid lobby code" });
-        }
     });
 
     app.post("/gamestart", async (req, res) => {
@@ -297,7 +330,7 @@ io.on("connection", (socket) => {
         socket.join(code);
         console.log(lobbies);
         const newLobby = await Lobby.create({
-            host_id: data.user.id,
+            host: data.user.id,
             code: code,
             status: "waiting",
         });
@@ -319,7 +352,7 @@ io.on("connection", (socket) => {
 
 
 
-server.listen(3001, '0.0.0.0', () => {
+server.listen(3001, '127.0.0.1', () => {
     console.log("SERVER IS RUNNING")
     console.log(server.address().address + ":" + server.address().port);
 })

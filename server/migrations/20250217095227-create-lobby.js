@@ -23,14 +23,14 @@ module.exports = {
         allowNull: false,
         type: Sequelize.DATE
       },
-      host_id: {
+      /* host: {
         allowNull: false,
         type: Sequelize.INTEGER,
         references: {
           model: 'Users',
           key: 'id'
         }
-      }
+      } */
     });
   },
   async down(queryInterface, Sequelize) {
