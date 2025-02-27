@@ -35,8 +35,7 @@ function NewGame({ socket }) {
       initialState.code = data.code;
       navigate("/desk");
     }
-    console.log(data);
-    console.log("asd")
+
   };
 
   /* const sendNewGame = () => {

@@ -17,25 +17,13 @@ function Desk({ socket }) {
         code: initialState.code,
       }),
     });
-    const data = await response.json();
-    console.log(data);
-    setData(data);
+    const d = await response.json();
+    setData(d);
+    console.log(d);
+    console.log(initialState.code);
+    socket.emit("gameStart", { code: initialState.code });
 
-    
-  }
-  useEffect(() => {
-    gameStart();
-    
-    const handleLobbyUpdate = (updatedData) => {
-      console.log("Lobby updated:", updatedData);
-      setData(updatedData);
-    };
-  
-    socket.on("updateLobby", handleLobbyUpdate);
-
-    /* socket.emit("gameStart", { code: initialState.code });
-
-    socket.on("gameStart", (response) => {
+    socket.on("updateLobby", (response) => {
       console.log("Kliens visszakapta az adatokat")
       console.log("Game started, received data:", response.players);
       setData(response);
@@ -43,7 +31,11 @@ function Desk({ socket }) {
 
     return () => {
       socket.off("gameStart");
-    }; */
+    };
+    
+  }
+  useEffect(() => {
+    gameStart();
   }, [socket]);
 
   if (!data) {
