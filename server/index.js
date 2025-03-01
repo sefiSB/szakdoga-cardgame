@@ -314,7 +314,7 @@ io.on("connection", (socket) => {
       } else {
         io.to(socket.id).emit("codeError");
       }
-    } catch (error) {
+    } catch (error) {cd
       
       console.log(error);
     }
