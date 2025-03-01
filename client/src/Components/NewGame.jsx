@@ -9,8 +9,12 @@ function NewGame({ socket }) {
   const [startingCards, setStartingCards] = useState(0);
   const [revealedCards, setRevealedCards] = useState(0);
   const [hiddenCards, setHiddenCards] = useState(0);
+  const [cardType, setCardType] = useState("French");
+  const [maxplayers, setMaxplayers] = useState(4);
+  const [notUsed, setNotUsed] = useState([]);
+  const [numberOfDeck, setNumberOfDeck] = useState(1);
 
-  const navigate= useNavigate();
+  const navigate = useNavigate();
   //csak teszt jelleggel
   const postGame = async () => {
     const response = await fetch("http://localhost:3001/addlobby", {
@@ -28,19 +32,17 @@ function NewGame({ socket }) {
       }),
     });
     const data = await response.json();
-    if(data.error){
+    if (data.error) {
       alert("Game creation failed");
-    }
-    else{
+    } else {
       initialState.code = data.code;
-      socket.emit("joinLobby",{
+      socket.emit("joinLobby", {
         code: data.code,
-        user:initialState.user,
-        user_id: initialState.user_id
-      })
+        user: initialState.user,
+        user_id: initialState.user_id,
+      });
       navigate("/desk");
     }
-
   };
 
   /* const sendNewGame = () => {
@@ -82,6 +84,44 @@ function NewGame({ socket }) {
 
         <label className="form-control w-full max-w-xs">
           <div className="label">
+            <span className="label-text">Max players</span>
+            {/* <span className="label-text-alt">Top Right label</span> */}
+          </div>
+          <input
+            type="number"
+            placeholder="Place a number here"
+            className="input input-bordered w-full max-w-xs"
+            onChange={(e) => {
+              setMaxplayers(e.target.value);
+            }}
+          />
+          {/* <div className="label">
+            <span className="label-text-alt">Bottom Left label</span>
+            <span className="label-text-alt">Bottom Right label</span>
+          </div> */}
+        </label>
+
+        <label className="form-control w-full max-w-xs">
+          <div className="label">
+            <fieldset class="fieldset">
+              <select
+                defaultValue="Pick a browser"
+                class="select select-secondary"
+                onChange={(e) => setCardType(e.target.value)}
+              >
+                <option disabled={true}>Type of card</option>
+                <option>French</option>
+                <option>Hungarian</option>
+                <option>Uno</option>
+              </select>
+            </fieldset>
+          </div>
+        </label>
+
+        
+
+        <label className="form-control w-full max-w-xs">
+          <div className="label">
             <span className="label-text">Number of starting cards in hand</span>
             {/* <span className="label-text-alt">Top Right label</span> */}
           </div>
@@ -116,7 +156,7 @@ function NewGame({ socket }) {
 
         {isCardsOnDesk ? (
           <>
-            <div className="border p-5 rounded-3xl border-dashed border-orange-600">
+            <div className="border p-5 rounded-3xl border-solid border-orange-600">
               <label className="form-control w-full max-w-xs ">
                 <div className="label">
                   <span className="label-text">
@@ -164,16 +204,26 @@ function NewGame({ socket }) {
           <></>
         )}
 
-        <button
-          className="btn btn-outline btn-primary"
-          onClick={() => {
-            //postGame();
-            postGame();
-            //redirect to desk
-          }}
-        >
-          Submit
-        </button>
+        <div className="flex gap-10">
+          <button
+            className="btn btn-outline btn-primary"
+            onClick={() => {
+              //postGame();
+              postGame();
+              //redirect to desk
+            }}
+          >
+            Submit
+          </button>
+          <button
+            className="btn btn-outline btn-secondary"
+            onClick={() => {
+              //save preset
+            }}
+          >
+            Save preset
+          </button>
+        </div>
       </div>
     </>
   );

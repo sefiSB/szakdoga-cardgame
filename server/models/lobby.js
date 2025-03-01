@@ -17,6 +17,7 @@ module.exports = (sequelize, DataTypes) => {
   }
   Lobby.init(
     {
+      name:DataTypes.STRING,
       code: DataTypes.STRING,
       status: DataTypes.ENUM("waiting", "ongoing", "ended"),
     },
