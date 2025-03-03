@@ -15,8 +15,6 @@ const lobbyContainsPlayer = (code, playerID) => {
 };
 
 const createLobby = (data) => {
-  console.log("EZEKET KAPTA MEG A KREÁLÓ FÜGGVÉNY")
-  console.log(data)
   lobbies[data.code] = {
     name: data.name,
     code: data.code,
@@ -53,8 +51,8 @@ const addPLayer = (code, player) => {
     id: player.id,
     username: player.username,
     cards: {
-      onHand: ["2 of clubs"], //TEMPORARY
-      onTableVisible: ["2 of clubs"], //TEMPORARY
+      onHand: [], //TEMPORARY
+      onTableVisible: [], //TEMPORARY
       onTableHidden: [], //TEMPORARY
     },
   });

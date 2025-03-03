@@ -6,8 +6,21 @@ function Desk({ socket }) {
   const [data, setData] = useState(null);
   const [isStarted, setIsStarted] = useState(false);
 
+  const startingGame = () => {
+    setIsStarted(true);
+
+    shuffleArray(data.presetdata.usedCards)
+
+    for(let i=0; i<data.players.length;i++){
+      for(let j=0;j<data.presetdata.startingCards;j++){
+        //Teszt kedvéért visible kártyák
+        data.players[i].cards.onTableVisible.push(data.presetdata.usedCards.pop())
+      }
+    }
+  };
+
+
   const gameStart = async () => {
-    
     const response = await fetch("http://127.0.0.1:3001/gamestart", {
       method: "POST",
       headers: {
@@ -31,8 +44,17 @@ function Desk({ socket }) {
     return () => {
       socket.off("gameStart");
     };
-    
   };
+
+  const shuffleArray = (array) => {
+    for (let i = array.length - 1; i >= 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+  };
+
+  
+
   useEffect(() => {
     gameStart();
   }, [socket]);
@@ -44,6 +66,7 @@ function Desk({ socket }) {
   const players = data.players;
   const totalPlayers = players.length;
 
+  console.log(isStarted)
   if (!isStarted) {
     return (
       <>
@@ -85,19 +108,21 @@ function Desk({ socket }) {
               </div>
             );
           })}
-          
         </div>
-          {data.host === initialState.user_id ? (
-            <>
-              <div className="justify-center items-center flex gap-5">
-                <button class="btn btn-primary btn-xs sm:btn-sm md:btn-md lg:btn-lg xl:btn-xl">
-                  Start game
-                </button>
-              </div>
-            </>
-          ) : (
-            <></>
-          )}
+        {data.host === initialState.user_id ? (
+          <>
+            <div className="justify-center items-center flex gap-5">
+              <button
+                class="btn btn-primary btn-xs sm:btn-sm md:btn-md lg:btn-lg xl:btn-xl"
+                onClick={startingGame}
+              >
+                Start game
+              </button>
+            </div>
+          </>
+        ) : (
+          <></>
+        )}
       </>
     );
   }
@@ -148,10 +173,10 @@ function Desk({ socket }) {
               ))}
             </div>
             <div className="flex">
-              {player.cards.onTableVisible.map((card, index) => (
+              {player.cards.onTableVisible.map(([cardname,cardfile], index) => (
                 <div key={index} className="bg-blue-500 m-1 rounded-md">
                   <img
-                    src={"/assets/cards/french/" + cardNames[card]}
+                    src={"/assets/cards/french/" + cardfile}
                     alt=""
                     style={{ width: "5vh" }}
                   />

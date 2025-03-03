@@ -73,8 +73,8 @@ const initLobbies = async () => {
               id: player.id,
               username: player.username,
               cards: {
-                onHand: ["2 of clubs"], //TEMPORARY
-                onTableVisible: ["2 of clubs"], //TEMPORARY
+                onHand: [], //TEMPORARY
+                onTableVisible: [], //TEMPORARY
                 onTableHidden: [], //TEMPORARY
               },
             };
@@ -144,8 +144,6 @@ app.post("/adduser", async (req, res) => {
 //
 app.post("/addlobby", async (req, res) => {
   try {
-    console.log("Kéréssel beérkezett adatok:")
-    console.log(req.body)
     const cde = createCode();
     const lobby = await Lobby.create({
       name:req.body.gameName,

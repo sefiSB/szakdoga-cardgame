@@ -18,10 +18,13 @@ function NewGame({ socket }) {
   const navigate = useNavigate();
   //csak teszt jelleggel
   const postGame = async () => {
-    const usedCards = Object.entries(cardNames).filter(
-      ([cardName]) => !notUsed.includes(cardName)
-    );
-    
+    let usedCards=[];
+    for(let i = 0; i<packNumber;i++){
+      let used= Object.entries(cardNames).filter(
+        ([cardName]) => !notUsed.includes(cardName))
+        usedCards= [...usedCards,...used];
+      }
+
     const response = await fetch("http://localhost:3001/addlobby", {
       method: "POST",
       headers: {
