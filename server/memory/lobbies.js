@@ -11,28 +11,42 @@ const createCode = () => {
 };
 
 const lobbyContainsPlayer = (code, playerID) => {
-    return lobbies[code].players.some((player) => player.id === playerID);
+  return lobbies[code].players.some((player) => player.id === playerID);
 };
 
 const createLobby = (data) => {
+  console.log("EZEKET KAPTA MEG A KREÁLÓ FÜGGVÉNY")
+  console.log(data)
   lobbies[data.code] = {
     name: data.name,
     code: data.code,
     players: [],
     state: "waiting",
+    host:data.host,
+    presetdata: {
+      startingCards: data.presetdata.startingCards,
+      host: data.presetdata.user_id,
+      cardType: data.presetdata.cardType,
+      packNumber: data.presetdata.packNumber,
+      usedCards: data.presetdata.usedCards,
+      maxplayers: data.presetdata.maxplayers,
+    },
     decks: {
       drawDeck: [],
       throwDeck: [],
       onTable: [],
     },
   };
+
+  /* console.log("Lobby created:");
+  console.log(lobbies[data.code]); */
 };
 
 const addPLayer = (code, player) => {
   if (!lobbies[code]) {
     return false;
   }
-  if (lobbyContainsPlayer(code,player.id)) {
+  if (lobbyContainsPlayer(code, player.id)) {
     return false;
   }
   lobbies[code].players.push({

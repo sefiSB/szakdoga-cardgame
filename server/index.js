@@ -144,8 +144,11 @@ app.post("/adduser", async (req, res) => {
 //
 app.post("/addlobby", async (req, res) => {
   try {
+    console.log("Kéréssel beérkezett adatok:")
+    console.log(req.body)
     const cde = createCode();
     const lobby = await Lobby.create({
+      name:req.body.gameName,
       host: req.body.host,
       code: cde,
       status: "waiting",
@@ -166,8 +169,17 @@ app.post("/addlobby", async (req, res) => {
     //await initLobbies();
 
     createLobby({
-      name: req.gameName,
+      name: req.body.gameName,
       code: lobby.code,
+      host: req.body.host,
+      presetdata:{
+        startingCards: req.body.startingCards,
+        host: req.body.host,
+        cardType:req.body.cardType,
+        packNumber:req.body.packNumber,
+        usedCards:req.body.usedCards,
+        maxplayers:req.body.maxplayers,
+      }
     });
 
     console.log(lobbies[lobby.code].players);
@@ -184,10 +196,12 @@ app.post("/addlobby", async (req, res) => {
   }
 });
 
+
+app.post("hostStarted")
+
 app.post("/gamestart", async (req, res) => {
   //ALAP ADATOK NINCSENEK FENT AZ ADATBÁZISON
 
-  await initLobbies();
   if (lobbies[req.body.code]) {
     console.log("PEDIG KÜLD");
     res.json(lobbies[req.body.code]);

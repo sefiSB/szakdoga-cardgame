@@ -1,4 +1,4 @@
-const cardNames = {
+export const cardNames = {
     "2 of clubs": "2_of_clubs.svg",
     "2 of diamonds": "2_of_diamonds.svg",
     "2 of hearts": "2_of_hearts.svg",

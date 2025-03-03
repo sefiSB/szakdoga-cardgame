@@ -2,6 +2,7 @@ import { useState } from "react";
 import { initialState } from "../Store/store";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { cardNames } from "../Utils/French";
 
 function NewGame({ socket }) {
   const [isCardsOnDesk, setIsCardsOnDesk] = useState(false);
@@ -11,12 +12,16 @@ function NewGame({ socket }) {
   const [hiddenCards, setHiddenCards] = useState(0);
   const [cardType, setCardType] = useState("French");
   const [maxplayers, setMaxplayers] = useState(4);
-  const [notUsed, setNotUsed] = useState([]);
-  const [numberOfDeck, setNumberOfDeck] = useState(1);
+  const [notUsed, setNotUsed] = useState(["card back"]);
+  const [packNumber, setPackNumber] = useState(1);
 
   const navigate = useNavigate();
   //csak teszt jelleggel
   const postGame = async () => {
+    const usedCards = Object.entries(cardNames).filter(
+      ([cardName]) => !notUsed.includes(cardName)
+    );
+    
     const response = await fetch("http://localhost:3001/addlobby", {
       method: "POST",
       headers: {
@@ -25,10 +30,14 @@ function NewGame({ socket }) {
       body: JSON.stringify({
         gameName: gameName,
         startingCards: startingCards,
-        isCardsOnDesk: isCardsOnDesk,
-        revealedCards: revealedCards,
-        hiddenCards: hiddenCards,
+        /* isCardsOnDesk: isCardsOnDesk, */
+        /* revealedCards: revealedCards,
+        hiddenCards: hiddenCards, */
         host: initialState.user_id,
+        cardType: cardType,
+        packNumber: packNumber,
+        usedCards: usedCards,
+        maxplayers: maxplayers,
       }),
     });
     const data = await response.json();
@@ -103,6 +112,9 @@ function NewGame({ socket }) {
 
         <label className="form-control w-full max-w-xs">
           <div className="label">
+            <span className="label-text">Type of cards</span>
+          </div>
+          <div className="flex gap-10">
             <fieldset class="fieldset">
               <select
                 defaultValue="Pick a browser"
@@ -115,10 +127,71 @@ function NewGame({ socket }) {
                 <option>Uno</option>
               </select>
             </fieldset>
+
+            {/* Open the modal using document.getElementById('ID').showModal() method */}
+            <button
+              className="btn"
+              onClick={() => document.getElementById("my_modal_1").showModal()}
+            >
+              Select cards
+            </button>
+            <dialog id="my_modal_1" className="modal">
+              <div className="modal-box w-11/12 max-w-5xl">
+                <h3 className="font-bold text-lg">Select Cards</h3>
+                <div className="grid grid-cols-6 gap-2">
+                  {Object.entries(cardNames)
+                    .filter(([cardName]) => !notUsed.includes(cardName))
+                    .map(([cardName, cardImage]) => (
+                      <div
+                        key={cardName}
+                        className="flex flex-col items-center"
+                      >
+                        <img
+                          src={`/assets/cards/french/${cardImage}`}
+                          alt={cardName}
+                          style={{ width: "100px", height: "auto" }}
+                        />
+                        <p>{cardName}</p>
+                        <button
+                          className="btn btn-sm"
+                          onClick={() => {
+                            setNotUsed((prev) => [...prev, cardName]);
+                            console.log(notUsed);
+                            console.log(cardName);
+                          }}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                </div>
+                <p className="py-4">
+                  Press ESC key or click the button below to close
+                </p>
+                <div className="modal-action">
+                  <form method="dialog">
+                    <button className="btn">Close</button>
+                  </form>
+                </div>
+              </div>
+            </dialog>
           </div>
         </label>
 
-        
+        <label className="form-control w-full max-w-xs">
+          <div className="label">
+            <span className="label-text">How many packs do you need?</span>
+          </div>
+          <input
+            type="number"
+            placeholder="Place a number here"
+            className="input input-bordered w-full max-w-xs"
+            value={packNumber}
+            onChange={(e) => {
+              setPackNumber(e.target.value);
+            }}
+          />
+        </label>
 
         <label className="form-control w-full max-w-xs">
           <div className="label">
