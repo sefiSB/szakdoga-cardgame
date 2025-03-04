@@ -7,18 +7,8 @@ function Desk({ socket }) {
   const [isStarted, setIsStarted] = useState(false);
 
   const startingGame = () => {
-    setIsStarted(true);
-
-    shuffleArray(data.presetdata.usedCards)
-
-    for(let i=0; i<data.players.length;i++){
-      for(let j=0;j<data.presetdata.startingCards;j++){
-        //Teszt kedvéért visible kártyák
-        data.players[i].cards.onTableVisible.push(data.presetdata.usedCards.pop())
-      }
-    }
+    socket.emit("hostStarted", { code: initialState.code });
   };
-
 
   const gameStart = async () => {
     const response = await fetch("http://127.0.0.1:3001/gamestart", {
@@ -35,39 +25,51 @@ function Desk({ socket }) {
     console.log(initialState.code);
     socket.emit("gameStart", { code: initialState.code });
 
-    socket.on("updateLobby", (response) => {
-      console.log("Kliens visszakapta az adatokat");
-      console.log("Game started, received data:", response.players);
-      setData(response);
+    socket.emit("joinLobby", {
+      code: data.code,
+      user: initialState.user,
+      user_id: initialState.user_id,
     });
+
+    /* socket.on("updateLobby", (response) => {
+      console.log("Kliens visszakapta az adatokat "+response);
+      setData(response);
+    }); */
 
     return () => {
       socket.off("gameStart");
     };
   };
 
-  const shuffleArray = (array) => {
-    for (let i = array.length - 1; i >= 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]];
-    }
-  };
-
-  
-
   useEffect(() => {
     gameStart();
+
+    socket.on("updateLobby", (response) => {
+      console.log("Kliens visszakapta az adatokat ");
+      console.log(response);
+      setData(response);
+    });
+
+    socket.emit("reconnectLobby", {
+      user_id: initialState.user_id,
+      code: initialState.code,
+    });
+
+    return () => {
+      socket.off("updateLobby");
+    };
   }, [socket]);
   if (!data) {
     return <div className="text-center text-white">Loading game data...</div>;
   }
 
-  const currentPlayerId = initialState.user_id;
   const players = data.players;
   const totalPlayers = players.length;
+  const player=data.players.find((p)=>p.id===initialState.user_id);
+  console.log(player)
 
-  console.log(isStarted)
-  if (!isStarted) {
+  console.log(data.state === "waiting");
+  if (data.state === "waiting") {
     return (
       <>
         <div className="relative w-[90vw] h-[80vh] bg-green-600 rounded-2xl mx-auto flex items-center justify-center bottom-0 mb-2">
@@ -77,37 +79,39 @@ function Desk({ socket }) {
           </div>
 
           {/* Játékosok elhelyezése */}
-          {players.map((player, index) => {
-            let positionStyle = {};
-            if (index < totalPlayers / 2) {
-              // Felső játékosok (elosztva)
-              positionStyle = {
-                top: "3%",
-                left: `${(index / (totalPlayers / 2)) * 80 + 10}%`,
-              };
-            } else {
-              // Oldalsó játékosok (bal/jobb)
-              const sideIndex = index - Math.floor(totalPlayers / 2);
-              const yPos = `${(sideIndex / (totalPlayers / 2)) * 70 + 10}%`;
+          {players
+            .filter((player) => player.id != initialState.user_id)
+            .map((player, index) => {
+              let positionStyle = {};
+              if (index < totalPlayers / 2) {
+                // Felső játékosok (elosztva)
+                positionStyle = {
+                  top: "3%",
+                  left: `${(index / (totalPlayers / 2)) * 80 + 10}%`,
+                };
+              } else {
+                // Oldalsó játékosok (bal/jobb)
+                const sideIndex = index - Math.floor(totalPlayers / 2);
+                const yPos = `${(sideIndex / (totalPlayers / 2)) * 70 + 10}%`;
 
-              positionStyle =
-                index % 2 === 0
-                  ? { left: "2%", top: yPos } // Bal oldal
-                  : { right: "2%", top: yPos }; // Jobb oldal
-            }
+                positionStyle =
+                  index % 2 === 0
+                    ? { left: "2%", top: yPos } // Bal oldal
+                    : { right: "2%", top: yPos }; // Jobb oldal
+              }
 
-            return (
-              <div
-                key={player.id}
-                className="absolute flex flex-col items-center"
-                style={positionStyle}
-              >
-                <div className="bg-blue-500 p-2 rounded-md">
-                  {player.username}
+              return (
+                <div
+                  key={player.id}
+                  className="absolute flex flex-col items-center"
+                  style={positionStyle}
+                >
+                  <div className="bg-blue-500 p-2 rounded-md">
+                    {player.username}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
         </div>
         {data.host === initialState.user_id ? (
           <>
@@ -128,70 +132,116 @@ function Desk({ socket }) {
   }
 
   return (
-    <div className="relative w-[90vw] h-[80vh] bg-green-600 rounded-2xl mx-auto flex items-center justify-center bottom-0 mb-2">
+    <div className="relative w-[90vw] h-[90vh] bg-green-600 rounded-2xl mx-auto flex items-center justify-center bottom-0 mb-2">
       {/* Középen a húzó- és dobópakli */}
       <div className="absolute bg-gray-700 p-4 rounded-lg top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-        Decks
+        {/* <img src="/assets/cards/french/card_back.svg" alt="" /> */}
       </div>
 
-      {/* Játékosok elhelyezése */}
-      {players.map((player, index) => {
-        let positionStyle = {};
-        if (index < totalPlayers / 2) {
-          // Felső játékosok (elosztva)
-          positionStyle = {
-            top: "3%",
-            left: `${(index / (totalPlayers / 2)) * 80 + 10}%`,
-          };
-        } else {
-          // Oldalsó játékosok (bal/jobb)
-          const sideIndex = index - Math.floor(totalPlayers / 2);
-          const yPos = `${(sideIndex / (totalPlayers / 2)) * 70 + 10}%`;
+      <div className="absolute top-1 right-1 bg-gray-700 rounded-lg">
+        <ul class="menu bg-base-200 rounded-box w-56">
+          <li>
+            <details open>
+              <summary>Actions</summary>
+              <ul>
+                <li>
+                  <a>Submenu 1</a>
+                </li>
+                <li>
+                  <a>Submenu 2</a>
+                </li>
+                <li>
+                  <details open>
+                    <summary>Parent</summary>
+                    <ul>
+                      <li>
+                        <a>Submenu 1</a>
+                      </li>
+                      <li>
+                        <a>Submenu 2</a>
+                      </li>
+                    </ul>
+                  </details>
+                </li>
+              </ul>
+            </details>
+          </li>
+        </ul>
+      </div>
 
-          positionStyle =
-            index % 2 === 0
-              ? { left: "2%", top: yPos } // Bal oldal
-              : { right: "2%", top: yPos }; // Jobb oldal
-        }
+      
+      {
+        players
+        .filter((player) => player.id !== initialState.user_id)
+        .map((player, index) => {
+          
+          let positionStyle = {};
+          if (index < totalPlayers / 2) {
+            // Felső játékosok (elosztva)
+            positionStyle = {
+              top: "3%",
+              left: `${(index / (totalPlayers / 2)) * 80 + 10}%`,
+            };
+          } else {
+            // Oldalsó játékosok (bal/jobb)
+            const sideIndex = index - Math.floor(totalPlayers / 2);
+            const yPos = `${(sideIndex / (totalPlayers / 2)) * 70 + 10}%`;
 
-        return (
-          <div
-            key={player.id}
-            className="absolute flex flex-col items-center"
-            style={positionStyle}
-          >
-            <div className="bg-blue-500 p-2 rounded-md">{player.username}</div>
-            <div className="flex">
-              {player.cards.onHand.map((card, index) => (
-                <div key={index} className="bg-blue-500 m-1 rounded-md">
-                  <img
-                    src={"/assets/cards/french/card_back.svg"}
-                    alt=""
-                    style={{ width: "5vh" }}
-                  />
-                </div>
-              ))}
+            positionStyle =
+              index % 2 === 0
+                ? { left: "2%", top: yPos } // Bal oldal
+                : { right: "2%", top: yPos }; // Jobb oldal
+          }
+
+          return (
+            <div
+              key={player.id}
+              className="absolute flex flex-col items-center"
+              style={positionStyle}
+            >
+              <div className="bg-blue-500 p-2 rounded-md">
+                {player.username}
+              </div>
+              <div className="flex">
+                {player.cards.onHand.map((card, index) => (
+                  <div key={index} className="bg-blue-500 m-1 rounded-md">
+                    <img
+                      src={"/assets/cards/french/card_back.svg"}
+                      alt=""
+                      style={{ width: "5vh" }}
+                    />
+                  </div>
+                ))}
+              </div>
+              <div className="flex">
+                {player.cards.onTableVisible.map(
+                  ([cardname, cardfile], index) => (
+                    <div key={index} className="bg-blue-500 m-1 rounded-md">
+                      <img
+                        src={"/assets/cards/french/" + cardfile}
+                        alt=""
+                        style={{ width: "5vh" }}
+                      />
+                    </div>
+                  )
+                )}
+              </div>
             </div>
-            <div className="flex">
-              {player.cards.onTableVisible.map(([cardname,cardfile], index) => (
-                <div key={index} className="bg-blue-500 m-1 rounded-md">
-                  <img
-                    src={"/assets/cards/french/" + cardfile}
-                    alt=""
-                    style={{ width: "5vh" }}
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-        );
-      })}
+          );
+        })}
 
       {/* Saját lapok alul */}
       <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-        <div className="bg-red-500 p-3 rounded-lg">Card 1</div>
+        {
+          player.cards.onTableVisible.map(([cardname,cardfile],index)=>{
+            return(<div key={index} className="bg-red-500 p-3 rounded-lg"><img src={"/assets/cards/french/"+cardfile} alt="" /></div>)
+            
+          })
+        }
+        
+        {/* <div className="bg-red-500 p-3 rounded-lg">Card 1</div>
         <div className="bg-red-500 p-3 rounded-lg">Card 2</div>
-        <div className="bg-red-500 p-3 rounded-lg">Card 3</div>
+        <div className="bg-red-500 p-3 rounded-lg">Card 3</div> */}
       </div>
     </div>
   );

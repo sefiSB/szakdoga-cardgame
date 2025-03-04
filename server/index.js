@@ -7,7 +7,6 @@ const { Sequelize } = require("sequelize");
 const { User, Lobby, Preset, Host } = require("./models");
 const { on } = require("events");
 const { platform } = require("os");
-const { initialState } = require("../client/src/Store/store");
 const user = require("./models/user");
 const { create } = require("domain");
 const {
@@ -19,41 +18,12 @@ const {
 
 const app = express();
 
-//////////TESTING//////////
-//172.20.10.5
-//////////TESTING//////////
-
-/* const initLobbies = async () => {
-  const lobbylist = await Lobby.findAll();
-  lobbylist.forEach(async (lobby) => {
-    const players = await User.findAll({
-      where: {
-        lobby_id: lobby.id,
-      },
-    });
-    lobbies[lobby.code] = {
-      name: lobby.name,
-      code: lobby.code,
-      players: players.map((player) => {
-        return {
-          id: player.id,
-          username: player.username,
-          cards: {
-            onHand: ["2 of clubs"], //TEMPORARY
-            onTableVisible: ["2 of clubs"], //TEMPORARY
-            onTableHidden: [], //TEMPORARY
-          },
-        };
-      }),
-      state: "waiting",
-      decks: {
-        drawDeck: [],
-        throwDeck: [],
-        onTable: [],
-      },
-    };
-  });
-}; */
+const shuffleArray = (array) => {
+  for (let i = array.length - 1; i >= 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+};
 
 const initLobbies = async () => {
   try {
@@ -146,7 +116,7 @@ app.post("/addlobby", async (req, res) => {
   try {
     const cde = createCode();
     const lobby = await Lobby.create({
-      name:req.body.gameName,
+      name: req.body.gameName,
       host: req.body.host,
       code: cde,
       status: "waiting",
@@ -170,17 +140,16 @@ app.post("/addlobby", async (req, res) => {
       name: req.body.gameName,
       code: lobby.code,
       host: req.body.host,
-      presetdata:{
+      presetdata: {
         startingCards: req.body.startingCards,
         host: req.body.host,
-        cardType:req.body.cardType,
-        packNumber:req.body.packNumber,
-        usedCards:req.body.usedCards,
-        maxplayers:req.body.maxplayers,
-      }
+        cardType: req.body.cardType,
+        packNumber: req.body.packNumber,
+        usedCards: req.body.usedCards,
+        maxplayers: req.body.maxplayers,
+      },
     });
 
-    console.log(lobbies[lobby.code].players);
     addPLayer(lobby.code, {
       id: user.id,
       username: user.username,
@@ -194,8 +163,7 @@ app.post("/addlobby", async (req, res) => {
   }
 });
 
-
-app.post("hostStarted")
+//app.post("hostStarted");
 
 app.post("/gamestart", async (req, res) => {
   //ALAP ADATOK NINCSENEK FENT AZ ADATBÁZISON
@@ -211,6 +179,61 @@ app.post("/gamestart", async (req, res) => {
 
 io.on("connection", (socket) => {
   console.log(`User connected: ${socket.id}`);
+
+  socket.on("hostStarted", (data) => {
+    /* console.log("JÖTT AZ ADAT:");
+    console.log(lobbies[data.code]); */
+
+    //KEVERÉS ÉS KIOSZTÁS
+    lobbies[data.code].state = "ongoing";
+    lobbies[data.code].decks.drawDeck = lobbies[data.code].presetdata.usedCards;
+    shuffleArray(lobbies[data.code].decks.drawDeck);
+    for (let i = 0; i < lobbies[data.code].players.length; i++) {
+      for (let j = 0; j < lobbies[data.code].presetdata.startingCards; j++) {
+        //Teszt kedvéért visible kártyák
+        lobbies[data.code].players[i].cards.onTableVisible.push(
+          lobbies[data.code].presetdata.usedCards.pop()
+        );
+      }
+    }
+
+    console.log("EZT KÜLDI VISSZA:");
+    console.log(lobbies[data.code]);
+    //socket.join(data.code);
+    //io.to(data.code).emit("updateLobby",lobbies[data.code])
+    io.emit("updateLobby", lobbies[data.code]);
+    //io.to(data.code).emit("hostStarted");
+  });
+
+  socket.on("throwCard", (data) => {
+    const { code, player_id, cardName, from, to } = data;
+
+    const lobby = lobbies[code];
+    const player = lobby.players.find((player) => player.id === player_id);
+    if (!player) {
+      //vmi error
+    }
+
+
+
+    const cardIndex = player.cards.onTableVisible.findIndex(
+      ([name, _]) => name === cardname
+    );
+
+    if (cardIndex < 0) {
+      //vmi error
+    }
+
+    const [card] = player.cards.onTableVisible.splice(cardIndex, 1);
+
+    lobby.decks.throwDeck.push(card);
+
+    io.to(code).emit("updateLobby", lobby);
+  });
+
+  
+
+  socket.on("drawCrad", (data) => {});
 
   socket.on("joinLobby", async (data) => {
     try {
@@ -237,11 +260,18 @@ io.on("connection", (socket) => {
         username: user.username,
       });
 
-      socket.join(lobby.code);
+      socket.join(data.code);
 
-      // Emit the updateLobby event to all clients in the lobby
+      io.in(data.code)
+        .fetchSockets()
+        .then((sockets) => {
+          console.log(
+            `A(z) ${data.code} lobbyban lévő socketek:`,
+            sockets.map((s) => s.id)
+          );
+        });
+
       io.to(lobby.code).emit("updateLobby", lobbies[lobby.code]);
-
       io.to(socket.id).emit("codeSuccess", { code: lobby.code });
     } catch (error) {
       console.log(error);
@@ -278,6 +308,16 @@ io.on("connection", (socket) => {
     console.log(data.code);
     console.log("Szerver megkapta a kódot");
     io.to(data.code).emit("gameStart", lobbies[data.code]);
+  });
+
+  socket.on("reconnectLobby", (data) => {
+    const { user_id, code } = data;
+    if (lobbies[code]) {
+      socket.join(code);
+      console.log(
+        `Felhasználó (${user_id}) új socket ID-val újracsatlakozott a(z) ${code} lobbyhoz.`
+      );
+    }
   });
 });
 

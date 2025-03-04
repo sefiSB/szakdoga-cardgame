@@ -24,8 +24,12 @@ function JoinGame({socket}) {
     });
     socket.on("codeSuccess", (data) => {
       initialState.code = data.code;
+      
       navigate("/desk");
     });
+    
+
+    socket.emit("join")
   }
 
  /*  const postCode = async () => {
@@ -69,9 +73,9 @@ function JoinGame({socket}) {
     socket.on("updateLobby", (data) => {
       console.log("Lobby frissült:", data.players);
       initialState.code = data.code;
-      setTimeout(() => {
+      /* setTimeout(() => {
         navigate("/desk");
-      }),
+      }), */
       setError(null); // Ha sikeres volt a csatlakozás, töröljük a hibát
       setLobby(data);
     });

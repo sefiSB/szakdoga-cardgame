@@ -36,8 +36,8 @@ const createLobby = (data) => {
     },
   };
 
-  /* console.log("Lobby created:");
-  console.log(lobbies[data.code]); */
+  console.log("EZ JÖTT LÉTRE:")
+  lobbies[data.code];
 };
 
 const addPLayer = (code, player) => {
