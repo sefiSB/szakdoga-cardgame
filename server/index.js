@@ -203,15 +203,14 @@ io.on("connection", (socket) => {
     const { code, player_id, cardName } = data;
     const lobby = lobbies[code];
     const player = lobby.players.find((player) => player.id === player_id);
-    if (!player||!lobby) {
-      console.log("vmi nemjo")
+    if (!player || !lobby) {
+      console.log("vmi nemjo");
     }
 
-    console.log(player.cards.onTableVisible)
+    console.log(player.cards.onTableVisible);
     const cardIndex = player.cards.onTableVisible.findIndex(
       ([name, _]) => name === cardName
     );
-    
 
     if (cardIndex < 0) {
       //vmi error
@@ -221,32 +220,72 @@ io.on("connection", (socket) => {
 
     lobby.decks.throwDeck.push(card);
     console.log(socket.rooms);
-    lobbies[code]=lobby;
+    lobbies[code] = lobby;
     io.to(code).emit("updateLobby", lobby);
   });
 
   socket.on("drawCard", (data) => {
-    console.log("kuki")
+    console.log("kuki");
     const { code, player_id } = data;
     const lobby = lobbies[code];
     const player = lobby.players.find((player) => player.id === player_id);
     console.log(player);
     console.log(lobby);
-    if (!player||!lobby) {
-      console.log("vmi nemjó")
+    if (!player || !lobby) {
+      console.log("vmi nemjó");
     }
 
     console.log(player.cards.onTableVisible);
     player.cards.onTableVisible.push(lobby.decks.drawDeck.pop());
     console.log(player.cards.onTableVisible);
-    lobbies[code]=lobby;
-    io.to(code).emit("updateLobby",lobby);
+    lobbies[code] = lobby;
+    io.to(code).emit("updateLobby", lobby);
   });
 
-  /*
-  socket.on("switchCard");
+  /* socket.on("switchCard",(data)=>{
+      const {from, to, cardName, code} = data
 
-  socket.on("switchOnHand");
+      
+      const lobby = lobbies[code];
+      const fromPlayer = lobby.players.find((player) => player.id === from);
+      const toPlayer = lobby.players.find((player) => player.id === to);
+      
+
+  }); */
+
+  socket.on("switchOnHand", (data) => {
+    const { from, to, code } = data;
+    console.log("jött a csere");
+    const lobby = lobbies[code];
+    const fromPlayer = lobby.players.find((player) => player.id === from);
+    const toPlayer = lobby.players.find((player) => player.id === to);
+    console.log(toPlayer);
+    console.log(fromPlayer);
+
+    io.to(code).emit("requestOnHandSwitch", {
+      from: from,
+      to: to,
+      code: code,
+    });
+  });
+
+  socket.on("respondOnHandSwitch", (data) => {
+    const { from, to, code, isAccepted } = data;
+    console.log("ez:");
+    console.log(data);
+    if (isAccepted) {
+      const lobby = lobbies[code];
+      const fromPlayer = lobby.players.find((player) => player.id === from);
+      const toPlayer = lobby.players.find((player) => player.id === to);
+      const tmpFrom = [...fromPlayer.cards.onTableVisible];
+      const tmpTo = [...toPlayer.cards.onTableVisible];
+      fromPlayer.cards.onTableVisible = tmpTo;
+      toPlayer.cards.onTableVisible = tmpFrom;
+    }
+
+    io.to(code).emit("updateLobby", lobbies[code]);
+  });
+  /*
 
   socket.on("revealCard");
 
