@@ -35,9 +35,6 @@ const createLobby = (data) => {
       onTable: [],
     },
   };
-
-  console.log("EZ JÖTT LÉTRE:")
-  lobbies[data.code];
 };
 
 const addPLayer = (code, player) => {

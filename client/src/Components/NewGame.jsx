@@ -48,11 +48,11 @@ function NewGame({ socket }) {
       alert("Game creation failed");
     } else {
       initialState.code = data.code;
-      /* socket.emit("joinLobby", {
+      socket.emit("joinHost", {
         code: data.code,
         user: initialState.user,
         user_id: initialState.user_id,
-      }); */
+      });
       navigate("/desk");
     }
   };

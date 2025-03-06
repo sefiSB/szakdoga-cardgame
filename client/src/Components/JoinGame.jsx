@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 
 
 function JoinGame({socket}) {
-  const [code,setCode] = useState("");
+  const [code,setCode] = useState(null);
   const [lobby, setLobby] = useState(null); // Tárolja a lobby állapotát
   const [error, setError] = useState(null); // Tárolja a hibát, ha van
 
@@ -14,7 +14,7 @@ function JoinGame({socket}) {
 
   const postCode = () => {
     socket.emit("joinLobby",{
-      code: code,
+      code: parseInt(code),
       user: initialState.user,
       user_id: initialState.user_id,
     });
@@ -23,13 +23,9 @@ function JoinGame({socket}) {
       console.log("Invalid lobby code!");
     });
     socket.on("codeSuccess", (data) => {
-      initialState.code = data.code;
-      
+      initialState.code = parseInt(data.code);
       navigate("/desk");
     });
-    
-
-    socket.emit("join")
   }
 
  /*  const postCode = async () => {
@@ -72,7 +68,7 @@ function JoinGame({socket}) {
     // EZ SZTM NEM IS FOG KELLENI
     socket.on("updateLobby", (data) => {
       console.log("Lobby frissült:", data.players);
-      initialState.code = data.code;
+      initialState.code = parseint(data.code);
       /* setTimeout(() => {
         navigate("/desk");
       }), */
