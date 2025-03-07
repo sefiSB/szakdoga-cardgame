@@ -26,9 +26,9 @@ function Desk({ socket }) {
     });
     setSelectedPlayer(null);
   };
+  
 
   const sendAnswer = (ans) => {
-    console.log("pöcs");
     socket.emit("respondOnHandSwitch", {
       from:onHandSwapName,
       to:initialState.user_id,

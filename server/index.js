@@ -112,6 +112,28 @@ app.post("/adduser", async (req, res) => {
     res.status(500).json({ error: "Database error", details: error });
   }
 });
+
+app.post("/addpreset", async (req, res) => {
+  try {
+    console.log(req.body);
+    const preset = await Preset.create({
+      name: req.body.name,
+      startingcards: req.body.startingCards,
+      cards_on_desk: req.body.cards_on_desk,
+      revealed: req.body.revealed,
+      hidden: req.body.hidden,
+      user_id: req.body.user_id,
+    });
+    res.json(preset);
+  } catch (error) {
+    res.status(500).json({ error: "Database error", details: error });
+  }
+});
+
+app.get("/presets", async (req, res) => {
+  const presets = await Preset.findAll();
+  res.json(presets);
+});
 //
 app.post("/addlobby", async (req, res) => {
   try {

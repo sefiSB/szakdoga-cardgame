@@ -11,7 +11,9 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      Preset.belongsTo(models.User)
+      Preset.belongsTo(models.User,{
+        foreignKey:"user_id"
+      })
     }
   }
   Preset.init({

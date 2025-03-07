@@ -14,16 +14,41 @@ function NewGame({ socket }) {
   const [maxplayers, setMaxplayers] = useState(4);
   const [notUsed, setNotUsed] = useState(["card back"]);
   const [packNumber, setPackNumber] = useState(1);
+  const [presetSuccesful, setPresetSuccesful] = useState(null);
 
   const navigate = useNavigate();
-  //csak teszt jelleggel
+
+  const submitPreset = async () => {
+    const response = await fetch("http://localhost:3001/addpreset", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name: initialState.user,
+        startingCards: startingCards,
+        cards_on_desk: isCardsOnDesk,
+        revealed: revealedCards,
+        hidden: hiddenCards,
+        user_id: initialState.user_id,
+      }),
+    });
+    const data = await response.json();
+    if (data.error) {
+      setPresetSuccesful(false);
+    } else {
+      setPresetSuccesful(true);
+    }
+  };
+
   const postGame = async () => {
-    let usedCards=[];
-    for(let i = 0; i<packNumber;i++){
-      let used= Object.entries(cardNames).filter(
-        ([cardName]) => !notUsed.includes(cardName))
-        usedCards= [...usedCards,...used];
-      }
+    let usedCards = [];
+    for (let i = 0; i < packNumber; i++) {
+      let used = Object.entries(cardNames).filter(
+        ([cardName]) => !notUsed.includes(cardName)
+      );
+      usedCards = [...usedCards, ...used];
+    }
 
     const response = await fetch("http://localhost:3001/addlobby", {
       method: "POST",
@@ -33,9 +58,9 @@ function NewGame({ socket }) {
       body: JSON.stringify({
         gameName: gameName,
         startingCards: startingCards,
-        /* isCardsOnDesk: isCardsOnDesk, */
-        /* revealedCards: revealedCards,
-        hiddenCards: hiddenCards, */
+        isCardsOnDesk: isCardsOnDesk,
+        revealedCards: revealedCards,
+        hiddenCards: hiddenCards,
         host: initialState.user_id,
         cardType: cardType,
         packNumber: packNumber,
@@ -294,12 +319,23 @@ function NewGame({ socket }) {
           <button
             className="btn btn-outline btn-secondary"
             onClick={() => {
-              //save preset
+              submitPreset();
             }}
           >
             Save preset
           </button>
         </div>
+        {presetSuccesful!==null ? (
+          <>
+            <div>
+              {
+                presetSuccesful?(<p className="success-content">Preset created successfully!</p>):(<p className="error">Preset creation failed!</p>)
+              } 
+            </div>
+          </>
+        ) : (
+          <></>
+        )}
       </div>
     </>
   );
