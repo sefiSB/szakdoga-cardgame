@@ -123,6 +123,9 @@ app.post("/addpreset", async (req, res) => {
       revealed: req.body.revealed,
       hidden: req.body.hidden,
       user_id: req.body.user_id,
+      maxplayers:req.body.maxplayers,
+      packNumber:req.body.packNumber,
+      cardType:req.body.cardType
     });
     res.json(preset);
   } catch (error) {
@@ -220,6 +223,11 @@ io.on("connection", (socket) => {
     io.emit("updateLobby", lobbies[data.code]);
     //io.to(data.code).emit("hostStarted");
   });
+
+
+  socket.on("presetAdded",()=>{
+    socket.emit("presetAdded");
+  })
 
   socket.on("playCard", (data) => {
     const { code, player_id, cardName } = data;

@@ -21,7 +21,10 @@ module.exports = (sequelize, DataTypes) => {
     startingcards: DataTypes.INTEGER,
     cards_on_desk: DataTypes.BOOLEAN,
     revealed: DataTypes.INTEGER,
-    hidden: DataTypes.INTEGER
+    hidden: DataTypes.INTEGER,
+    maxplayers:DataTypes.INTEGER,
+    cardType:DataTypes.STRING,
+    packNumber:DataTypes.INTEGER
   }, {
     sequelize,
     modelName: 'Preset',
