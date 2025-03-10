@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { initialState } from "../Store/store";
 import cardNames from "../Utils/French";
+import { useNavigate } from "react-router-dom";
 
 function Desk({ socket }) {
   const [data, setData] = useState(null);
@@ -9,6 +10,11 @@ function Desk({ socket }) {
   const [selectedDeck, setSelectedDeck] = useState(null);
   //const [swapOnHandRequest, setSwapOnHandRequest]= useState(false);
   const [onHandSwapName, setOnHandSwapName] = useState(null);
+
+  const navigate= useNavigate();
+  if(!initialState.user_id){
+    navigate("/login");
+  }
 
   const playCard = (tc) => {
     socket.emit("playCard", {

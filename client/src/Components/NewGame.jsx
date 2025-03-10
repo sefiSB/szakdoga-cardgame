@@ -11,7 +11,7 @@ function NewGame({ socket }) {
   const [startingCards, setStartingCards] = useState(0);
   const [revealedCards, setRevealedCards] = useState(0);
   const [hiddenCards, setHiddenCards] = useState(0);
-  const [cardType, setCardType] = useState("French");
+  const [cardType, setCardType] = useState("french");
   const [maxplayers, setMaxplayers] = useState(4);
   const [notUsed, setNotUsed] = useState(["card back"]);
   const [packNumber, setPackNumber] = useState(1);
@@ -20,6 +20,10 @@ function NewGame({ socket }) {
   const [activeTab, setActiveTab] = useState(1);
 
   const navigate = useNavigate();
+  if(!initialState.user_id){
+    navigate("/login");
+  }
+
 
   const getPresets = async () => {
     const response = await fetch("http://127.0.0.1:3001/presets", {
@@ -54,6 +58,7 @@ function NewGame({ socket }) {
     const data = await response.json();
     if (data.error) {
       setPresetSuccesful(false);
+      console.log(data.details)
     } else {
       setPresetSuccesful(true);
     }
@@ -101,6 +106,17 @@ function NewGame({ socket }) {
     }
   };
 
+  const setPresetSettings = (preset) =>{
+    setGameName(preset.name);
+    setMaxplayers(preset.maxplayers);
+    setCardType(preset.cardType);
+    setPackNumber(preset.packNumber);
+    setStartingCards(preset.startingcards);
+    setIsCardsOnDesk(preset.cards_on_desk);
+    setRevealedCards(preset.revealed);
+    setHiddenCards(preset.hidden);
+  }
+
   useEffect(() => {
     getPresets();
     socket.on("presetAdded", () => {
@@ -121,6 +137,7 @@ function NewGame({ socket }) {
               type="text"
               placeholder="Name"
               className="input input-bordered w-full max-w-xs"
+              value={gameName}
               onChange={(e) => {
                 setGameName(e.target.value);
               }}
@@ -138,6 +155,7 @@ function NewGame({ socket }) {
             </div>
             <input
               type="number"
+              value={maxplayers}
               placeholder="Place a number here"
               className="input input-bordered w-full max-w-xs"
               onChange={(e) => {
@@ -158,13 +176,14 @@ function NewGame({ socket }) {
               <fieldset class="fieldset">
                 <select
                   defaultValue="Pick a browser"
+                  value={cardType}
                   class="select select-secondary"
                   onChange={(e) => setCardType(e.target.value)}
                 >
                   <option disabled={true}>Type of card</option>
-                  <option>French</option>
-                  <option>Hungarian</option>
-                  <option>Uno</option>
+                  <option>french</option>
+                  <option>hungarian</option>
+                  <option>uno</option>
                 </select>
               </fieldset>
 
@@ -246,6 +265,7 @@ function NewGame({ socket }) {
               type="number"
               placeholder="Place a number here"
               className="input input-bordered w-full max-w-xs"
+              value={startingCards}
               onChange={(e) => {
                 setStartingCards(e.target.value);
               }}
@@ -263,7 +283,8 @@ function NewGame({ socket }) {
             </div>
             <input
               type="checkbox"
-              className="toggle border-indigo-600 bg-indigo-500 checked:bg-orange-400 checked:text-orange-800 checked:border-orange-500 "
+              checked={isCardsOnDesk}
+              className="toggle border-indigo-600 bg-indigo-500 checked:bg-orange-400 checked:text-orange-800 checked:border-orange-500"
               onClick={(e) => {
                 console.log(e.target.checked);
                 setIsCardsOnDesk(e.target.checked);
@@ -284,6 +305,7 @@ function NewGame({ socket }) {
                   <input
                     type="number"
                     placeholder="Place a number here"
+                    value={revealedCards}
                     className="input input-bordered w-full max-w-xs"
                     onChange={(e) => {
                       setRevealedCards(e.target.value);
@@ -305,6 +327,7 @@ function NewGame({ socket }) {
                   <input
                     type="number"
                     placeholder="Place a number here"
+                    value={hiddenCards}
                     className="input input-bordered w-full max-w-xs"
                     onChange={(e) => {
                       setHiddenCards(e.target.value);
@@ -357,7 +380,7 @@ function NewGame({ socket }) {
             <></>
           )}
         </div>
-        <div className="flex flex-col mt-10 items-center gap-4 w-1/4">
+        <div className="flex flex-col mt-10 items-center gap-4 w-1/4 border p-5 rounded-xl">
           <div role="tablist" className="tabs tabs-boxed">
             <a
               role="tab"
@@ -380,9 +403,12 @@ function NewGame({ socket }) {
                 <>
                   {presetsData.map((preset) => {
                     if (preset.user_id === initialState.user_id) {
-                      return <div className="border">
+                      return <div className="border p-5" onClick={()=>{
+                        setPresetSettings(preset);
+                      }}>
                         <strong>{preset.name}</strong>
                         <p>Starting cards:{preset.startingcards}, Max players: {preset.maxplayers}, Pack count: {preset.packNumber}, <br />
+                        Card type: {preset.cardType}
                         </p>
                       </div>;
                     }
@@ -392,7 +418,12 @@ function NewGame({ socket }) {
                 <>
                   {presetsData.map((preset) => {
                     console.log(preset)
-                    return <h3>{preset.name}</h3>;
+                    return <div className="border p-5">
+                        <strong>{preset.name} - {preset.User.username}</strong>
+                        <p>Starting cards:{preset.startingcards}, Max players: {preset.maxplayers}, Pack count: {preset.packNumber}, <br />
+                        Card type: {preset.cardType}
+                        </p>
+                      </div>;
                   })}
                 </>
               )}

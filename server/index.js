@@ -9,6 +9,7 @@ const { on } = require("events");
 const { platform } = require("os");
 const user = require("./models/user");
 const { create } = require("domain");
+const bcrypt = require("bcryptjs");
 const {
   lobbies,
   createCode,
@@ -87,28 +88,49 @@ app.get("/users", async (req, res) => {
 });
 
 app.post("/loginuser", async (req, res) => {
-  const users = await User.findAll();
-  let user = users.find(
-    (user) =>
-      user.username === req.body.name && user.password === req.body.password
-  );
-  if (user) {
+  try {
+    const user = await User.findOne({ where: { username: req.body.name } });
+    if (!user) {
+      return res.json({ error: "User not found!" });
+    }
+    console.log(user);
+    const pwcmp = await bcrypt.compare(req.body.password, user.password);
+    if (!pwcmp) {
+      return res.json({ error: "Password is incorrect!" });
+    }
     res.json(user);
-  } else {
-    res.json({ error: "User not found" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Database error", details: error.message });
   }
 });
 
 app.post("/adduser", async (req, res) => {
   try {
-    const user = await User.create({
-      username: req.body.name,
-      email: req.body.email,
-      password: req.body.password,
+    const usernameExists = User.findOne({
+      where: { username: req.body.name },
     });
-    initialState.user_id = user.id;
-    res.json(user);
+
+    const emailExists = User.findOne({
+      where: { email: req.body.email },
+    });
+
+    if (usernameExists) {
+      res.status(500).json({ error: "This username is already in use" });
+    } else if (emailExists) {
+      res.status(500).json({ error: "This email is already in use" });
+    } else {
+      const hashedPw = await bcrypt.hash(req.body.password, 10);
+      const user = await User.create({
+        username: req.body.name,
+        email: req.body.email,
+        password: hashedPw,
+      });
+
+      res.json(user);
+    }
   } catch (error) {
+    console.log(error);
     res.status(500).json({ error: "Database error", details: error });
   }
 });
@@ -118,14 +140,14 @@ app.post("/addpreset", async (req, res) => {
     console.log(req.body);
     const preset = await Preset.create({
       name: req.body.name,
-      startingcards: req.body.startingCards,
+      startingcards: req.body.startingcards,
       cards_on_desk: req.body.cards_on_desk,
       revealed: req.body.revealed,
       hidden: req.body.hidden,
       user_id: req.body.user_id,
-      maxplayers:req.body.maxplayers,
-      packNumber:req.body.packNumber,
-      cardType:req.body.cardType
+      maxplayers: req.body.maxplayers,
+      packNumber: req.body.packNumber,
+      cardType: req.body.cardType,
     });
     res.json(preset);
   } catch (error) {
@@ -134,7 +156,13 @@ app.post("/addpreset", async (req, res) => {
 });
 
 app.get("/presets", async (req, res) => {
-  const presets = await Preset.findAll();
+  const presets = await Preset.findAll({
+    include: {
+      model: User,
+      attributes: ["id", "username"],
+    },
+  });
+  console.log(presets);
   res.json(presets);
 });
 //
@@ -224,10 +252,9 @@ io.on("connection", (socket) => {
     //io.to(data.code).emit("hostStarted");
   });
 
-
-  socket.on("presetAdded",()=>{
+  socket.on("presetAdded", () => {
     socket.emit("presetAdded");
-  })
+  });
 
   socket.on("playCard", (data) => {
     const { code, player_id, cardName } = data;

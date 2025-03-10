@@ -4,6 +4,7 @@
     "db": "npx sequelize db:migrate:undo:all && npx sequelize db:migrate --debug && npx sequelize db:seed:all --debug"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "express": "^4.21.2",
     "mysql": "^2.18.1",

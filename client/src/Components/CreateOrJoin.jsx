@@ -3,6 +3,9 @@ import { useNavigate } from "react-router-dom";
 
 function CreateOrJoin() {
   const navigate = useNavigate();
+  if(!initialState.user_id){
+    navigate("/login");
+  }
   //console.log("username" + initialState.user);
   return (
     <>

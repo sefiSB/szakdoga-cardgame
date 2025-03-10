@@ -7,12 +7,10 @@ function Register({ socket }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error,setError] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
-
   const postUser = async () => {
-    console.log("asdasdasdsadasd")
     const response = await fetch("http://localhost:3001/adduser", {
       method: "POST",
       headers: {
@@ -21,13 +19,18 @@ function Register({ socket }) {
       body: JSON.stringify({
         name,
         password,
-        email
+        email,
       }),
     });
     const data = await response.json();
-    initialState.user_id = data.id;
-    navigate("/createorjoin");
-    console.log(data);
+    if (data.error) {
+      setError(data.error);
+      console.log(data.details)
+    } else {
+      initialState.user_id = data.id;
+      navigate("/createorjoin");
+      console.log(data);
+    }
   };
 
   /* const postUser = () => {
@@ -50,7 +53,6 @@ function Register({ socket }) {
 
     
   }; */
-
 
   return (
     <>
@@ -121,14 +123,18 @@ function Register({ socket }) {
             initialState.email = email;
             initialState.password = password;
             postUser();
-
           }}
         >
           Sign up
         </button>
         <p>{error}</p>
 
-        <p>Already have an account? <Link className="link link-success" to="/login">Log in!</Link></p>
+        <p>
+          Already have an account?{" "}
+          <Link className="link link-success" to="/login">
+            Log in!
+          </Link>
+        </p>
       </div>
     </>
   );
