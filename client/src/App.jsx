@@ -12,7 +12,6 @@ import JoinGame from "./Components/JoinGame";
 import NewGame from "./Components/NewGame";
 import Register from "./Components/Register";
 import Desk from "./Components/Desk";
-import Presets from "./Components/Presets";
 
 function App() {
   /* useEffect(() => {

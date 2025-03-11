@@ -4,7 +4,8 @@ import cardNames from "../Utils/French";
 import { useNavigate } from "react-router-dom";
 
 function Desk({ socket }) {
-  const [amIIn,setAmIIn] = useState(true);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [amIIn, setAmIIn] = useState(true);
   const [data, setData] = useState(null);
   const [selectedCard, setSelectedCard] = useState(null);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
@@ -17,7 +18,6 @@ function Desk({ socket }) {
     navigate("/login");
   }
 
-
   const kickPlayer = () => {
     socket.emit("kickPlayer", {
       code: initialState.code,
@@ -25,11 +25,10 @@ function Desk({ socket }) {
     });
   };
 
-
   const isIn = () => {
-    if(data){
-      if(data.players.find((p) => p.id === initialState.user_id)){
-          setAmIIn(true);
+    if (data) {
+      if (data.players.find((p) => p.id === initialState.user_id)) {
+        setAmIIn(true);
       }
       setAmIIn(false);
     }
@@ -69,10 +68,29 @@ function Desk({ socket }) {
     });
   };
 
+  const giveCardToPlayer = (player_id) => {
+    socket.emit("giveCard", {
+      player_id: player_id,
+      code: initialState.code,
+      cardname: selectedCard,
+    });
+  };
+
   console.log(initialState.code);
 
   const startingGame = () => {
     socket.emit("hostStarted", { code: initialState.code });
+  };
+
+  const giveHost = () => {
+    socket.emit("grantHost", {
+      player_id: selectedPlayer,
+      code: initialState.code,
+    });
+  };
+
+  const shuffleThrowDeckIn = () => {
+    socket.emit("shuffleThrowDeckIn", { code: initialState.code });
   };
 
   const gameStart = async () => {
@@ -140,6 +158,7 @@ function Desk({ socket }) {
   if (data.state === "waiting") {
     return (
       <>
+        
         <div className="relative w-[90vw] h-[80vh] bg-green-600 rounded-2xl mx-auto flex items-center justify-center bottom-0 mb-2">
           {/* Középen a húzó- és dobópakli,  itt majd drag&drop-os téma lesz */}
           <div className="absolute bg-gray-700 p-4 rounded-lg top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
@@ -201,6 +220,7 @@ function Desk({ socket }) {
 
   if (data.state === "ended") {
     return (
+      
       <div className="relative w-[90vw] h-[80vh] bg-green-600 rounded-2xl mx-auto flex items-center justify-center bottom-0 mb-2">
         <div className="absolute bg-gray-700 p-4 rounded-lg top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
           Game ended
@@ -212,13 +232,15 @@ function Desk({ socket }) {
     );
   }
 
-  if(!amIIn){
-    return(<>
-      <div className="items-center justify-center">
-        <div>You've been kicked!</div>
-        <button onClick={()=>navigate("/createorjoin")}>Back</button>
-      </div>
-    </>);
+  if (!amIIn) {
+    return (
+      <>
+        <div className="items-center justify-center">
+          <div>You've been kicked!</div>
+          <button onClick={() => navigate("/createorjoin")}>Back</button>
+        </div>
+      </>
+    );
   }
 
   return (
@@ -353,6 +375,29 @@ function Desk({ socket }) {
               <li>
                 <a>Switch with other player</a>
               </li>
+              {data.host === initialState.user_id ? (
+                <li>
+                  <a>Give to other player</a>
+                  <ul className="menu menu-sm bg-base-200 rounded-box w-56 ml-4">
+                    {data.players
+                      .filter((player) => player.id !== initialState.user_id)
+                      .map((player) => (
+                        <li key={player.id}>
+                          <a
+                            onClick={() => {
+                              giveCardToPlayer(player.id);
+                              setSelectedCard(null);
+                            }}
+                          >
+                            {player.username}
+                          </a>
+                        </li>
+                      ))}
+                  </ul>
+                </li>
+              ) : (
+                <></>
+              )}
             </ul>
           </div>
         ) : (
@@ -383,6 +428,15 @@ function Desk({ socket }) {
                   <li>
                     <a>Idk yet</a>
                   </li>
+                  {data.host === initialState.user_id ? (
+                    <li>
+                      <a onClick={shuffleThrowDeckIn}>
+                        Shuffle throw deck into draw deck
+                      </a>
+                    </li>
+                  ) : (
+                    <> </>
+                  )}
                 </>
               ) : (
                 <></>
@@ -409,6 +463,13 @@ function Desk({ socket }) {
               {data.host === initialState.user_id ? (
                 <li>
                   <a onClick={kickPlayer}>Kick player</a>
+                </li>
+              ) : (
+                <></>
+              )}
+              {data.host === initialState.user_id ? (
+                <li>
+                  <a onClick={giveHost}>Give host</a>
                 </li>
               ) : (
                 <></>

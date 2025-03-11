@@ -276,6 +276,59 @@ io.on("connection", (socket) => {
     io.to(code).emit("updateLobby", lobby);
   });
 
+  socket.on("giveCard", (data) => {
+    const { player_id, code, cardname } = data;
+    const lobby = lobbies[code];
+    const player = lobby.players.find((player) => player.id === player_id);
+    if (!player || !lobby) {
+      console.log("vmi nemjo");
+    }
+
+    const cardInd = lobby.players
+      .find((player) => player.id === lobby.host)
+      .cards.onTableVisible.findIndex(([name, _]) => name === cardname);
+
+    const [card] = lobby.players
+      .find((player) => player.id === lobby.host)
+      .cards.onTableVisible.splice(cardInd, 1);
+
+    player.cards.onTableVisible.push(card);
+
+    lobbies[code] = lobby;
+    io.to(code).emit("updateLobby", lobby);
+  });
+
+  socket.on("grantHost", async (data) => {
+    const { player_id, code } = data;
+    const lobby = lobbies[code];
+    const playerInd = lobby.players.findIndex(
+      (player) => player.id === player_id
+    );
+    if (playerInd < 0) {
+      return;
+    }
+    try {
+      const user = await User.findOne({
+        where: {
+          id: player_id,
+        },
+      });
+
+      const host = await Host.findOne({
+        where: {
+          host_id: lobby.host,
+        },
+      });
+
+      await host.update({ host_id: player_id });
+
+      lobby.host = player_id;
+      io.to(code).emit("updateLobby", lobby);
+    } catch (error) {
+      console.log(error);
+    }
+  });
+
   socket.on("playCard", (data) => {
     const { code, player_id, cardName } = data;
     const lobby = lobbies[code];
@@ -301,8 +354,17 @@ io.on("connection", (socket) => {
     io.to(code).emit("updateLobby", lobby);
   });
 
+  socket.on("shuffleThrowDeckIn", (data) => {
+    const { code } = data;
+    const lobby = lobbies[code];
+    lobby.decks.drawDeck = [...lobby.decks.drawDeck, ...lobby.decks.throwDeck];
+    shuffleArray(lobby.decks.drawDeck);
+    lobby.decks.throwDeck = [];
+    lobbies[code] = lobby;
+    io.to(code).emit("updateLobby", lobby);
+  });
+
   socket.on("drawCard", (data) => {
-    console.log("kuki");
     const { code, player_id } = data;
     const lobby = lobbies[code];
     const player = lobby.players.find((player) => player.id === player_id);

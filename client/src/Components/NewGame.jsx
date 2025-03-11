@@ -3,7 +3,7 @@ import { initialState } from "../Store/store";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { cardNames } from "../Utils/French";
-import Presets from "./Presets";
+import Presets from "./SettingsMenu";
 
 function NewGame({ socket }) {
   const [isCardsOnDesk, setIsCardsOnDesk] = useState(false);
