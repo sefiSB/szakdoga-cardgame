@@ -107,11 +107,11 @@ app.post("/loginuser", async (req, res) => {
 
 app.post("/adduser", async (req, res) => {
   try {
-    const usernameExists = User.findOne({
+    const usernameExists = await User.findOne({
       where: { username: req.body.name },
     });
 
-    const emailExists = User.findOne({
+    const emailExists = await User.findOne({
       where: { email: req.body.email },
     });
 
@@ -167,6 +167,7 @@ app.get("/presets", async (req, res) => {
 });
 //
 app.post("/addlobby", async (req, res) => {
+  console.log(req.body);
   try {
     const cde = createCode();
     const lobby = await Lobby.create({
@@ -182,7 +183,7 @@ app.post("/addlobby", async (req, res) => {
       },
     });
 
-    user.update({ lobby_id: lobby.id });
+    await user.update({ lobby_id: lobby.id });
 
     const host = await Host.create({
       host_id: user.id,
@@ -195,7 +196,7 @@ app.post("/addlobby", async (req, res) => {
       code: lobby.code,
       host: req.body.host,
       presetdata: {
-        startingCards: req.body.startingCards,
+        startingCards: req.body.startingcards,
         host: req.body.host,
         cardType: req.body.cardType,
         packNumber: req.body.packNumber,
@@ -216,8 +217,6 @@ app.post("/addlobby", async (req, res) => {
     console.log(error);
   }
 });
-
-//app.post("hostStarted");
 
 app.post("/gamestart", async (req, res) => {
   //ALAP ADATOK NINCSENEK FENT AZ ADATBÁZISON
@@ -254,6 +253,27 @@ io.on("connection", (socket) => {
 
   socket.on("presetAdded", () => {
     socket.emit("presetAdded");
+  });
+
+  socket.on("kickPlayer", async (data) => {
+    const { player_id, code } = data;
+    const lobby = lobbies[code];
+    const playerIndex = lobby.players.findIndex(
+      (player) => player.id === player_id
+    );
+    if (playerIndex < 0) {
+      return;
+    }
+    const user = await User.findOne({
+      where: {
+        id: player_id,
+      },
+    });
+    console.log(user + " " + player_id);
+    await user.update({ lobby_id: null });
+
+    lobby.players.splice(playerIndex, 1);
+    io.to(code).emit("updateLobby", lobby);
   });
 
   socket.on("playCard", (data) => {

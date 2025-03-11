@@ -4,6 +4,7 @@ import cardNames from "../Utils/French";
 import { useNavigate } from "react-router-dom";
 
 function Desk({ socket }) {
+  const [amIIn,setAmIIn] = useState(true);
   const [data, setData] = useState(null);
   const [selectedCard, setSelectedCard] = useState(null);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
@@ -11,10 +12,28 @@ function Desk({ socket }) {
   //const [swapOnHandRequest, setSwapOnHandRequest]= useState(false);
   const [onHandSwapName, setOnHandSwapName] = useState(null);
 
-  const navigate= useNavigate();
-  if(!initialState.user_id){
+  const navigate = useNavigate();
+  if (!initialState.user_id) {
     navigate("/login");
   }
+
+
+  const kickPlayer = () => {
+    socket.emit("kickPlayer", {
+      code: initialState.code,
+      player_id: selectedPlayer,
+    });
+  };
+
+
+  const isIn = () => {
+    if(data){
+      if(data.players.find((p) => p.id === initialState.user_id)){
+          setAmIIn(true);
+      }
+      setAmIIn(false);
+    }
+  };
 
   const playCard = (tc) => {
     socket.emit("playCard", {
@@ -32,14 +51,13 @@ function Desk({ socket }) {
     });
     setSelectedPlayer(null);
   };
-  
 
   const sendAnswer = (ans) => {
     socket.emit("respondOnHandSwitch", {
-      from:onHandSwapName,
-      to:initialState.user_id,
-      code:initialState.code,
-      isAccepted: ans
+      from: onHandSwapName,
+      to: initialState.user_id,
+      code: initialState.code,
+      isAccepted: ans,
     });
     setSelectedPlayer(null);
   };
@@ -93,9 +111,8 @@ function Desk({ socket }) {
     gameStart();
 
     socket.on("updateLobby", (response) => {
-      console.log("MOST KAPTAM UPDATET");
-      console.log(response);
       setData(response);
+      isIn();
     });
 
     socket.on("requestOnHandSwitch", (data) => {
@@ -180,6 +197,28 @@ function Desk({ socket }) {
         )}
       </>
     );
+  }
+
+  if (data.state === "ended") {
+    return (
+      <div className="relative w-[90vw] h-[80vh] bg-green-600 rounded-2xl mx-auto flex items-center justify-center bottom-0 mb-2">
+        <div className="absolute bg-gray-700 p-4 rounded-lg top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+          Game ended
+        </div>
+        <div className="flex">
+          <button>Exit</button>
+        </div>
+      </div>
+    );
+  }
+
+  if(!amIIn){
+    return(<>
+      <div className="items-center justify-center">
+        <div>You've been kicked!</div>
+        <button onClick={()=>navigate("/createorjoin")}>Back</button>
+      </div>
+    </>);
   }
 
   return (
@@ -271,7 +310,7 @@ function Desk({ socket }) {
                   style={{ width: "5vh" }}
                   onClick={(e) => {
                     const deckType = e.target.getAttribute("deckdata");
-                 
+
                     if (selectedDeck === deckType) {
                       setSelectedDeck(null);
                     } else {
@@ -367,6 +406,13 @@ function Desk({ socket }) {
                   Swap cards on hands
                 </a>
               </li>
+              {data.host === initialState.user_id ? (
+                <li>
+                  <a onClick={kickPlayer}>Kick player</a>
+                </li>
+              ) : (
+                <></>
+              )}
             </ul>
           </div>
         ) : (

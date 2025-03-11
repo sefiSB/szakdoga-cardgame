@@ -32,7 +32,6 @@ function App() {
         <Route path="/joingame" element={<JoinGame socket={socket} />} />
         <Route path="/newgame" element={<NewGame socket={socket} />} />
         <Route path="/desk" element={<Desk socket={socket} />} />
-        <Route path="/presets" element={<Presets socket={socket} />} />
       </Routes>
     </>
   );
