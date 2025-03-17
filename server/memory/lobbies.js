@@ -23,7 +23,7 @@ const createLobby = (data) => {
     host:data.host,
     presetdata: {
       startingCards: data.presetdata.startingCards,
-      host: data.presetdata.user_id,
+      host: data.presetdata.host,
       cardType: data.presetdata.cardType,
       packNumber: data.presetdata.packNumber,
       usedCards: data.presetdata.usedCards,

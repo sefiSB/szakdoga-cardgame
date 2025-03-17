@@ -113,11 +113,6 @@ function NewGame({ socket }) {
       alert("Game creation failed");
     } else {
       initialState.code = data.code;
-      /* socket.emit("joinHost", {
-        code: data.code,
-        user: initialState.user,
-        user_id: initialState.user_id,
-      }); */
       socket.emit("joinLobby", {
         code: data.code,
         user: initialState.user,

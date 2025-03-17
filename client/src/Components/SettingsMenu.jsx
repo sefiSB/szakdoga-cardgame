@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import { useEffect } from "react";
 
-function SettingsMenu() {
+function SettingsMenu({ socket }) { 
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   if (!initialState.user_id) {
@@ -12,6 +12,7 @@ function SettingsMenu() {
   }
 
   const toggleMenu = () => {
+    console.log("Menu toggled");
     setIsOpen(!isOpen);
   };
   const logout = () => {
@@ -21,8 +22,17 @@ function SettingsMenu() {
     navigate("/login");
   };
 
+  const leaveGame = () => {
+    socket.emit("leaveGame", {
+      user_id: initialState.user_id,
+      code: initialState.code,
+    });
+    initialState.code = null;
+    navigate("/createorjoin");
+  }
+
   return (
-    <div className="relative">
+    <div className="relative z-10">
       <button
         onClick={toggleMenu}
         className="absolute top-0 left-0 m-4 p-2 bg-gray-800 text-white rounded"

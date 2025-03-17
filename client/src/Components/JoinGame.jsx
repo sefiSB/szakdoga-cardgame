@@ -31,7 +31,7 @@ function JoinGame({socket}) {
       navigate("/desk");
     });
   }
-
+  
  
 
 

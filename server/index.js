@@ -3,7 +3,7 @@ const http = require("http");
 const { Server } = require("socket.io");
 const mysql = require("mysql");
 const cors = require("cors");
-const { Sequelize } = require("sequelize");
+const { Sequelize, where } = require("sequelize");
 const { User, Lobby, Preset, Host } = require("./models");
 const { on } = require("events");
 const { platform } = require("os");
@@ -93,14 +93,13 @@ app.post("/loginuser", async (req, res) => {
     if (!user) {
       return res.json({ error: "User not found!" });
     }
-    console.log(user);
+
     const pwcmp = await bcrypt.compare(req.body.password, user.password);
     if (!pwcmp) {
       return res.json({ error: "Password is incorrect!" });
     }
     res.json(user);
   } catch (error) {
-    console.log(error);
     res.status(500).json({ error: "Database error", details: error.message });
   }
 });
@@ -130,14 +129,12 @@ app.post("/adduser", async (req, res) => {
       res.json(user);
     }
   } catch (error) {
-    console.log(error);
     res.status(500).json({ error: "Database error", details: error });
   }
 });
 
 app.post("/addpreset", async (req, res) => {
   try {
-    console.log(req.body);
     const preset = await Preset.create({
       name: req.body.name,
       startingcards: req.body.startingcards,
@@ -162,12 +159,11 @@ app.get("/presets", async (req, res) => {
       attributes: ["id", "username"],
     },
   });
-  console.log(presets);
+
   res.json(presets);
 });
 //
 app.post("/addlobby", async (req, res) => {
-  console.log(req.body);
   try {
     const cde = createCode();
     const lobby = await Lobby.create({
@@ -189,8 +185,7 @@ app.post("/addlobby", async (req, res) => {
       host_id: user.id,
       lobby_id: lobby.id,
     });
-    //await initLobbies();
-
+    console.log("HOST LÉTREHOZVA??!?!!?!??!:", host);
     createLobby({
       name: req.body.gameName,
       code: lobby.code,
@@ -213,8 +208,6 @@ app.post("/addlobby", async (req, res) => {
     res.json(lobbies[lobby.code]);
   } catch (error) {
     res.status(500).json({ error: "Database error", details: error });
-
-    console.log(error);
   }
 });
 
@@ -255,6 +248,92 @@ io.on("connection", (socket) => {
     socket.emit("presetAdded");
   });
 
+  socket.on("leaveGame", async (data) => {
+    const { user_id, code } = data;
+    try {
+      const lobby = lobbies[code];
+      const playerIndex = lobby.players.findIndex(
+        (player) => player.id === user_id
+      );
+
+      if (playerIndex < 0) {
+        return;
+      }
+
+      lobby.players.splice(playerIndex, 1);
+
+      const user = await User.findOne({
+        where: {
+          id: user_id,
+        },
+      });
+
+      if (lobby.players.length === 0) {
+        await Lobby.destroy({
+          where: {
+            code: code,
+          },
+        });
+        delete lobbies[code];
+        return; // Kilépés, mert nincs több játékos
+      }
+
+      if (lobby.host === user_id) {
+        if (lobby.players.length > 0) {
+          const player_id = lobby.players[0].id;
+          /* if (player_id === user_id) {
+            return; */
+          const player = await User.findOne({
+            where: {
+              id: player_id,
+            },
+          });
+
+          const host = await Host.findOne({
+            where: {
+              host_id: lobby.host,
+            },
+          });
+          await host.update({ host_id: player_id });
+          lobby.host = player_id;
+        }
+        else{
+          //MÉG TESZT JELLEGGEL KINT HAGYOM
+          /* await Host.destroy({
+            where: {
+              host_id: user_id,
+            },
+          }); */
+        }
+      }
+      await user.update({ lobby_id: null });
+
+      lobbies[code] = lobby;
+
+      // Töröljük az előző hostot az adatbázisból
+      
+
+      // Csak akkor hozzuk létre az új hostot, ha megváltozott
+      const existingHost = await Host.findOne({
+        where: {
+          host_id: lobby.host,
+        },
+      });
+
+      if (!existingHost) {
+        await Host.create({
+          host_id: lobby.host,
+          lobby_id: lobby.id,
+        });
+      }
+
+      console.log("LEAVE GAME");
+      io.to(code).emit("updateLobby", lobby);
+    } catch (error) {
+      console.log("HIBA A LEAVEGAME-BEN:", error);
+    }
+  });
+
   socket.on("giveFromThrowDeck", (data) => {
     const { code, player_id } = data;
     const lobby = lobbies[code];
@@ -278,7 +357,7 @@ io.on("connection", (socket) => {
         id: player_id,
       },
     });
-    console.log(user + " " + player_id);
+
     await user.update({ lobby_id: null });
 
     lobby.players.splice(playerIndex, 1);
@@ -346,7 +425,6 @@ io.on("connection", (socket) => {
       console.log("vmi nemjo");
     }
 
-    console.log(player.cards.onTableVisible);
     const cardIndex = player.cards.onTableVisible.findIndex(
       ([name, _]) => name === cardName
     );
@@ -377,15 +455,13 @@ io.on("connection", (socket) => {
     const { code, player_id } = data;
     const lobby = lobbies[code];
     const player = lobby.players.find((player) => player.id === player_id);
-    console.log(player);
-    console.log(lobby);
+
     if (!player || !lobby) {
       console.log("vmi nemjó");
     }
 
-    console.log(player.cards.onTableVisible);
     player.cards.onTableVisible.push(lobby.decks.drawDeck.pop());
-    console.log(player.cards.onTableVisible);
+
     lobbies[code] = lobby;
     io.to(code).emit("updateLobby", lobby);
   });
@@ -403,12 +479,9 @@ io.on("connection", (socket) => {
 
   socket.on("switchOnHand", (data) => {
     const { from, to, code } = data;
-    console.log("jött a csere");
     const lobby = lobbies[code];
     const fromPlayer = lobby.players.find((player) => player.id === from);
     const toPlayer = lobby.players.find((player) => player.id === to);
-    console.log(toPlayer);
-    console.log(fromPlayer);
 
     io.to(code).emit("requestOnHandSwitch", {
       from: from,
@@ -419,8 +492,7 @@ io.on("connection", (socket) => {
 
   socket.on("respondOnHandSwitch", (data) => {
     const { from, to, code, isAccepted } = data;
-    console.log("ez:");
-    console.log(data);
+
     if (isAccepted) {
       const lobby = lobbies[code];
       const fromPlayer = lobby.players.find((player) => player.id === from);
@@ -440,15 +512,17 @@ io.on("connection", (socket) => {
   socket.on("hideCard"); */
 
   socket.on("joinLobby", async (data) => {
+    let { code, user, user_id } = data;
+    code = parseInt(code);
     try {
       const lobby = await Lobby.findOne({
         where: {
-          code: data.code,
+          code: code,
         },
       });
       const user = await User.findOne({
         where: {
-          id: data.user_id,
+          id: user_id,
         },
       });
 
@@ -464,8 +538,7 @@ io.on("connection", (socket) => {
         username: user.username,
       });
 
-      socket.join(data.code);
-      console.log("XDDDDDDDDDDDDDDD");
+      socket.join(code);
       console.log(socket.rooms);
 
       io.in(data.code)
@@ -477,55 +550,12 @@ io.on("connection", (socket) => {
           );
         });
 
-        io.to(data.code).emit("updateLobby", lobbies[lobby.code]);
+      io.to(data.code).emit("updateLobby", lobbies[lobby.code]);
       io.to(socket.id).emit("codeSuccess", { code: lobby.code });
     } catch (error) {
       console.log(error);
       io.to(socket.id).emit("codeError", { error: "An error occurred" });
       //socket.emit("updateLobby", lobbies[code]);
-    }
-  });
-
-  socket.on("joinHost", async (data) => {
-    try {
-      const lobby = await Lobby.findOne({
-        where: {
-          code: data.code,
-        },
-      });
-      const user = await User.findOne({
-        where: {
-          id: data.user_id,
-        },
-      });
-
-      if (!lobby) {
-        io.to(socket.id).emit("codeError", { error: "Invalid lobby code" });
-        return;
-      }
-
-      await user.update({ lobby_id: lobby.id });
-
-      addPLayer(lobby.code, {
-        id: user.id,
-        username: user.username,
-      });
-
-      socket.join(data.code);
-      console.log("XDDDDDDDDDDDDDDD");
-      console.log(socket.rooms);
-
-      io.in(data.code)
-        .fetchSockets()
-        .then((sockets) => {
-          console.log(
-            `A(z) ${data.code} lobbyban lévő socketek:`,
-            sockets.map((s) => s.id)
-          );
-        });
-      io.to(lobby.code).emit("updateLobby", lobbies[lobby.code]);
-    } catch (error) {
-      console.log(error);
     }
   });
 

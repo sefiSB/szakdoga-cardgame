@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { initialState } from "../Store/store";
 import cardNames from "../Utils/French";
 import { useNavigate } from "react-router-dom";
-/* import { SettingsMenu } from "./SettingsMenu"; */
+import SettingsMenu from "./SettingsMenu";
 
 function Desk({ socket }) {
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -110,11 +110,11 @@ function Desk({ socket }) {
     console.log(initialState.code);
     socket.emit("gameStart", { code: initialState.code });
 
-    socket.emit("joinLobby", {
+    /* socket.emit("joinLobby", {
       code: d.code,
       user: initialState.user,
       user_id: initialState.user_id,
-    });
+    }); */
 
     /* socket.on("updateLobby", (response) => {
       console.log("Kliens visszakapta az adatokat "+response);
@@ -160,7 +160,7 @@ function Desk({ socket }) {
   if (data.state === "waiting") {
     return (
       <>
-        {/* <SettingsMenu /> */}
+        <SettingsMenu socket={socket} />
         <div className="relative w-[90vw] h-[80vh] bg-green-600 rounded-2xl mx-auto flex items-center justify-center bottom-0 mb-2">
           {/* Középen a húzó- és dobópakli,  itt majd drag&drop-os téma lesz */}
           <div className="absolute bg-gray-700 p-4 rounded-lg top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
@@ -229,7 +229,7 @@ function Desk({ socket }) {
   if (data.state === "ended") {
     return (
       <>
-        {/* <SettingsMenu /> */}
+        <SettingsMenu socket={socket}/>
         <div className="relative w-[90vw] h-[80vh] bg-green-600 rounded-2xl mx-auto flex items-center justify-center bottom-0 mb-2">
           <div className="absolute bg-gray-700 p-4 rounded-lg top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
             Game ended
@@ -255,7 +255,7 @@ function Desk({ socket }) {
 
   return (
     <>
-      {/* <SettingsMenu /> */}
+      <SettingsMenu socket={socket}/>
       <div className="relative">
         {onHandSwapName !== null ? (
           <div
@@ -311,7 +311,9 @@ function Desk({ socket }) {
               {data.decks.drawDeck.length > 0 ? (
                 <img
                   className="w-[5vh]"
-                  src={`assets/cards/${data.presetdata.cardType}/card_back.${data.presetdata.cardType === "french" ? "svg" : "png"}`}  //EZT IS ÁT KELL GONDOLNI SZINTÉN
+                  src={`assets/cards/${data.presetdata.cardType}/card_back.${
+                    data.presetdata.cardType === "french" ? "svg" : "png"
+                  }`} //EZT IS ÁT KELL GONDOLNI SZINTÉN
                   alt="drawDeck"
                   deckdata="drawDeck"
                   onClick={(e) => {
@@ -545,7 +547,13 @@ function Desk({ socket }) {
                     {player.cards.onHand.map((card, index) => (
                       <div key={index} className="bg-blue-500 m-1 rounded-md">
                         <img
-                          src={`/assets/cards/${data.presetdata.cardType}/card_back.${data.presetdata.cardType === "french" ? "svg" : "png"}`} //EZT MÉG ÁT KELL GONDOLNI
+                          src={`/assets/cards/${
+                            data.presetdata.cardType
+                          }/card_back.${
+                            data.presetdata.cardType === "french"
+                              ? "svg"
+                              : "png"
+                          }`} //EZT MÉG ÁT KELL GONDOLNI
                           alt=""
                           style={{ width: "5vh" }}
                         />
@@ -553,7 +561,7 @@ function Desk({ socket }) {
                     ))}
                   </div>
                   <div className="flex">
-                    {console.log(data.presetdata.cardType)} 
+                    {console.log(data.presetdata.cardType)}
                     {player.cards.onTableVisible.map(
                       ([cardname, cardfile], index) => (
                         <div key={index} className="bg-blue-500 m-1 rounded-md">
@@ -598,7 +606,9 @@ function Desk({ socket }) {
                 >
                   <img
                     className="w-[13vh]"
-                    src={`/assets/cards/${data.presetdata.cardType}/` + cardfile}
+                    src={
+                      `/assets/cards/${data.presetdata.cardType}/` + cardfile
+                    }
                     alt=""
                   />
                 </div>
