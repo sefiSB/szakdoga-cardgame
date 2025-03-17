@@ -2,6 +2,7 @@ import { useState } from "react";
 import { initialState } from "../Store/store";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import SettingsMenu from "./SettingsMenu";
 
 
 function JoinGame({socket}) {
@@ -31,39 +32,7 @@ function JoinGame({socket}) {
     });
   }
 
- /*  const postCode = async () => {
-    const response = await fetch("http://localhost:3001/joinlobby", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        code: code,
-        user: initialState.user,
-        user_id: initialState.user_id,
-      }),
-    });
-    const data = await response.json();
-    if(data.error){
-      setError("Invalid lobby code!");
-      console.log("Invalid lobby code!");
-    }
-    else{
-      initialState.code = data.code;
-      navigate("/desk");
-    }
-    console.log(data);
-  } */
-
-
-
-
-  /* const sendCode = ()=>{
-    socket.emit("sendCode",{code:code,user:initialState.user});
-    socket.on("codeError", (data) => {
-      setError("Invalid lobby code!");
-    });
-  } */
+ 
 
 
   
@@ -71,7 +40,7 @@ function JoinGame({socket}) {
     // EZ SZTM NEM IS FOG KELLENI
     socket.on("updateLobby", (data) => {
       console.log("Lobby frissült:", data.players);
-      initialState.code = parseint(data.code);
+      initialState.code = parseInt(data.code);
       /* setTimeout(() => {
         navigate("/desk");
       }), */
@@ -95,6 +64,7 @@ function JoinGame({socket}) {
   console.log("username" + initialState.user);
   return (
     <>
+    <SettingsMenu />
       <div className="flex flex-col justify-center items-center h-screen gap-4">
         <div className="form-control">
           <label className="label">

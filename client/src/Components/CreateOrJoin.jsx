@@ -1,9 +1,8 @@
 import { initialState } from "../Store/store";
 import { useNavigate } from "react-router-dom";
-import SettingsMenu from "./SettingsMenu";
+
 
 import { useEffect } from "react";
-
 
 function CreateOrJoin() {
   const navigate = useNavigate();
@@ -13,7 +12,7 @@ function CreateOrJoin() {
   //console.log("username" + initialState.user);
   return (
     <>
-      <SettingsMenu />
+      
       <div className="flex flex-col justify-center items-center h-screen gap-6">
         {/* Szöveg */}
         <h1 className="text-4xl font-bold">Welcome {initialState.user}</h1>

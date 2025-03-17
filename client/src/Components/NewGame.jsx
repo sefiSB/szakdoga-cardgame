@@ -2,8 +2,9 @@ import { useState } from "react";
 import { initialState } from "../Store/store";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { cardNames } from "../Utils/French";
-import Presets from "./SettingsMenu";
+import { frenchCardNames } from "../Utils/French";
+import { hungarianCardNames } from "../Utils/Hungarian";
+/* import { SettingsMenu } from "./SettingsMenu"; */
 
 function NewGame({ socket }) {
   const [isCardsOnDesk, setIsCardsOnDesk] = useState(false);
@@ -20,10 +21,9 @@ function NewGame({ socket }) {
   const [activeTab, setActiveTab] = useState(1);
 
   const navigate = useNavigate();
-  if(!initialState.user_id){
+  if (!initialState.user_id) {
     navigate("/login");
   }
-
 
   const getPresets = async () => {
     const response = await fetch("http://127.0.0.1:3001/presets", {
@@ -33,7 +33,7 @@ function NewGame({ socket }) {
       },
     });
     const resp = await response.json();
-    console.log(resp)
+    console.log(resp);
     setPresetsData(resp);
   };
 
@@ -49,16 +49,16 @@ function NewGame({ socket }) {
         cards_on_desk: isCardsOnDesk,
         revealed: revealedCards,
         hidden: hiddenCards,
-        packNumber:packNumber,
-        cardType:cardType,
-        maxplayers:maxplayers,
+        packNumber: packNumber,
+        cardType: cardType,
+        maxplayers: maxplayers,
         user_id: initialState.user_id,
       }),
     });
     const data = await response.json();
     if (data.error) {
       setPresetSuccesful(false);
-      console.log(data.details)
+      console.log(data.details);
     } else {
       setPresetSuccesful(true);
     }
@@ -67,12 +67,28 @@ function NewGame({ socket }) {
 
   const postGame = async () => {
     let usedCards = [];
-    for (let i = 0; i < packNumber; i++) {
-      let used = Object.entries(cardNames).filter(
-        ([cardName]) => !notUsed.includes(cardName)
-      );
-      usedCards = [...usedCards, ...used];
+
+    if(cardType === "french"){
+      for (let i = 0; i < packNumber; i++) {
+        let used = Object.entries(frenchCardNames).filter(
+          ([cardName]) => !notUsed.includes(cardName)
+        );
+        usedCards = [...usedCards, ...used];
+      }
     }
+    if(cardType === "hungarian"){
+      for (let i = 0; i < packNumber; i++) {
+        let used = Object.entries(hungarianCardNames).filter(
+          ([cardName]) => !notUsed.includes(cardName)
+        );
+        usedCards = [...usedCards, ...used];
+      }
+    }
+
+    /* if(cardType === "uno"){
+    } */
+
+    
 
     const response = await fetch("http://localhost:3001/addlobby", {
       method: "POST",
@@ -97,7 +113,12 @@ function NewGame({ socket }) {
       alert("Game creation failed");
     } else {
       initialState.code = data.code;
-      socket.emit("joinHost", {
+      /* socket.emit("joinHost", {
+        code: data.code,
+        user: initialState.user,
+        user_id: initialState.user_id,
+      }); */
+      socket.emit("joinLobby", {
         code: data.code,
         user: initialState.user,
         user_id: initialState.user_id,
@@ -106,7 +127,7 @@ function NewGame({ socket }) {
     }
   };
 
-  const setPresetSettings = (preset) =>{
+  const setPresetSettings = (preset) => {
     setGameName(preset.name);
     setMaxplayers(preset.maxplayers);
     setCardType(preset.cardType);
@@ -115,7 +136,7 @@ function NewGame({ socket }) {
     setIsCardsOnDesk(preset.cards_on_desk);
     setRevealedCards(preset.revealed);
     setHiddenCards(preset.hidden);
-  }
+  };
 
   useEffect(() => {
     getPresets();
@@ -126,6 +147,7 @@ function NewGame({ socket }) {
 
   return (
     <>
+      {/* <SettingsMenu /> */}
       <div className="flex flex-row justify-center items-start  gap-4 ">
         <div className="flex flex-col justify-center items-center h-screen gap-4 flex-grow">
           <label className="form-control w-full max-w-xs">
@@ -200,31 +222,69 @@ function NewGame({ socket }) {
                 <div className="modal-box w-11/12 max-w-5xl">
                   <h3 className="font-bold text-lg">Select Cards</h3>
                   <div className="grid grid-cols-6 gap-2">
-                    {Object.entries(cardNames)
-                      .filter(([cardName]) => !notUsed.includes(cardName))
-                      .map(([cardName, cardImage]) => (
-                        <div
-                          key={cardName}
-                          className="flex flex-col items-center"
-                        >
-                          <img
-                            src={`/assets/cards/french/${cardImage}`}
-                            alt={cardName}
-                            style={{ width: "100px", height: "auto" }}
-                          />
-                          <p>{cardName}</p>
-                          <button
-                            className="btn btn-sm"
-                            onClick={() => {
-                              setNotUsed((prev) => [...prev, cardName]);
-                              console.log(notUsed);
-                              console.log(cardName);
-                            }}
-                          >
-                            Remove
-                          </button>
-                        </div>
-                      ))}
+                    {cardType === "french" ? (
+                      <>
+                        {Object.entries(frenchCardNames)
+                          .filter(([cardName]) => !notUsed.includes(cardName))
+                          .map(([cardName, cardImage]) => (
+                            <div
+                              key={cardName}
+                              className="flex flex-col items-center"
+                            >
+                              <img
+                                src={`/assets/cards/${cardType}/${cardImage}`}
+                                alt={cardName}
+                                style={{ width: "100px", height: "auto" }}
+                              />
+                              <p>{cardName}</p>
+                              <button
+                                className="btn btn-sm"
+                                onClick={() => {
+                                  setNotUsed((prev) => [...prev, cardName]);
+                                  console.log(notUsed);
+                                  console.log(cardName);
+                                }}
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          ))}
+                      </>
+                    ) : (
+                      <></>
+                    )}
+
+                    {cardType === "hungarian" ? (
+                      <>
+                        {Object.entries(hungarianCardNames)
+                          .filter(([cardName]) => !notUsed.includes(cardName))
+                          .map(([cardName, cardImage]) => (
+                            <div
+                              key={cardName}
+                              className="flex flex-col items-center"
+                            >
+                              <img
+                                src={`/assets/cards/${cardType}/${cardImage}`}
+                                alt={cardName}
+                                style={{ width: "100px", height: "auto" }}
+                              />
+                              <p>{cardName}</p>
+                              <button
+                                className="btn btn-sm"
+                                onClick={() => {
+                                  setNotUsed((prev) => [...prev, cardName]);
+                                  console.log(notUsed);
+                                  console.log(cardName);
+                                }}
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          ))}
+                      </>
+                    ) : (
+                      <></>
+                    )}
                   </div>
                   <p className="py-4">
                     Press ESC key or click the button below to close
@@ -398,36 +458,49 @@ function NewGame({ socket }) {
             </a>
           </div>
           <div className="h-60 overflow-y-auto">
-            
-              {activeTab === 1 ? (
-                <>
-                  {presetsData.map((preset) => {
-                    if (preset.user_id === initialState.user_id) {
-                      return <div className="border p-5" onClick={()=>{
-                        setPresetSettings(preset);
-                      }}>
+            {activeTab === 1 ? (
+              <>
+                {presetsData.map((preset) => {
+                  if (preset.user_id === initialState.user_id) {
+                    return (
+                      <div
+                        className="border p-5"
+                        onClick={() => {
+                          setPresetSettings(preset);
+                        }}
+                      >
                         <strong>{preset.name}</strong>
-                        <p>Starting cards:{preset.startingcards}, Max players: {preset.maxplayers}, Pack count: {preset.packNumber}, <br />
-                        Card type: {preset.cardType}
+                        <p>
+                          Starting cards:{preset.startingcards}, Max players:{" "}
+                          {preset.maxplayers}, Pack count: {preset.packNumber},{" "}
+                          <br />
+                          Card type: {preset.cardType}
                         </p>
-                      </div>;
-                    }
-                  })}
-                </>
-              ) : (
-                <>
-                  {presetsData.map((preset) => {
-                    console.log(preset)
-                    return <div className="border p-5">
-                        <strong>{preset.name} - {preset.User.username}</strong>
-                        <p>Starting cards:{preset.startingcards}, Max players: {preset.maxplayers}, Pack count: {preset.packNumber}, <br />
+                      </div>
+                    );
+                  }
+                })}
+              </>
+            ) : (
+              <>
+                {presetsData.map((preset) => {
+                  console.log(preset);
+                  return (
+                    <div className="border p-5">
+                      <strong>
+                        {preset.name} - {preset.User.username}
+                      </strong>
+                      <p>
+                        Starting cards:{preset.startingcards}, Max players:{" "}
+                        {preset.maxplayers}, Pack count: {preset.packNumber},{" "}
+                        <br />
                         Card type: {preset.cardType}
-                        </p>
-                      </div>;
-                  })}
-                </>
-              )}
-            
+                      </p>
+                    </div>
+                  );
+                })}
+              </>
+            )}
           </div>
         </div>
       </div>

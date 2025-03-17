@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { initialState } from "../Store/store";
 import cardNames from "../Utils/French";
 import { useNavigate } from "react-router-dom";
+/* import { SettingsMenu } from "./SettingsMenu"; */
 
 function Desk({ socket }) {
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -129,6 +130,7 @@ function Desk({ socket }) {
     gameStart();
 
     socket.on("updateLobby", (response) => {
+      console.log("Jött adat");
       setData(response);
       isIn();
     });
@@ -158,11 +160,17 @@ function Desk({ socket }) {
   if (data.state === "waiting") {
     return (
       <>
-        
+        {/* <SettingsMenu /> */}
         <div className="relative w-[90vw] h-[80vh] bg-green-600 rounded-2xl mx-auto flex items-center justify-center bottom-0 mb-2">
           {/* Középen a húzó- és dobópakli,  itt majd drag&drop-os téma lesz */}
           <div className="absolute bg-gray-700 p-4 rounded-lg top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-            Waiting for host to start the game...
+            {data.host === initialState.user_id ? (
+              <p>
+                Join code: <strong>{data.code}</strong>
+              </p>
+            ) : (
+              <p> Waiting for host to start the game...</p>
+            )}
           </div>
 
           {/* Játékosok elhelyezése */}
@@ -220,15 +228,17 @@ function Desk({ socket }) {
 
   if (data.state === "ended") {
     return (
-      
-      <div className="relative w-[90vw] h-[80vh] bg-green-600 rounded-2xl mx-auto flex items-center justify-center bottom-0 mb-2">
-        <div className="absolute bg-gray-700 p-4 rounded-lg top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-          Game ended
+      <>
+        {/* <SettingsMenu /> */}
+        <div className="relative w-[90vw] h-[80vh] bg-green-600 rounded-2xl mx-auto flex items-center justify-center bottom-0 mb-2">
+          <div className="absolute bg-gray-700 p-4 rounded-lg top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+            Game ended
+          </div>
+          <div className="flex">
+            <button>Exit</button>
+          </div>
         </div>
-        <div className="flex">
-          <button>Exit</button>
-        </div>
-      </div>
+      </>
     );
   }
 
@@ -244,95 +254,68 @@ function Desk({ socket }) {
   }
 
   return (
-    <div className="relative">
-      {onHandSwapName !== null ? (
-        <div
-          role="alert"
-          className="alert alert-vertical sm:alert-horizontal absolute bottom-0 right-0 left-0 m-4 z-10"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            className="stroke-info h-6 w-6 shrink-0"
+    <>
+      {/* <SettingsMenu /> */}
+      <div className="relative">
+        {onHandSwapName !== null ? (
+          <div
+            role="alert"
+            className="alert alert-vertical sm:alert-horizontal absolute bottom-0 right-0 left-0 m-4 z-10"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            ></path>
-          </svg>
-          <div>
-            <h3 className="font-bold">New message!</h3>
-            <div className="text-xs">
-              Kitalálom wants to swap decks with you
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              className="stroke-info h-6 w-6 shrink-0"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              ></path>
+            </svg>
+            <div>
+              <h3 className="font-bold">New message!</h3>
+              <div className="text-xs">
+                Kitalálom wants to swap decks with you
+              </div>
             </div>
+            <button
+              onClick={() => {
+                sendAnswer(true);
+                setOnHandSwapName(null);
+              }}
+              className="btn btn-sm"
+            >
+              Accept
+            </button>
+            <button
+              onClick={() => {
+                sendAnswer(false);
+                setOnHandSwapName(null);
+              }}
+              className="btn btn-sm"
+            >
+              Reject
+            </button>
           </div>
-          <button
-            onClick={() => {
-              sendAnswer(true);
-              setOnHandSwapName(null);
-            }}
-            className="btn btn-sm"
-          >
-            Accept
-          </button>
-          <button
-            onClick={() => {
-              sendAnswer(false);
-              setOnHandSwapName(null);
-            }}
-            className="btn btn-sm"
-          >
-            Reject
-          </button>
-        </div>
-      ) : (
-        <></>
-      )}
-      <div className="relative w-[90vw] h-[90vh] bg-green-600 rounded-2xl mx-auto flex items-center justify-center bottom-0 mb-2">
-        {/* Középen a húzó- és dobópakli */}
+        ) : (
+          <></>
+        )}
+        <div className="relative w-[90vw] h-[90vh] bg-green-600 rounded-2xl mx-auto flex items-center justify-center bottom-0 mb-2">
+          {/* Középen a húzó- és dobópakli */}
 
-        <div className="absolute bg-green-600 p-4 rounded-lg top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-          <div className="relative flex gap-4">
-            {data.decks.drawDeck.length > 0 ? (
-              <img
-                className="w-[5vh]"
-                src="assets/cards/french/card_back.svg"
-                alt="drawDeck"
-                deckdata="drawDeck"
-                onClick={(e) => {
-                  const deckType = e.target.getAttribute("deckdata");
-                  if (selectedDeck === deckType) {
-                    setSelectedDeck(null);
-                  } else {
-                    setSelectedDeck(deckType);
-                    setSelectedPlayer(null);
-                    setSelectedCard(null);
-                  }
-                }}
-              />
-            ) : (
-              <div
-                className="w-full h-full border-2 border-white rounded-lg"
-                style={{ width: "5vh", height: "7vh" }}
-              ></div>
-            )}
-
-            <div className="relative">
-              {data.decks.throwDeck.length > 0 ? (
+          <div className="absolute bg-green-600 p-4 rounded-lg top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+            <div className="relative flex gap-4">
+              {data.decks.drawDeck.length > 0 ? (
                 <img
-                  src={
-                    "/assets/cards/french/" +
-                    data.decks.throwDeck[data.decks.throwDeck.length - 1][1]
-                  }
-                  alt="throwDeck"
-                  deckdata="throwDeck"
-                  style={{ width: "5vh" }}
+                  className="w-[5vh]"
+                  src={`assets/cards/${data.presetdata.cardType}/card_back.${data.presetdata.cardType === "french" ? "svg" : "png"}`}  //EZT IS ÁT KELL GONDOLNI SZINTÉN
+                  alt="drawDeck"
+                  deckdata="drawDeck"
                   onClick={(e) => {
                     const deckType = e.target.getAttribute("deckdata");
-
                     if (selectedDeck === deckType) {
                       setSelectedDeck(null);
                     } else {
@@ -348,242 +331,283 @@ function Desk({ socket }) {
                   style={{ width: "5vh", height: "7vh" }}
                 ></div>
               )}
+
+              <div className="relative">
+                {data.decks.throwDeck.length > 0 ? (
+                  <img
+                    src={
+                      `/assets/cards/${data.presetdata.cardType}/` +
+                      data.decks.throwDeck[data.decks.throwDeck.length - 1][1]
+                    }
+                    alt="throwDeck"
+                    deckdata="throwDeck"
+                    style={{ width: "5vh" }}
+                    onClick={(e) => {
+                      const deckType = e.target.getAttribute("deckdata");
+
+                      if (selectedDeck === deckType) {
+                        setSelectedDeck(null);
+                      } else {
+                        setSelectedDeck(deckType);
+                        setSelectedPlayer(null);
+                        setSelectedCard(null);
+                      }
+                    }}
+                  />
+                ) : (
+                  <div
+                    className="w-full h-full border-2 border-white rounded-lg"
+                    style={{ width: "5vh", height: "7vh" }}
+                  ></div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
 
-        {selectedCard !== null ? (
-          <div className="absolute top-1 right-1 bg-gray-700 rounded-lg">
-            <h1 className="ml-3 mt-1">Card actions</h1>
-            <ul class="menu menu-sm bg-base-200 rounded-box w-56">
-              <li>
-                <a
-                  onClick={() => {
-                    playCard(selectedCard);
-                    setSelectedCard(null);
-                  }}
-                >
-                  Play card (throwdeck)
-                </a>
-              </li>
-              <li>
-                <a>Reveal card</a>
-              </li>
-              <li>
-                <a>Hide card</a>
-              </li>
-              <li>
-                <a>Switch with other player</a>
-              </li>
-              {data.host === initialState.user_id ? (
-                <li>
-                  <a>Give to other player</a>
-                  <ul className="menu menu-sm bg-base-200 rounded-box w-56 ml-4">
-                    {data.players
-                      .filter((player) => player.id !== initialState.user_id)
-                      .map((player) => (
-                        <li key={player.id}>
-                          <a
-                            onClick={() => {
-                              giveCardToPlayer(player.id);
-                              setSelectedCard(null);
-                            }}
-                          >
-                            {player.username}
-                          </a>
-                        </li>
-                      ))}
-                  </ul>
-                </li>
-              ) : (
-                <></>
-              )}
-            </ul>
-          </div>
-        ) : (
-          <></>
-        )}
-
-        {selectedDeck !== null ? (
-          <div className="absolute top-1 right-1 bg-gray-700 rounded-lg">
-            <h1 className="ml-3 mt-1">Deck actions</h1>
-            <ul class="menu menu-sm bg-base-200 rounded-box w-56">
-              {selectedDeck === "drawDeck" ? (
+          {selectedCard !== null ? (
+            <div className="absolute top-1 right-1 bg-gray-700 rounded-lg">
+              <h1 className="ml-3 mt-1">Card actions</h1>
+              <ul class="menu menu-sm bg-base-200 rounded-box w-56">
                 <li>
                   <a
                     onClick={() => {
-                      drawOne();
-                      setSelectedDeck(null);
+                      playCard(selectedCard);
+                      setSelectedCard(null);
                     }}
                   >
-                    Draw ONE (draw deck)
+                    Play card (throwdeck)
                   </a>
                 </li>
-              ) : (
-                <></>
-              )}
-
-              {selectedDeck === "throwDeck" ? (
-                <>
+                <li>
+                  <a>Reveal card</a>
+                </li>
+                <li>
+                  <a>Hide card</a>
+                </li>
+                <li>
+                  <a>Switch with other player</a>
+                </li>
+                {data.host === initialState.user_id ? (
                   <li>
-                    <a>Idk yet</a>
+                    <a>Give to other player</a>
+                    <ul className="menu menu-sm bg-base-200 rounded-box w-56 ml-4">
+                      {data.players
+                        .filter((player) => player.id !== initialState.user_id)
+                        .map((player) => (
+                          <li key={player.id}>
+                            <a
+                              onClick={() => {
+                                giveCardToPlayer(player.id);
+                                setSelectedCard(null);
+                              }}
+                            >
+                              {player.username}
+                            </a>
+                          </li>
+                        ))}
+                    </ul>
                   </li>
-                  {data.host === initialState.user_id ? (
+                ) : (
+                  <></>
+                )}
+              </ul>
+            </div>
+          ) : (
+            <></>
+          )}
+
+          {selectedDeck !== null ? (
+            <div className="absolute top-1 right-1 bg-gray-700 rounded-lg">
+              <h1 className="ml-3 mt-1">Deck actions</h1>
+              <ul class="menu menu-sm bg-base-200 rounded-box w-56">
+                {selectedDeck === "drawDeck" ? (
+                  <li>
+                    <a
+                      onClick={() => {
+                        drawOne();
+                        setSelectedDeck(null);
+                      }}
+                    >
+                      Draw ONE (draw deck)
+                    </a>
+                  </li>
+                ) : (
+                  <></>
+                )}
+
+                {selectedDeck === "throwDeck" ? (
+                  <>
                     <li>
-                      <a onClick={shuffleThrowDeckIn}>
-                        Shuffle throw deck into draw deck
-                      </a>
+                      <a>Idk yet</a>
                     </li>
-                  ) : (
-                    <> </>
-                  )}
-                </>
-              ) : (
-                <></>
-              )}
-            </ul>
-          </div>
-        ) : (
-          <></>
-        )}
+                    {data.host === initialState.user_id ? (
+                      <>
+                        <li>
+                          <a onClick={shuffleThrowDeckIn}>
+                            Shuffle throw deck into draw deck
+                          </a>
+                        </li>
+                        <li>
+                          <a>Give last card to player</a>
+                        </li>
+                      </>
+                    ) : (
+                      <> </>
+                    )}
+                  </>
+                ) : (
+                  <></>
+                )}
+              </ul>
+            </div>
+          ) : (
+            <></>
+          )}
 
-        {selectedPlayer !== null ? (
-          <div className="absolute top-1 right-1 bg-gray-700 rounded-lg">
-            <h1 className="ml-3 mt-1">Player actions</h1>
-            <ul className="menu menu-sm bg-base-200 rounded-box w-56">
-              <li>
-                <a
-                  onClick={() => {
-                    sendOnHandReq();
-                  }}
-                >
-                  Swap cards on hands
-                </a>
-              </li>
-              {data.host === initialState.user_id ? (
+          {selectedPlayer !== null ? (
+            <div className="absolute top-1 right-1 bg-gray-700 rounded-lg">
+              <h1 className="ml-3 mt-1">Player actions</h1>
+              <ul className="menu menu-sm bg-base-200 rounded-box w-56">
                 <li>
-                  <a onClick={kickPlayer}>Kick player</a>
+                  <a
+                    onClick={() => {
+                      sendOnHandReq();
+                    }}
+                  >
+                    Swap cards on hands
+                  </a>
                 </li>
-              ) : (
-                <></>
-              )}
-              {data.host === initialState.user_id ? (
-                <li>
-                  <a onClick={giveHost}>Give host</a>
-                </li>
-              ) : (
-                <></>
-              )}
-            </ul>
-          </div>
-        ) : (
-          <></>
-        )}
+                {data.host === initialState.user_id ? (
+                  <li>
+                    <a onClick={kickPlayer}>Kick player</a>
+                  </li>
+                ) : (
+                  <></>
+                )}
+                {data.host === initialState.user_id ? (
+                  <li>
+                    <a onClick={giveHost}>Give host</a>
+                  </li>
+                ) : (
+                  <></>
+                )}
+              </ul>
+            </div>
+          ) : (
+            <></>
+          )}
 
-        <div className="absolute top-1 right-1 bg-gray-700 rounded-lg"></div>
+          <div className="absolute top-1 right-1 bg-gray-700 rounded-lg"></div>
 
-        {players
-          .filter((player) => player.id !== initialState.user_id)
-          .map((player, index) => {
-            let positionStyle = {};
-            if (index < totalPlayers / 2) {
-              // Felső játékosok (elosztva)
-              positionStyle = {
-                top: "3%",
-                left: `${(index / (totalPlayers / 2)) * 80 + 10}%`,
-              };
-            } else {
-              // Oldalsó játékosok (bal/jobb)
-              const sideIndex = index - Math.floor(totalPlayers / 2);
-              const yPos = `${(sideIndex / (totalPlayers / 2)) * 70 + 10}%`;
+          {players
+            .filter((player) => player.id !== initialState.user_id)
+            .map((player, index) => {
+              let positionStyle = {};
+              if (index < totalPlayers / 2) {
+                // Felső játékosok (elosztva)
+                positionStyle = {
+                  top: "3%",
+                  left: `${(index / (totalPlayers / 2)) * 80 + 10}%`,
+                };
+              } else {
+                // Oldalsó játékosok (bal/jobb)
+                const sideIndex = index - Math.floor(totalPlayers / 2);
+                const yPos = `${(sideIndex / (totalPlayers / 2)) * 70 + 10}%`;
 
-              positionStyle =
-                index % 2 === 0
-                  ? { left: "2%", top: yPos } // Bal oldal
-                  : { right: "2%", top: yPos }; // Jobb oldal
-            }
+                positionStyle =
+                  index % 2 === 0
+                    ? { left: "2%", top: yPos } // Bal oldal
+                    : { right: "2%", top: yPos }; // Jobb oldal
+              }
 
-            return (
-              <div
-                key={player.id}
-                className="absolute flex flex-col items-center"
-                style={positionStyle}
-              >
+              return (
                 <div
-                  onClick={(e) => {
-                    if (selectedPlayer === player.id) {
-                      setSelectedPlayer(null);
-                    } else {
-                      console.log("mivan");
-                      setSelectedDeck(null);
-                      setSelectedCard(null);
-                      setSelectedPlayer(player.id);
-                    }
-                  }}
-                  className="bg-blue-500 p-2 rounded-md"
+                  key={player.id}
+                  className="absolute flex flex-col items-center"
+                  style={positionStyle}
                 >
-                  {player.username}
-                </div>
-                <div className="flex">
-                  {player.cards.onHand.map((card, index) => (
-                    <div key={index} className="bg-blue-500 m-1 rounded-md">
-                      <img
-                        src={"/assets/cards/french/card_back.svg"}
-                        alt=""
-                        style={{ width: "5vh" }}
-                      />
-                    </div>
-                  ))}
-                </div>
-                <div className="flex">
-                  {player.cards.onTableVisible.map(
-                    ([cardname, cardfile], index) => (
+                  <div
+                    onClick={(e) => {
+                      if (selectedPlayer === player.id) {
+                        setSelectedPlayer(null);
+                      } else {
+                        console.log("mivan");
+                        setSelectedDeck(null);
+                        setSelectedCard(null);
+                        setSelectedPlayer(player.id);
+                      }
+                    }}
+                    className="bg-blue-500 p-2 rounded-md"
+                  >
+                    {player.username}
+                  </div>
+                  <div className="flex">
+                    {player.cards.onHand.map((card, index) => (
                       <div key={index} className="bg-blue-500 m-1 rounded-md">
                         <img
-                          src={"/assets/cards/french/" + cardfile}
+                          src={`/assets/cards/${data.presetdata.cardType}/card_back.${data.presetdata.cardType === "french" ? "svg" : "png"}`} //EZT MÉG ÁT KELL GONDOLNI
                           alt=""
                           style={{ width: "5vh" }}
                         />
                       </div>
-                    )
-                  )}
+                    ))}
+                  </div>
+                  <div className="flex">
+                    {console.log(data.presetdata.cardType)} 
+                    {player.cards.onTableVisible.map(
+                      ([cardname, cardfile], index) => (
+                        <div key={index} className="bg-blue-500 m-1 rounded-md">
+                          <img
+                            src={
+                              "/assets/cards/" +
+                              data.presetdata.cardType +
+                              "/" +
+                              cardfile
+                            }
+                            alt=""
+                            style={{ width: "5vh" }}
+                          />
+                        </div>
+                      )
+                    )}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
 
-        {/* Saját lapok alul */}
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-          {player.cards.onTableVisible.map(([cardname, cardfile], index) => {
-            return (
-              <div
-                onClick={(e) => {
-                  if (selectedCard === cardname) {
-                    setSelectedCard(null);
-                  } else {
-                    setSelectedDeck(null);
-                    setSelectedPlayer(null);
-                    setSelectedCard(cardname);
-                  }
-                }}
-                key={index}
-                className={`bg-red-500 p-0 rounded-lg ${
-                  selectedCard === cardname
-                    ? "outline outline-4 outline-yellow-500"
-                    : ""
-                }`}
-              >
-                <img
-                  className="w-[13vh]"
-                  src={"/assets/cards/french/" + cardfile}
-                  alt=""
-                />
-              </div>
-            );
-          })}
+          {/* Saját lapok alul */}
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+            {player.cards.onTableVisible.map(([cardname, cardfile], index) => {
+              return (
+                <div
+                  onClick={(e) => {
+                    if (selectedCard === cardname) {
+                      setSelectedCard(null);
+                    } else {
+                      setSelectedDeck(null);
+                      setSelectedPlayer(null);
+                      setSelectedCard(cardname);
+                    }
+                  }}
+                  key={index}
+                  className={`bg-red-500 p-0 rounded-lg ${
+                    selectedCard === cardname
+                      ? "outline outline-4 outline-yellow-500"
+                      : ""
+                  }`}
+                >
+                  <img
+                    className="w-[13vh]"
+                    src={`/assets/cards/${data.presetdata.cardType}/` + cardfile}
+                    alt=""
+                  />
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 

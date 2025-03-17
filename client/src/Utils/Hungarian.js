@@ -7,7 +7,7 @@ export const hungarianCardNames = {
     "acorn seven": "acorn-seven.png",
     "acorn ten": "acorn-ten.png",
     "acorn unter": "acorn-unter.png",
-    "back": "back.png",
+    "card back": "card_back.png",
     "bell ace": "bell-ace.png",
     "bell eight": "bell-eight.png",
     "bell king": "bell-king.png",

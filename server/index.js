@@ -255,6 +255,15 @@ io.on("connection", (socket) => {
     socket.emit("presetAdded");
   });
 
+  socket.on("giveFromThrowDeck", (data) => {
+    const { code, player_id } = data;
+    const lobby = lobbies[code];
+    const player = lobby.players.find((player) => player.id === player_id);
+    player.cards.onTableVisible.push(lobby.decks.throwDeck.pop());
+    lobbies[code] = lobby;
+    io.to(code).emit("updateLobby", lobby);
+  });
+
   socket.on("kickPlayer", async (data) => {
     const { player_id, code } = data;
     const lobby = lobbies[code];
@@ -468,7 +477,7 @@ io.on("connection", (socket) => {
           );
         });
 
-      io.to(lobby.code).emit("updateLobby", lobbies[lobby.code]);
+        io.to(data.code).emit("updateLobby", lobbies[lobby.code]);
       io.to(socket.id).emit("codeSuccess", { code: lobby.code });
     } catch (error) {
       console.log(error);
@@ -514,7 +523,6 @@ io.on("connection", (socket) => {
             sockets.map((s) => s.id)
           );
         });
-
       io.to(lobby.code).emit("updateLobby", lobbies[lobby.code]);
     } catch (error) {
       console.log(error);

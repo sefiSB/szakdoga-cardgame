@@ -1,4 +1,4 @@
-export const cardNames = {
+export const frenchCardNames = {
     "2 of clubs": "2_of_clubs.svg",
     "2 of diamonds": "2_of_diamonds.svg",
     "2 of hearts": "2_of_hearts.svg",
@@ -69,4 +69,4 @@ export const cardNames = {
     "red joker": "red_joker.svg",
 };
 
-export default cardNames;
+export default frenchCardNames;
