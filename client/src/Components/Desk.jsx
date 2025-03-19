@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { initialState } from "../Store/store";
-import cardNames from "../Utils/French";
 import { useNavigate } from "react-router-dom";
 import SettingsMenu from "./SettingsMenu";
+
 
 function Desk({ socket }) {
   const [settingsOpen, setSettingsOpen] = useState(false);

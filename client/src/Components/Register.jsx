@@ -2,15 +2,35 @@ import { useNavigate } from "react-router-dom";
 import { initialState } from "../Store/store";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import passwordValidator from "password-validator";
+
 
 function Register({ socket }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [serverError, setServerError] = useState("");
+  const [error, setError] = useState([]);
+  var schema = new passwordValidator();
+  schema
+    .is().min(8)
+    .is().max(100)
+    .has().uppercase()
+    .has().lowercase()
+    .has().digits()
+    .has().not().spaces();
+
+    var schema2 = new passwordValidator();
+    schema2
+      .is().min(3)
+      .is().max(100)
+      .has().not().spaces();
+
   const navigate = useNavigate();
 
   const postUser = async () => {
+    console.log("POSZTOLTAM A USERT")
     const response = await fetch("http://localhost:3001/adduser", {
       method: "POST",
       headers: {
@@ -22,10 +42,12 @@ function Register({ socket }) {
         email,
       }),
     });
+
+  
     const data = await response.json();
     if (data.error) {
-      setError(data.error);
-      console.log(data.details)
+      setServerError(data.error);
+      console.log(data.details);
     } else {
       initialState.user_id = data.id;
       navigate("/createorjoin");
@@ -33,31 +55,59 @@ function Register({ socket }) {
     }
   };
 
-  /* const postUser = () => {
-    socket.emit("addUser", {
-      name,
-      email,
-      password
-    })
+  const validateEmail = (email) => {
+    var re = /\S+@\S+\.\S+/;
+    return re.test(email);
+  };
 
-    socket.on("addUserSuccess", (data) => {
-      if (data) {
-        setError("User added successfully");
-        initialState.user_id = data.id;
-        setTimeout(() => navigate("/createorjoin"), 1000);
-      }
-      else {
-        setError("User already exists");
-      }
-    });
-
-    
-  }; */
+  const checkCredentials = () => {
+    let errors=[];
+    if (!schema2.validate(name)) {
+      const nameerrorlist = schema2.validate(name, { list: true });
+      console.log(nameerrorlist);
+      nameerrorlist.forEach((e) => {
+        if(e === "min") errors=[...errors, "Username must be at least 3 characters long"];
+        if(e === "max") errors=[...errors, "Username must be at most 100 characters long"];
+        if(e === "spaces") errors=[...errors, "Username cannot contain spaces"];
+      })
+    }
+    if (password !== confirmPassword) {
+      errors=[...errors, "Passwords do not match"];
+    }
+    if (!schema.validate(password)) {
+      const errorlist = schema.validate(password, { list: true });
+      errorlist.forEach((e) => {
+        if(e === "min") errors=[...errors, "Password must be at least 8 characters long"];
+        if(e === "max") errors=[...errors, "Password must be at most 100 characters long"];
+        if(e === "uppercase") errors=[...errors, "Password must contain at least one uppercase letter"];
+        if(e === "lowercase") errors=[...errors, "Password must contain at least one lowercase letter"];
+        if(e === "digits") errors=[...errors, "Password must contain at least one digit"];
+        if(e === "spaces") errors=[...errors, "Password cannot contain spaces"];
+      })
+      
+    }
+    if (!validateEmail(email)) {
+      errors=[...errors, "Invalid email"];
+    }
+    if (name === "") {
+      errors=[...errors, "Username cannot be empty"];
+    }
+    setError(errors);
+    console.log(errors)
+    if (errors.length === 0) {
+      return true;
+    }
+    return false;
+  }
 
   return (
     <>
       <div className="flex flex-col justify-center items-center h-screen gap-4">
-        <label className="input input-bordered flex items-center gap-2">
+        <label
+          className={`input input-bordered flex items-center gap-2 ${
+            validateEmail(email) ? "" : "border border-red-500"
+          }`}
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 16 16"
@@ -116,9 +166,38 @@ function Register({ socket }) {
             }}
           />
         </label>
+        <label
+          className={`input input-bordered flex items-center gap-2 ${
+            confirmPassword !== "" && password !== confirmPassword
+              ? "border border-red-500"
+              : ""
+          }`}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 16 16"
+            fill="currentColor"
+            className="h-4 w-4 opacity-70"
+          >
+            <path
+              fillRule="evenodd"
+              d="M14 6a4 4 0 0 1-4.899 3.899l-1.955 1.955a.5.5 0 0 1-.353.146H5v1.5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-2.293a.5.5 0 0 1 .146-.353l3.955-3.955A4 4 0 1 1 14 6Zm-4-2a.75.75 0 0 0 0 1.5.5.5 0 0 1 .5.5.75.75 0 0 0 1.5 0 2 2 0 0 0-2-2Z"
+              clipRule="evenodd"
+            />
+          </svg>
+          <input
+            type="password"
+            className="grow"
+            placeholder="confirm password"
+            onChange={(e) => {
+              setConfirmPassword(e.target.value);
+            }}
+          />
+        </label>
         <button
           className="btn btn-outline btn-primary"
           onClick={() => {
+            if(!checkCredentials()) return;
             initialState.user = name;
             initialState.email = email;
             initialState.password = password;
@@ -127,7 +206,10 @@ function Register({ socket }) {
         >
           Sign up
         </button>
-        <p>{error}</p>
+        <ul>
+          {error.map((e)=>{
+          return <li className="text-red-500">{e}</li>
+        })}</ul>
 
         <p>
           Already have an account?{" "}

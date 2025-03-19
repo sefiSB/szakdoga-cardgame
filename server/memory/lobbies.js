@@ -3,7 +3,7 @@ const lobbies = {};
 
 const createCode = () => {
   while (true) {
-    const code = Math.floor(Math.random() * 10000);
+    const code = Math.floor(1000+Math.random() * 9000);
     if (!lobbies[code]) {
       return code;
     }

@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { frenchCardNames } from "../Utils/French";
 import { hungarianCardNames } from "../Utils/Hungarian";
+import { unoCardNames } from "../Utils/Uno";
 /* import { SettingsMenu } from "./SettingsMenu"; */
 
 function NewGame({ socket }) {
@@ -68,7 +69,7 @@ function NewGame({ socket }) {
   const postGame = async () => {
     let usedCards = [];
 
-    if(cardType === "french"){
+    if (cardType === "french") {
       for (let i = 0; i < packNumber; i++) {
         let used = Object.entries(frenchCardNames).filter(
           ([cardName]) => !notUsed.includes(cardName)
@@ -76,7 +77,7 @@ function NewGame({ socket }) {
         usedCards = [...usedCards, ...used];
       }
     }
-    if(cardType === "hungarian"){
+    if (cardType === "hungarian") {
       for (let i = 0; i < packNumber; i++) {
         let used = Object.entries(hungarianCardNames).filter(
           ([cardName]) => !notUsed.includes(cardName)
@@ -85,10 +86,14 @@ function NewGame({ socket }) {
       }
     }
 
-    /* if(cardType === "uno"){
-    } */
-
-    
+    if (cardType === "uno") {
+      for (let i = 0; i < packNumber; i++) {
+        let used = Object.entries(unoCardNames).filter(
+          ([cardName]) => !notUsed.includes(cardName)
+        );
+        usedCards = [...usedCards, ...used];
+      }
+    }
 
     const response = await fetch("http://localhost:3001/addlobby", {
       method: "POST",
@@ -252,6 +257,38 @@ function NewGame({ socket }) {
                     {cardType === "hungarian" ? (
                       <>
                         {Object.entries(hungarianCardNames)
+                          .filter(([cardName]) => !notUsed.includes(cardName))
+                          .map(([cardName, cardImage]) => (
+                            <div
+                              key={cardName}
+                              className="flex flex-col items-center"
+                            >
+                              <img
+                                src={`/assets/cards/${cardType}/${cardImage}`}
+                                alt={cardName}
+                                style={{ width: "100px", height: "auto" }}
+                              />
+                              <p>{cardName}</p>
+                              <button
+                                className="btn btn-sm"
+                                onClick={() => {
+                                  setNotUsed((prev) => [...prev, cardName]);
+                                  console.log(notUsed);
+                                  console.log(cardName);
+                                }}
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          ))}
+                      </>
+                    ) : (
+                      <></>
+                    )}
+
+                    {cardType === "uno" ? (
+                      <>
+                        {Object.entries(unoCardNames)
                           .filter(([cardName]) => !notUsed.includes(cardName))
                           .map(([cardName, cardImage]) => (
                             <div
