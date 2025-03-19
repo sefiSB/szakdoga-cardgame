@@ -3,7 +3,6 @@ import { initialState } from "../Store/store";
 import { useNavigate } from "react-router-dom";
 import SettingsMenu from "./SettingsMenu";
 
-
 function Desk({ socket }) {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [amIIn, setAmIIn] = useState(true);
@@ -13,6 +12,7 @@ function Desk({ socket }) {
   const [selectedDeck, setSelectedDeck] = useState(null);
   //const [swapOnHandRequest, setSwapOnHandRequest]= useState(false);
   const [onHandSwapName, setOnHandSwapName] = useState(null);
+  const [playFrom, setPlayFrom] = useState(null);
 
   const navigate = useNavigate();
   if (!initialState.user_id) {
@@ -35,11 +35,13 @@ function Desk({ socket }) {
     }
   };
 
-  const playCard = (tc) => {
+  const playCard = (tc,pf) => {
+    console.log(tc);
     socket.emit("playCard", {
       code: initialState.code,
       player_id: initialState.user_id,
       cardName: tc,
+      playFrom:pf,
     });
   };
 
@@ -229,7 +231,7 @@ function Desk({ socket }) {
   if (data.state === "ended") {
     return (
       <>
-        <SettingsMenu socket={socket}/>
+        <SettingsMenu socket={socket} />
         <div className="relative w-[90vw] h-[80vh] bg-green-600 rounded-2xl mx-auto flex items-center justify-center bottom-0 mb-2">
           <div className="absolute bg-gray-700 p-4 rounded-lg top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
             Game ended
@@ -255,7 +257,7 @@ function Desk({ socket }) {
 
   return (
     <>
-      <SettingsMenu socket={socket}/>
+      <SettingsMenu socket={socket} />
       <div className="relative">
         {onHandSwapName !== null ? (
           <div
@@ -324,6 +326,7 @@ function Desk({ socket }) {
                       setSelectedDeck(deckType);
                       setSelectedPlayer(null);
                       setSelectedCard(null);
+                      setPllayFrom(null);
                     }
                   }}
                 />
@@ -333,10 +336,12 @@ function Desk({ socket }) {
                   style={{ width: "5vh", height: "7vh" }}
                 ></div>
               )}
-
+              {console.log(data.decks.throwDeck)}
               <div className="relative">
                 {data.decks.throwDeck.length > 0 ? (
+                  
                   <img
+                  
                     src={
                       `/assets/cards/${data.presetdata.cardType}/` +
                       data.decks.throwDeck[data.decks.throwDeck.length - 1][1]
@@ -353,6 +358,7 @@ function Desk({ socket }) {
                         setSelectedDeck(deckType);
                         setSelectedPlayer(null);
                         setSelectedCard(null);
+                        setPlayFrom(null);
                       }
                     }}
                   />
@@ -373,8 +379,9 @@ function Desk({ socket }) {
                 <li>
                   <a
                     onClick={() => {
-                      playCard(selectedCard);
+                      playCard(selectedCard,playFrom);
                       setSelectedCard(null);
+                      setPlayFrom(null);
                     }}
                   >
                     Play card (throwdeck)
@@ -401,6 +408,7 @@ function Desk({ socket }) {
                               onClick={() => {
                                 giveCardToPlayer(player.id);
                                 setSelectedCard(null);
+                                setPlayFrom(null);
                               }}
                             >
                               {player.username}
@@ -536,6 +544,7 @@ function Desk({ socket }) {
                         console.log("mivan");
                         setSelectedDeck(null);
                         setSelectedCard(null);
+                        setPlayFrom(null);
                         setSelectedPlayer(player.id);
                       }
                     }}
@@ -543,26 +552,64 @@ function Desk({ socket }) {
                   >
                     {player.username}
                   </div>
-                  <div className="flex">
-                    {player.cards.onHand.map((card, index) => (
-                      <div key={index} className="bg-blue-500 m-1 rounded-md">
-                        <img
-                          src={`/assets/cards/${
-                            data.presetdata.cardType
-                          }/card_back.${
-                            data.presetdata.cardType === "french"
-                              ? "svg"
-                              : "png"
-                          }`} //EZT MÉG ÁT KELL GONDOLNI
-                          alt=""
-                          style={{ width: "5vh" }}
-                        />
-                      </div>
-                    ))}
+                  <div className="flex flex-col items-center">
+                    {/* onHand (lefordítva) */}
+                    <div className="flex">
+                      {player.cards.onHand.map((card, index) => (
+                        <div key={index} className="bg-blue-500 m-1 rounded-md">
+                          <img
+                            src={`/assets/cards/${
+                              data.presetdata.cardType
+                            }/card_back.${
+                              data.presetdata.cardType === "french"
+                                ? "svg"
+                                : "png"
+                            }`}
+                            alt=""
+                            style={{ width: "5vh" }}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                    {/* onTableVisible (felfordítva) */}
+                    <div className="flex">
+                      {player.cards.onTableVisible.map(
+                        ([cardname, cardfile], index) => (
+                          <div
+                            key={index}
+                            className="bg-blue-500 m-1 rounded-md"
+                          >
+                            <img
+                              src={`/assets/cards/${data.presetdata.cardType}/${cardfile}`}
+                              alt={cardname}
+                              style={{ width: "5vh" }}
+                            />
+                          </div>
+                        )
+                      )}
+                    </div>
+                    {/* onTableHidden (lefordítva) */}
+                    <div className="flex">
+                      {player.cards.onTableHidden.map((card, index) => (
+                        <div key={index} className="bg-blue-500 m-1 rounded-md">
+                          <img
+                            src={`/assets/cards/${
+                              data.presetdata.cardType
+                            }/card_back.${
+                              data.presetdata.cardType === "french"
+                                ? "svg"
+                                : "png"
+                            }`}
+                            alt=""
+                            style={{ width: "5vh" }}
+                          />
+                        </div>
+                      ))}
+                    </div>
                   </div>
                   <div className="flex">
                     {console.log(data.presetdata.cardType)}
-                    {player.cards.onTableVisible.map(
+                    {/* {player.cards.onTableVisible.map(
                       ([cardname, cardfile], index) => (
                         <div key={index} className="bg-blue-500 m-1 rounded-md">
                           <img
@@ -577,7 +624,7 @@ function Desk({ socket }) {
                           />
                         </div>
                       )
-                    )}
+                    )} */}
                   </div>
                 </div>
               );
@@ -585,7 +632,7 @@ function Desk({ socket }) {
 
           {/* Saját lapok alul */}
           <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-            {player.cards.onTableVisible.map(([cardname, cardfile], index) => {
+            {player.cards.onHand.map(([cardname, cardfile], index) => {
               return (
                 <div
                   onClick={(e) => {
@@ -595,6 +642,8 @@ function Desk({ socket }) {
                       setSelectedDeck(null);
                       setSelectedPlayer(null);
                       setSelectedCard(cardname);
+                      setPlayFrom("onHand");
+                      console.log(cardname)
                     }
                   }}
                   key={index}

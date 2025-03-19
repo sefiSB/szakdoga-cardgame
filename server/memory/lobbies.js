@@ -28,6 +28,9 @@ const createLobby = (data) => {
       packNumber: data.presetdata.packNumber,
       usedCards: data.presetdata.usedCards,
       maxplayers: data.presetdata.maxplayers,
+      hiddenCards: data.presetdata.hiddenCards,
+      revealedCards: data.presetdata.revealedCards,
+      isCardsOnDesk: data.presetdata.isCardsOnDesk,
     },
     decks: {
       drawDeck: [],

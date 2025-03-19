@@ -185,7 +185,6 @@ app.post("/addlobby", async (req, res) => {
       host_id: user.id,
       lobby_id: lobby.id,
     });
-    console.log("HOST LÉTREHOZVA??!?!!?!??!:", host);
     createLobby({
       name: req.body.gameName,
       code: lobby.code,
@@ -197,8 +196,13 @@ app.post("/addlobby", async (req, res) => {
         packNumber: req.body.packNumber,
         usedCards: req.body.usedCards,
         maxplayers: req.body.maxplayers,
+        hiddenCards: req.body.hiddenCards,
+        revealedCards: req.body.revealedCards,
+        isCardsOnDesk: req.body.isCardsOnDesk,
       },
     });
+    /* console.log("EZT HOZTA LÉTRE")
+    console.log(lobbies[lobby.code]); */
 
     addPLayer(lobby.code, {
       id: user.id,
@@ -231,17 +235,32 @@ io.on("connection", (socket) => {
     shuffleArray(lobbies[data.code].decks.drawDeck);
     for (let i = 0; i < lobbies[data.code].players.length; i++) {
       for (let j = 0; j < lobbies[data.code].presetdata.startingCards; j++) {
-        //Teszt kedvéért visible kártyák
-        lobbies[data.code].players[i].cards.onTableVisible.push(
-          lobbies[data.code].presetdata.usedCards.pop()
+        lobbies[data.code].players[i].cards.onHand.push(
+          lobbies[data.code].decks.drawDeck.pop()
         );
       }
     }
+    //console.log(lobbies[data.code].presetdata);
+    if(lobbies[data.code].presetdata.isCardsOnDesk){
+      for(let i=0; i<lobbies[data.code].players.length; i++){
+        for(let j=0; j<lobbies[data.code].presetdata.revealedCards; j++){
+          lobbies[data.code].players[i].cards.onTableVisible.push(lobbies[data.code].decks.drawDeck.pop());
+        }
+        console.log(lobbies[data.code].players[i].cards.onTableVisible);
+    }
+    
+  
+  
+    for(let i=0; i<lobbies[data.code].players.length; i++){
+      for(let j=0; j<lobbies[data.code].presetdata.hiddenCards; j++){
+        lobbies[data.code].players[i].cards.onTableHidden.push(lobbies[data.code].decks.drawDeck.pop());
+      }
+      console.log(lobbies[data.code].players[i].cards.onTableHidden);
 
-    //socket.join(data.code);
-    //io.to(data.code).emit("updateLobby",lobbies[data.code])
+    }
+  }
+
     io.emit("updateLobby", lobbies[data.code]);
-    //io.to(data.code).emit("hostStarted");
   });
 
   socket.on("presetAdded", () => {
@@ -418,22 +437,41 @@ io.on("connection", (socket) => {
   });
 
   socket.on("playCard", (data) => {
-    const { code, player_id, cardName } = data;
+    /* console.log("AAAAAAAAAAAAAAAAAAAAAA");
+    console.log(data); */
+    const { code, player_id, cardName,playFrom } = data;
     const lobby = lobbies[code];
     const player = lobby.players.find((player) => player.id === player_id);
     if (!player || !lobby) {
       console.log("vmi nemjo");
     }
 
-    const cardIndex = player.cards.onTableVisible.findIndex(
-      ([name, _]) => name === cardName
-    );
+    let cardIndex=-1;
+    let card;
 
-    if (cardIndex < 0) {
-      //vmi error
+    if(playFrom === "onHand"){
+      cardIndex = player.cards.onHand.findIndex(
+        ([name, _]) => name === cardName
+      );
+      [card] = player.cards.onHand.splice(cardIndex, 1);
     }
 
-    const [card] = player.cards.onTableVisible.splice(cardIndex, 1);
+    if(playFrom === "onTableVisible"){
+      cardIndex = player.cards.onTableVisible.findIndex(
+        ([name, _]) => name === cardName
+      );
+      [card] = player.cards.onTableVisible.splice(cardIndex, 1);
+    }
+    if(playFrom === "onTableHidden"){
+      cardIndex = player.cards.onTableHidden.findIndex(
+        ([name, _]) => name === cardName
+      );
+      [card] = player.cards.onTableHidden.splice(cardIndex, 1);
+    }
+    console.log(card);
+    if (cardIndex < 0) {
+      console.log("Nincs ilyen kártya");
+    }    
 
     lobby.decks.throwDeck.push(card);
     console.log(socket.rooms);
