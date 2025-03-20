@@ -35,13 +35,13 @@ function Desk({ socket }) {
     }
   };
 
-  const playCard = (tc,pf) => {
+  const playCard = (tc, pf) => {
     console.log(tc);
     socket.emit("playCard", {
       code: initialState.code,
       player_id: initialState.user_id,
       cardName: tc,
-      playFrom:pf,
+      playFrom: pf,
     });
   };
 
@@ -339,9 +339,7 @@ function Desk({ socket }) {
               {console.log(data.decks.throwDeck)}
               <div className="relative">
                 {data.decks.throwDeck.length > 0 ? (
-                  
                   <img
-                  
                     src={
                       `/assets/cards/${data.presetdata.cardType}/` +
                       data.decks.throwDeck[data.decks.throwDeck.length - 1][1]
@@ -379,7 +377,7 @@ function Desk({ socket }) {
                 <li>
                   <a
                     onClick={() => {
-                      playCard(selectedCard,playFrom);
+                      playCard(selectedCard, playFrom);
                       setSelectedCard(null);
                       setPlayFrom(null);
                     }}
@@ -609,60 +607,79 @@ function Desk({ socket }) {
                   </div>
                   <div className="flex">
                     {console.log(data.presetdata.cardType)}
-                    {/* {player.cards.onTableVisible.map(
-                      ([cardname, cardfile], index) => (
-                        <div key={index} className="bg-blue-500 m-1 rounded-md">
-                          <img
-                            src={
-                              "/assets/cards/" +
-                              data.presetdata.cardType +
-                              "/" +
-                              cardfile
-                            }
-                            alt=""
-                            style={{ width: "5vh" }}
-                          />
-                        </div>
-                      )
-                    )} */}
                   </div>
                 </div>
               );
             })}
 
-          {/* Saját lapok alul */}
           <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-            {player.cards.onHand.map(([cardname, cardfile], index) => {
-              return (
-                <div
-                  onClick={(e) => {
-                    if (selectedCard === cardname) {
-                      setSelectedCard(null);
-                    } else {
-                      setSelectedDeck(null);
-                      setSelectedPlayer(null);
-                      setSelectedCard(cardname);
-                      setPlayFrom("onHand");
-                      console.log(cardname)
-                    }
-                  }}
-                  key={index}
-                  className={`bg-red-500 p-0 rounded-lg ${
-                    selectedCard === cardname
-                      ? "outline outline-4 outline-yellow-500"
-                      : ""
-                  }`}
-                >
-                  <img
-                    className="w-[13vh]"
-                    src={
-                      `/assets/cards/${data.presetdata.cardType}/` + cardfile
-                    }
-                    alt=""
-                  />
-                </div>
-              );
-            })}
+            <div className="flex flex-col items-center">
+              
+            {/* Saját onTableHidden (lefordítva) */}
+            <div className="flex">
+                {player.cards.onTableHidden.map((card, index) => (
+                  <div key={index} className="bg-red-500 p-0 rounded-lg">
+                    <img
+                      className="w-[5vh]"
+                      src={`/assets/cards/${
+                        data.presetdata.cardType
+                      }/card_back.${
+                        data.presetdata.cardType === "french" ? "svg" : "png"
+                      }`}
+                      alt=""
+                    />
+                  </div>
+                ))}
+              </div>
+
+              {/* Saját onTableVisible (felfordítva) */}
+              <div className="flex">
+                {player.cards.onTableVisible.map(
+                  ([cardname, cardfile], index) => (
+                    <div key={index} className="bg-red-500 p-0 rounded-lg">
+                      <img
+                        className="w-[5vh]"
+                        src={`/assets/cards/${data.presetdata.cardType}/${cardfile}`}
+                        alt=""
+                      />
+                    </div>
+                  )
+                )}
+              </div>
+              
+              
+              <div className="flex">
+                {player.cards.onHand.map(([cardname, cardfile], index) => {
+                  return (
+                    <div
+                      onClick={(e) => {
+                        if (selectedCard === cardname) {
+                          setSelectedCard(null);
+                        } else {
+                          setSelectedDeck(null);
+                          setSelectedPlayer(null);
+                          setSelectedCard(cardname);
+                          setPlayFrom("onHand");
+                          console.log(cardname);
+                        }
+                      }}
+                      key={index}
+                      className={`bg-red-500 p-0 rounded-lg ${
+                        selectedCard === cardname
+                          ? "outline outline-4 outline-yellow-500"
+                          : ""
+                      }`}
+                    >
+                      <img
+                        className="w-[10vh]"
+                        src={`/assets/cards/${data.presetdata.cardType}/${cardfile}`}
+                        alt=""
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </div>
       </div>
