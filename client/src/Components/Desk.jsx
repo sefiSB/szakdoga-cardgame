@@ -26,6 +26,33 @@ function Desk({ socket }) {
     });
   };
 
+  const revealCard = () => {
+    socket.emit("revealCard", {
+      player_id: initialState.user_id,
+      code: initialState.code,
+      cardName: selectedCard,
+      playFrom: playFrom,
+    });
+  };
+
+  const hideCard = () => {
+    socket.emit("hideCard", {
+      player_id: initialState.user_id,
+      code: initialState.code,
+      cardName: selectedCard,
+      playFrom: playFrom,
+    });
+  };
+
+  const toOnHand = () => {
+    socket.emit("toOnHand", {
+      player_id: initialState.user_id,
+      code: initialState.code,
+      cardName: selectedCard,
+      playFrom: playFrom,
+    });
+  };
+
   const isIn = () => {
     if (data) {
       if (data.players.find((p) => p.id === initialState.user_id)) {
@@ -386,10 +413,13 @@ function Desk({ socket }) {
                   </a>
                 </li>
                 <li>
-                  <a>Reveal card</a>
+                  <a onClick={revealCard}>Reveal card</a>
                 </li>
                 <li>
-                  <a>Hide card</a>
+                  <a onClick={hideCard}>Hide card</a>
+                </li>
+                <li>
+                  <a onClick={toOnHand}>Pick up to hand</a>
                 </li>
                 <li>
                   <a>Switch with other player</a>
@@ -614,29 +644,58 @@ function Desk({ socket }) {
 
           <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
             <div className="flex flex-col items-center">
-              
-            {/* Saját onTableHidden (lefordítva) */}
-            <div className="flex">
-                {player.cards.onTableHidden.map((card, index) => (
-                  <div key={index} className="bg-red-500 p-0 rounded-lg">
-                    <img
-                      className="w-[5vh]"
-                      src={`/assets/cards/${
-                        data.presetdata.cardType
-                      }/card_back.${
-                        data.presetdata.cardType === "french" ? "svg" : "png"
-                      }`}
-                      alt=""
-                    />
-                  </div>
-                ))}
+              {/* Saját onTableHidden (lefordítva) */}
+              <div className="flex">
+                {player.cards.onTableHidden.map(
+                  ([cardname, cardfile], index) => (
+                    <div
+                      key={index}
+                      onClick={(e) => {
+                        if (selectedCard === cardname) {
+                          setSelectedCard(null);
+                        } else {
+                          setSelectedDeck(null);
+                          setSelectedPlayer(null);
+                          setSelectedCard(cardname);
+                          console.log(cardname);
+                          setPlayFrom("onTableHidden");
+                        }
+                      }}
+                      className="bg-red-500 p-0 rounded-lg"
+                    >
+                      <img
+                        className="w-[5vh]"
+                        src={`/assets/cards/${
+                          data.presetdata.cardType
+                        }/card_back.${
+                          data.presetdata.cardType === "french" ? "svg" : "png"
+                        }`}
+                        alt=""
+                      />
+                    </div>
+                  )
+                )}
               </div>
 
               {/* Saját onTableVisible (felfordítva) */}
               <div className="flex">
                 {player.cards.onTableVisible.map(
                   ([cardname, cardfile], index) => (
-                    <div key={index} className="bg-red-500 p-0 rounded-lg">
+                    <div
+                      key={index}
+                      onClick={(e) => {
+                        if (selectedCard === cardname) {
+                          setSelectedCard(null);
+                        } else {
+                          setSelectedDeck(null);
+                          setSelectedPlayer(null);
+                          setSelectedCard(cardname);
+                          setPlayFrom("onTableVisible");
+                          console.log(cardname);
+                        }
+                      }}
+                      className="bg-red-500 p-0 rounded-lg"
+                    >
                       <img
                         className="w-[5vh]"
                         src={`/assets/cards/${data.presetdata.cardType}/${cardfile}`}
@@ -646,8 +705,7 @@ function Desk({ socket }) {
                   )
                 )}
               </div>
-              
-              
+
               <div className="flex">
                 {player.cards.onHand.map(([cardname, cardfile], index) => {
                   return (

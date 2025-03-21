@@ -241,26 +241,27 @@ io.on("connection", (socket) => {
       }
     }
     //console.log(lobbies[data.code].presetdata);
-    if(lobbies[data.code].presetdata.isCardsOnDesk){
-      for(let i=0; i<lobbies[data.code].players.length; i++){
-        for(let j=0; j<lobbies[data.code].presetdata.revealedCards; j++){
-          lobbies[data.code].players[i].cards.onTableVisible.push(lobbies[data.code].decks.drawDeck.pop());
+    if (lobbies[data.code].presetdata.isCardsOnDesk) {
+      for (let i = 0; i < lobbies[data.code].players.length; i++) {
+        for (let j = 0; j < lobbies[data.code].presetdata.revealedCards; j++) {
+          lobbies[data.code].players[i].cards.onTableVisible.push(
+            lobbies[data.code].decks.drawDeck.pop()
+          );
         }
         console.log(lobbies[data.code].players[i].cards.onTableVisible);
-    }
-    
-  
-  
-    for(let i=0; i<lobbies[data.code].players.length; i++){
-      for(let j=0; j<lobbies[data.code].presetdata.hiddenCards; j++){
-        lobbies[data.code].players[i].cards.onTableHidden.push(lobbies[data.code].decks.drawDeck.pop());
       }
-      console.log(lobbies[data.code].players[i].cards.onTableHidden);
 
+      for (let i = 0; i < lobbies[data.code].players.length; i++) {
+        for (let j = 0; j < lobbies[data.code].presetdata.hiddenCards; j++) {
+          lobbies[data.code].players[i].cards.onTableHidden.push(
+            lobbies[data.code].decks.drawDeck.pop()
+          );
+        }
+        console.log(lobbies[data.code].players[i].cards.onTableHidden);
+      }
     }
-  }
-
-    io.emit("updateLobby", lobbies[data.code]);
+    io.to(data.code).emit("updateLobby", lobbies[data.code]);
+    //io.emit("updateLobby", lobbies[data.code]);
   });
 
   socket.on("presetAdded", () => {
@@ -315,8 +316,7 @@ io.on("connection", (socket) => {
           });
           await host.update({ host_id: player_id });
           lobby.host = player_id;
-        }
-        else{
+        } else {
           //MÉG TESZT JELLEGGEL KINT HAGYOM
           /* await Host.destroy({
             where: {
@@ -330,7 +330,6 @@ io.on("connection", (socket) => {
       lobbies[code] = lobby;
 
       // Töröljük az előző hostot az adatbázisból
-      
 
       // Csak akkor hozzuk létre az új hostot, ha megváltozott
       const existingHost = await Host.findOne({
@@ -380,6 +379,121 @@ io.on("connection", (socket) => {
     await user.update({ lobby_id: null });
 
     lobby.players.splice(playerIndex, 1);
+    io.to(code).emit("updateLobby", lobby);
+  });
+
+  socket.on("revealCard", (data) => {
+    console.log("REVEAL CARD");
+    const { player_id, code, cardName, playFrom } = data;
+    const lobby = lobbies[code];
+    const player = lobby.players.find((player) => player.id === player_id);
+    if (!player || !lobby) {
+      console.log("vmi nemjo");
+    }
+
+    let cardInd = -1;
+    let card;
+    if (playFrom === "onTableHidden") {
+      cardInd = player.cards.onTableHidden.findIndex(
+        ([name, _]) => name === cardName
+      );
+      if (cardInd >= 0) {
+        [card] = player.cards.onTableHidden.splice(cardInd, 1);
+      }
+    }
+
+    if (playFrom === "onHand") {
+      cardInd = player.cards.onHand.findIndex(([name, _]) => name === cardName);
+      if (cardInd >= 0) {
+        [card] = player.cards.onHand.splice(cardInd, 1);
+      }
+    }
+    console.log(cardName);
+    console.log("cardInd: ", cardInd);
+    if (cardInd >= 0) {
+      player.cards.onTableVisible.push(card);
+      lobbies[code] = lobby;
+    }
+    io.to(code).emit("updateLobby", lobby);
+  });
+
+  socket.on("hideCard", (data) => {
+    console.log("HIDE CARD");
+    console.log(data);
+    const { player_id, code, cardName, playFrom } = data;
+    const lobby = lobbies[code];
+    console.log(playFrom);
+    console.log("HIDE CARD");
+
+    const player = lobby.players.find((player) => player.id === player_id);
+    if (!player || !lobby) {
+      console.log("vmi nemjo");
+    }
+    let cardInd = -1;
+    let card;
+
+    if (playFrom === "onTableVisible") {
+      cardInd = player.cards.onTableVisible.findIndex(
+        ([name, _]) => name === cardName
+      );
+      if (cardInd >= 0) {
+        [card] = player.cards.onTableVisible.splice(cardInd, 1);
+      }
+    }
+
+    if (playFrom === "onHand") {
+      console.log("ON HAND");
+
+      cardInd = player.cards.onHand.findIndex(([name, _]) => name === cardName);
+      if (cardInd >= 0) {
+        [card] = player.cards.onHand.splice(cardInd, 1);
+      }
+    }
+    console.log(cardName);
+    console.log("cardInd: ", cardInd);
+
+    if (cardInd >= 0) {
+      player.cards.onTableHidden.push(card);
+      lobbies[code] = lobby;
+    }
+    io.to(code).emit("updateLobby", lobby);
+  });
+
+  socket.on("toOnHand", (data) => {
+    console.log("TO ON HAND");
+    const { player_id, code, cardName, playFrom } = data;
+    const lobby = lobbies[code];
+    const player = lobby.players.find((player) => player.id === player_id);
+    if (!player || !lobby) {
+      console.log("vmi nemjo");
+    }
+
+    let cardInd = -1;
+    let card;
+    console.log(cardName, playFrom);
+    if (playFrom === "onTableVisible") {
+      cardInd = player.cards.onTableVisible.findIndex(
+        ([name, _]) => name === cardName
+      );
+      if (cardInd >= 0) {
+        [card] = player.cards.onTableVisible.splice(cardInd, 1);
+      }
+    }
+
+    if (playFrom === "onTableHidden") {
+      cardInd = player.cards.onTableHidden.findIndex(
+        ([name, _]) => name === cardName
+      );
+      if (cardInd >= 0) {
+        [card] = player.cards.onTableHidden.splice(cardInd, 1);
+      }
+    }
+    console.log(cardName);
+    console.log("cardInd: ", cardInd);
+    if (cardInd >= 0) {
+      player.cards.onHand.push(card);
+      lobbies[code] = lobby;
+    }
     io.to(code).emit("updateLobby", lobby);
   });
 
@@ -439,30 +553,30 @@ io.on("connection", (socket) => {
   socket.on("playCard", (data) => {
     /* console.log("AAAAAAAAAAAAAAAAAAAAAA");
     console.log(data); */
-    const { code, player_id, cardName,playFrom } = data;
+    const { code, player_id, cardName, playFrom } = data;
     const lobby = lobbies[code];
     const player = lobby.players.find((player) => player.id === player_id);
     if (!player || !lobby) {
       console.log("vmi nemjo");
     }
 
-    let cardIndex=-1;
+    let cardIndex = -1;
     let card;
 
-    if(playFrom === "onHand"){
+    if (playFrom === "onHand") {
       cardIndex = player.cards.onHand.findIndex(
         ([name, _]) => name === cardName
       );
       [card] = player.cards.onHand.splice(cardIndex, 1);
     }
 
-    if(playFrom === "onTableVisible"){
+    if (playFrom === "onTableVisible") {
       cardIndex = player.cards.onTableVisible.findIndex(
         ([name, _]) => name === cardName
       );
       [card] = player.cards.onTableVisible.splice(cardIndex, 1);
     }
-    if(playFrom === "onTableHidden"){
+    if (playFrom === "onTableHidden") {
       cardIndex = player.cards.onTableHidden.findIndex(
         ([name, _]) => name === cardName
       );
@@ -471,7 +585,7 @@ io.on("connection", (socket) => {
     console.log(card);
     if (cardIndex < 0) {
       console.log("Nincs ilyen kártya");
-    }    
+    }
 
     lobby.decks.throwDeck.push(card);
     console.log(socket.rooms);
