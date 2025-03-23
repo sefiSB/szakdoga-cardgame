@@ -661,7 +661,7 @@ function Desk({ socket }) {
                           setPlayFrom("onTableHidden");
                         }
                       }}
-                      className="bg-red-500 p-0 rounded-lg"
+                      className={`bg-red-500 p-0 rounded-lg ${selectedCard===cardname?"outline outline-4 outline-yellow-500":""}`}
                     >
                       <img
                         className="w-[5vh]"
@@ -694,7 +694,7 @@ function Desk({ socket }) {
                           console.log(cardname);
                         }
                       }}
-                      className="bg-red-500 p-0 rounded-lg"
+                      className={`bg-red-500 p-0 rounded-lg ${selectedCard===cardname?"outline outline-4 outline-yellow-500":""}`}
                     >
                       <img
                         className="w-[5vh]"

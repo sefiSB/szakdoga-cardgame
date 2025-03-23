@@ -3,7 +3,7 @@ const lobbies = {};
 
 const createCode = () => {
   while (true) {
-    const code = Math.floor(1000+Math.random() * 9000);
+    const code = Math.floor(1000 + Math.random() * 9000);
     if (!lobbies[code]) {
       return code;
     }
@@ -20,7 +20,7 @@ const createLobby = (data) => {
     code: data.code,
     players: [],
     state: "waiting",
-    host:data.host,
+    host: data.host,
     presetdata: {
       startingCards: data.presetdata.startingCards,
       host: data.presetdata.host,
@@ -38,6 +38,11 @@ const createLobby = (data) => {
       onTable: [],
     },
   };
+};
+
+const canJoin = (code) => {
+  console.log("max players: ",lobbies[code].presetdata.maxplayers);
+  return lobbies[code].players.length < lobbies[code].presetdata.maxplayers;
 };
 
 const addPLayer = (code, player) => {
@@ -59,4 +64,4 @@ const addPLayer = (code, player) => {
   return true;
 };
 
-module.exports = { lobbies, createCode, addPLayer, createLobby };
+module.exports = { lobbies, createCode, addPLayer, createLobby,canJoin };

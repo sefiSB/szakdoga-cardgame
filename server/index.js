@@ -15,6 +15,7 @@ const {
   createCode,
   addPLayer,
   createLobby,
+  canJoin,
 } = require("./memory/lobbies");
 const { emit } = require("process");
 
@@ -683,15 +684,22 @@ io.on("connection", (socket) => {
         return;
       }
 
-      await user.update({ lobby_id: lobby.id });
+      if (canJoin(lobby.code)) {
+        addPLayer(lobby.code, {
+          id: user.id,
+          username: user.username,
+        });
+        await user.update({ lobby_id: lobby.id });
 
-      addPLayer(lobby.code, {
-        id: user.id,
-        username: user.username,
-      });
+        socket.join(code);
+        console.log(socket.rooms);
 
-      socket.join(code);
-      console.log(socket.rooms);
+        io.to(data.code).emit("updateLobby", lobbies[lobby.code]);
+        io.to(socket.id).emit("codeSuccess", { code: lobby.code });
+      }
+      else{
+        io.to(socket.id).emit("lobbyFull", {error: "The lobby is full"});
+      }
 
       io.in(data.code)
         .fetchSockets()
@@ -701,9 +709,6 @@ io.on("connection", (socket) => {
             sockets.map((s) => s.id)
           );
         });
-
-      io.to(data.code).emit("updateLobby", lobbies[lobby.code]);
-      io.to(socket.id).emit("codeSuccess", { code: lobby.code });
     } catch (error) {
       console.log(error);
       io.to(socket.id).emit("codeError", { error: "An error occurred" });

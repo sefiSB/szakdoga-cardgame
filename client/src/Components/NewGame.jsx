@@ -20,6 +20,7 @@ function NewGame({ socket }) {
   const [presetSuccesful, setPresetSuccesful] = useState(null);
   const [presetsData, setPresetsData] = useState([]);
   const [activeTab, setActiveTab] = useState(1);
+  const [error, setError] = useState(null);
 
   const navigate = useNavigate();
   if (!initialState.user_id) {
@@ -95,6 +96,20 @@ function NewGame({ socket }) {
       }
     }
 
+    const neededCards =
+      maxplayers * (startingCards + hiddenCards + revealedCards);
+
+      if (usedCards.length < neededCards) {
+      console.log(maxplayers,startingCards,hiddenCards,revealedCards)  
+      console.log("Kártyák száma: ",usedCards.length)
+      console.log("Kellene: ",neededCards)
+      setError(
+        "The number of used cards are not enough for the given player count."
+      );
+      return;
+    }
+    setError(null);
+
     const response = await fetch("http://localhost:3001/addlobby", {
       method: "POST",
       headers: {
@@ -129,13 +144,13 @@ function NewGame({ socket }) {
 
   const setPresetSettings = (preset) => {
     setGameName(preset.name);
-    setMaxplayers(preset.maxplayers);
+    setMaxplayers(parseInt(preset.maxplayers));
     setCardType(preset.cardType);
-    setPackNumber(preset.packNumber);
-    setStartingCards(preset.startingcards);
+    setPackNumber(parseInt(preset.packNumber));
+    setStartingCards(parseInt(preset.startingcards));
     setIsCardsOnDesk(preset.cards_on_desk);
-    setRevealedCards(preset.revealed);
-    setHiddenCards(preset.hidden);
+    setRevealedCards(parseInt(preset.revealed));
+    setHiddenCards(parseInt(preset.hidden));
   };
 
   useEffect(() => {
@@ -181,7 +196,7 @@ function NewGame({ socket }) {
               placeholder="Place a number here"
               className="input input-bordered w-full max-w-xs"
               onChange={(e) => {
-                setMaxplayers(e.target.value);
+                setMaxplayers(parseInt(e.target.value));
               }}
             />
             {/* <div className="label">
@@ -341,7 +356,7 @@ function NewGame({ socket }) {
               className="input input-bordered w-full max-w-xs"
               value={packNumber}
               onChange={(e) => {
-                setPackNumber(e.target.value);
+                setPackNumber(parseInt(e.target.value));
               }}
             />
           </label>
@@ -359,7 +374,7 @@ function NewGame({ socket }) {
               className="input input-bordered w-full max-w-xs"
               value={startingCards}
               onChange={(e) => {
-                setStartingCards(e.target.value);
+                setStartingCards(parseInt(e.target.value));
               }}
             />
             {/* <div className="label">
@@ -400,7 +415,7 @@ function NewGame({ socket }) {
                     value={revealedCards}
                     className="input input-bordered w-full max-w-xs"
                     onChange={(e) => {
-                      setRevealedCards(e.target.value);
+                      setRevealedCards(parseInt(e.target.value));
                     }}
                   />
                   {/* <div className="label">
@@ -422,7 +437,7 @@ function NewGame({ socket }) {
                     value={hiddenCards}
                     className="input input-bordered w-full max-w-xs"
                     onChange={(e) => {
-                      setHiddenCards(e.target.value);
+                      setHiddenCards(parseInt(e.target.value));
                     }}
                   />
                   {/* <div className="label">
@@ -466,6 +481,15 @@ function NewGame({ socket }) {
                 ) : (
                   <p className="error">Preset creation failed!</p>
                 )}
+              </div>
+            </>
+          ) : (
+            <></>
+          )}
+          {error !== null ? (
+            <>
+              <div>
+                <p className="text-red-500">{error}</p>
               </div>
             </>
           ) : (

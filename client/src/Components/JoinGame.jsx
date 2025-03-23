@@ -23,13 +23,18 @@ function JoinGame({socket}) {
       user_id: initialState.user_id,
     });
     socket.on("codeError", (data) => {
-      setError("Invalid lobby code!");
+      setError(data.error);
       console.log("Invalid lobby code!");
     });
+    socket.on("lobbyFull",(data)=>{
+      setError(data.error);
+      console.log(data.error);
+    })
     socket.on("codeSuccess", (data) => {
       initialState.code = parseInt(data.code);
       navigate("/desk");
     });
+
   }
   
  
