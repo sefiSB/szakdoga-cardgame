@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import { useEffect } from "react";
 
-function SettingsMenu({ socket }) { 
+function SettingsMenu({ socket, isHost }) {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   if (!initialState.user_id) {
@@ -29,7 +29,7 @@ function SettingsMenu({ socket }) {
     });
     initialState.code = null;
     navigate("/createorjoin");
-  }
+  };
 
   return (
     <div className="relative z-10">
@@ -47,13 +47,22 @@ function SettingsMenu({ socket }) {
                 <li>
                   <a onClick={leaveGame}>Leave game</a>
                 </li>
+                {isHost ? (
+                  <>
+                    <li>
+                      <a>Restart game</a>
+                    </li>
+                    <li>
+                      <a>End game</a>
+                    </li>
+                  </>
+                ) : (
+                  <></>
+                )}
               </>
             ) : (
               <></>
             )}
-            <li>
-              <a href="#settings">Settings</a>
-            </li>
             <li>
               <a onClick={logout}>Logout</a>
             </li>

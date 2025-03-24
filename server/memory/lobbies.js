@@ -41,8 +41,8 @@ const createLobby = (data) => {
 };
 
 const canJoin = (code) => {
-  console.log("max players: ",lobbies[code].presetdata.maxplayers);
-  return lobbies[code].players.length < lobbies[code].presetdata.maxplayers;
+  console.log(lobbies[code].state);
+  return (lobbies[code].players.length < lobbies[code].presetdata.maxplayers && lobbies[code].state==="waiting");
 };
 
 const addPLayer = (code, player) => {

@@ -30,7 +30,7 @@ function Desk({ socket }) {
     socket.emit("revealCard", {
       player_id: initialState.user_id,
       code: initialState.code,
-      cardName: selectedCard,
+      cardNo: selectedCard,
       playFrom: playFrom,
     });
   };
@@ -39,7 +39,7 @@ function Desk({ socket }) {
     socket.emit("hideCard", {
       player_id: initialState.user_id,
       code: initialState.code,
-      cardName: selectedCard,
+      cardNo: selectedCard,
       playFrom: playFrom,
     });
   };
@@ -48,7 +48,7 @@ function Desk({ socket }) {
     socket.emit("toOnHand", {
       player_id: initialState.user_id,
       code: initialState.code,
-      cardName: selectedCard,
+      cardNo: selectedCard,
       playFrom: playFrom,
     });
   };
@@ -100,9 +100,10 @@ function Desk({ socket }) {
 
   const giveCardToPlayer = (player_id) => {
     socket.emit("giveCard", {
+      from: playFrom,
       player_id: player_id,
       code: initialState.code,
-      cardname: selectedCard,
+      cardNo: selectedCard,
     });
   };
 
@@ -189,7 +190,7 @@ function Desk({ socket }) {
   if (data.state === "waiting") {
     return (
       <>
-        <SettingsMenu socket={socket} />
+        <SettingsMenu socket={socket} isHost={data.host===initialState.user_id} />
         <div className="relative w-[90vw] h-[80vh] bg-green-600 rounded-2xl mx-auto flex items-center justify-center bottom-0 mb-2">
           {/* Középen a húzó- és dobópakli,  itt majd drag&drop-os téma lesz */}
           <div className="absolute bg-gray-700 p-4 rounded-lg top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
@@ -602,7 +603,7 @@ function Desk({ socket }) {
                     {/* onTableVisible (felfordítva) */}
                     <div className="flex">
                       {player.cards.onTableVisible.map(
-                        ([cardname, cardfile], index) => (
+                        ([cardname, cardfile,cardNo], index) => (
                           <div
                             key={index}
                             className="bg-blue-500 m-1 rounded-md"
@@ -647,21 +648,21 @@ function Desk({ socket }) {
               {/* Saját onTableHidden (lefordítva) */}
               <div className="flex">
                 {player.cards.onTableHidden.map(
-                  ([cardname, cardfile], index) => (
+                  ([cardname, cardfile,cardNo], index) => (
                     <div
                       key={index}
                       onClick={(e) => {
-                        if (selectedCard === cardname) {
+                        if (selectedCard === cardNo) {
                           setSelectedCard(null);
                         } else {
                           setSelectedDeck(null);
                           setSelectedPlayer(null);
-                          setSelectedCard(cardname);
-                          console.log(cardname);
+                          setSelectedCard(cardNo);
+                          console.log(cardNo);
                           setPlayFrom("onTableHidden");
                         }
                       }}
-                      className={`bg-red-500 p-0 rounded-lg ${selectedCard===cardname?"outline outline-4 outline-yellow-500":""}`}
+                      className={`bg-red-500 p-0 rounded-lg ${selectedCard===cardNo?"outline outline-4 outline-yellow-500":""}`}
                     >
                       <img
                         className="w-[5vh]"
@@ -680,21 +681,21 @@ function Desk({ socket }) {
               {/* Saját onTableVisible (felfordítva) */}
               <div className="flex">
                 {player.cards.onTableVisible.map(
-                  ([cardname, cardfile], index) => (
+                  ([cardname, cardfile,cardNo], index) => (
                     <div
                       key={index}
                       onClick={(e) => {
-                        if (selectedCard === cardname) {
+                        if (selectedCard === cardNo) {
                           setSelectedCard(null);
                         } else {
                           setSelectedDeck(null);
                           setSelectedPlayer(null);
-                          setSelectedCard(cardname);
+                          setSelectedCard(cardNo);
                           setPlayFrom("onTableVisible");
-                          console.log(cardname);
+                          console.log(cardNo);
                         }
                       }}
-                      className={`bg-red-500 p-0 rounded-lg ${selectedCard===cardname?"outline outline-4 outline-yellow-500":""}`}
+                      className={`bg-red-500 p-0 rounded-lg ${selectedCard===cardNo?"outline outline-4 outline-yellow-500":""}`}
                     >
                       <img
                         className="w-[5vh]"
@@ -707,23 +708,23 @@ function Desk({ socket }) {
               </div>
 
               <div className="flex">
-                {player.cards.onHand.map(([cardname, cardfile], index) => {
+                {player.cards.onHand.map(([cardname, cardfile,cardNo], index) => {
                   return (
                     <div
                       onClick={(e) => {
-                        if (selectedCard === cardname) {
+                        if (selectedCard === cardNo) {
                           setSelectedCard(null);
                         } else {
                           setSelectedDeck(null);
                           setSelectedPlayer(null);
-                          setSelectedCard(cardname);
+                          setSelectedCard(cardNo);
                           setPlayFrom("onHand");
                           console.log(cardname);
                         }
                       }}
                       key={index}
                       className={`bg-red-500 p-0 rounded-lg ${
-                        selectedCard === cardname
+                        selectedCard === cardNo
                           ? "outline outline-4 outline-yellow-500"
                           : ""
                       }`}

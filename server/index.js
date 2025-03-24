@@ -231,7 +231,16 @@ io.on("connection", (socket) => {
 
   socket.on("hostStarted", (data) => {
     //KEVERÉS ÉS KIOSZTÁS
+    console.log("hostStarted");
     lobbies[data.code].state = "ongoing";
+
+    let i = 0;
+    lobbies[data.code].presetdata.usedCards.forEach((e) => {
+      e.push(i);
+      console.log(e);
+      i++;
+    });
+    console.log(lobbies[data.code].presetdata.usedCards);
     lobbies[data.code].decks.drawDeck = lobbies[data.code].presetdata.usedCards;
     shuffleArray(lobbies[data.code].decks.drawDeck);
     for (let i = 0; i < lobbies[data.code].players.length; i++) {
@@ -385,7 +394,7 @@ io.on("connection", (socket) => {
 
   socket.on("revealCard", (data) => {
     console.log("REVEAL CARD");
-    const { player_id, code, cardName, playFrom } = data;
+    const { player_id, code, cardNo, playFrom } = data;
     const lobby = lobbies[code];
     const player = lobby.players.find((player) => player.id === player_id);
     if (!player || !lobby) {
@@ -396,7 +405,7 @@ io.on("connection", (socket) => {
     let card;
     if (playFrom === "onTableHidden") {
       cardInd = player.cards.onTableHidden.findIndex(
-        ([name, _]) => name === cardName
+        ([name, _]) => name === cardNo
       );
       if (cardInd >= 0) {
         [card] = player.cards.onTableHidden.splice(cardInd, 1);
@@ -404,12 +413,12 @@ io.on("connection", (socket) => {
     }
 
     if (playFrom === "onHand") {
-      cardInd = player.cards.onHand.findIndex(([name, _]) => name === cardName);
+      cardInd = player.cards.onHand.findIndex(([name, _]) => name === cardNo);
       if (cardInd >= 0) {
         [card] = player.cards.onHand.splice(cardInd, 1);
       }
     }
-    console.log(cardName);
+    console.log(cardNo);
     console.log("cardInd: ", cardInd);
     if (cardInd >= 0) {
       player.cards.onTableVisible.push(card);
@@ -421,7 +430,7 @@ io.on("connection", (socket) => {
   socket.on("hideCard", (data) => {
     console.log("HIDE CARD");
     console.log(data);
-    const { player_id, code, cardName, playFrom } = data;
+    const { player_id, code, cardNo, playFrom } = data;
     const lobby = lobbies[code];
     console.log(playFrom);
     console.log("HIDE CARD");
@@ -435,7 +444,7 @@ io.on("connection", (socket) => {
 
     if (playFrom === "onTableVisible") {
       cardInd = player.cards.onTableVisible.findIndex(
-        ([name, _]) => name === cardName
+        ([__, _, cno]) => cno === cardNo
       );
       if (cardInd >= 0) {
         [card] = player.cards.onTableVisible.splice(cardInd, 1);
@@ -445,12 +454,12 @@ io.on("connection", (socket) => {
     if (playFrom === "onHand") {
       console.log("ON HAND");
 
-      cardInd = player.cards.onHand.findIndex(([name, _]) => name === cardName);
+      cardInd = player.cards.onHand.findIndex(([__, _, cno]) => cno === cardNo);
       if (cardInd >= 0) {
         [card] = player.cards.onHand.splice(cardInd, 1);
       }
     }
-    console.log(cardName);
+    console.log(cardNo);
     console.log("cardInd: ", cardInd);
 
     if (cardInd >= 0) {
@@ -462,7 +471,7 @@ io.on("connection", (socket) => {
 
   socket.on("toOnHand", (data) => {
     console.log("TO ON HAND");
-    const { player_id, code, cardName, playFrom } = data;
+    const { player_id, code, cardNo, playFrom } = data;
     const lobby = lobbies[code];
     const player = lobby.players.find((player) => player.id === player_id);
     if (!player || !lobby) {
@@ -471,10 +480,10 @@ io.on("connection", (socket) => {
 
     let cardInd = -1;
     let card;
-    console.log(cardName, playFrom);
+    console.log(cardNo, playFrom);
     if (playFrom === "onTableVisible") {
       cardInd = player.cards.onTableVisible.findIndex(
-        ([name, _]) => name === cardName
+        ([__, _, cno]) => cno === cardNo
       );
       if (cardInd >= 0) {
         [card] = player.cards.onTableVisible.splice(cardInd, 1);
@@ -483,13 +492,13 @@ io.on("connection", (socket) => {
 
     if (playFrom === "onTableHidden") {
       cardInd = player.cards.onTableHidden.findIndex(
-        ([name, _]) => name === cardName
+        ([__, _, cno]) => cno === cardNo
       );
       if (cardInd >= 0) {
         [card] = player.cards.onTableHidden.splice(cardInd, 1);
       }
     }
-    console.log(cardName);
+    console.log(cardNo);
     console.log("cardInd: ", cardInd);
     if (cardInd >= 0) {
       player.cards.onHand.push(card);
@@ -499,22 +508,45 @@ io.on("connection", (socket) => {
   });
 
   socket.on("giveCard", (data) => {
-    const { player_id, code, cardname } = data;
+    const { from, player_id, code, cardNo } = data;
     const lobby = lobbies[code];
     const player = lobby.players.find((player) => player.id === player_id);
     if (!player || !lobby) {
       console.log("vmi nemjo");
     }
 
-    const cardInd = lobby.players
-      .find((player) => player.id === lobby.host)
-      .cards.onTableVisible.findIndex(([name, _]) => name === cardname);
+    let cardInd = -1;
+    let card;
 
-    const [card] = lobby.players
-      .find((player) => player.id === lobby.host)
-      .cards.onTableVisible.splice(cardInd, 1);
+    if (from === "onHand") {
+      cardInd = lobby.players
+        .find((player) => player.id === lobby.host)
+        .cards.onHand.findIndex(([__, _, cno]) => cno === cardNo);
 
-    player.cards.onTableVisible.push(card);
+      [card] = lobby.players
+        .find((player) => player.id === lobby.host)
+        .cards.onHand.splice(cardInd, 1);
+    }
+    if (from === "onTableVisible") {
+      cardInd = lobby.players
+        .find((player) => player.id === lobby.host)
+        .cards.onTableVisible.findIndex(([__, _, cno]) => cno === cardNo);
+
+      [card] = lobby.players
+        .find((player) => player.id === lobby.host)
+        .cards.onTableVisible.splice(cardInd, 1);
+    }
+    if (from === "onTableHidden") {
+      cardInd = lobby.players
+        .find((player) => player.id === lobby.host)
+        .cards.onTableHidden.findIndex(([__, _, cno]) => cno === cardNo);
+
+      [card] = lobby.players
+        .find((player) => player.id === lobby.host)
+        .cards.onTableHidden.splice(cardInd, 1);
+    }
+
+    player.cards.onHand.push(card);
 
     lobbies[code] = lobby;
     io.to(code).emit("updateLobby", lobby);
@@ -613,7 +645,7 @@ io.on("connection", (socket) => {
       console.log("vmi nemjó");
     }
 
-    player.cards.onTableVisible.push(lobby.decks.drawDeck.pop());
+    player.cards.onHand.push(lobby.decks.drawDeck.pop());
 
     lobbies[code] = lobby;
     io.to(code).emit("updateLobby", lobby);
@@ -696,9 +728,10 @@ io.on("connection", (socket) => {
 
         io.to(data.code).emit("updateLobby", lobbies[lobby.code]);
         io.to(socket.id).emit("codeSuccess", { code: lobby.code });
-      }
-      else{
-        io.to(socket.id).emit("lobbyFull", {error: "The lobby is full"});
+      } else {
+        io.to(socket.id).emit("lobbyFull", {
+          error: "The lobby is full or already started.",
+        });
       }
 
       io.in(data.code)
