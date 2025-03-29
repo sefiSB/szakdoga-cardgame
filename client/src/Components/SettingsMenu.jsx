@@ -7,8 +7,16 @@ import { useEffect } from "react";
 function SettingsMenu({ socket, isHost }) {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+  console.log("host: ",isHost);
   if (!initialState.user_id) {
     navigate("/login");
+  }
+
+
+  const endGame=()=>{
+    socket.emit("endGame",{
+      code:initialState.code,
+    })
   }
 
   const toggleMenu = () => {
@@ -16,6 +24,11 @@ function SettingsMenu({ socket, isHost }) {
     setIsOpen(!isOpen);
   };
   const logout = () => {
+    socket.emit("leaveGame", {
+      user_id: initialState.user_id,
+      code: initialState.code,
+    });
+    
     initialState.user_id = null;
     initialState.user = null;
     initialState.code = null;
@@ -50,10 +63,12 @@ function SettingsMenu({ socket, isHost }) {
                 {isHost ? (
                   <>
                     <li>
-                      <a>Restart game</a>
+                      <a onClick={()=>{
+                        socket.emit("restartGame",{code:initialState.code})
+                      }}>Restart game</a>
                     </li>
                     <li>
-                      <a>End game</a>
+                      <a onClick={endGame}>End game</a>
                     </li>
                   </>
                 ) : (

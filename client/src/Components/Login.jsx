@@ -8,6 +8,7 @@ function Login({ socket }) {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
+  console.log(localStorage);
 
   const validateUser = () => {
     const response = fetch("http://127.0.0.1:3001/loginuser", {

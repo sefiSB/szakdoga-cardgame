@@ -237,7 +237,6 @@ io.on("connection", (socket) => {
     let i = 0;
     lobbies[data.code].presetdata.usedCards.forEach((e) => {
       e.push(i);
-      console.log(e);
       i++;
     });
     console.log(lobbies[data.code].presetdata.usedCards);
@@ -276,6 +275,67 @@ io.on("connection", (socket) => {
 
   socket.on("presetAdded", () => {
     socket.emit("presetAdded");
+  });
+
+  socket.on("restartGame", (data) => {
+    const { code } = data;
+    let lobby = lobbies[code];
+    lobby.state = "ongoing";
+
+    // Újrainicializáljuk a drawDeck-et az eredeti kártyák alapján
+    lobby.decks.drawDeck = [...lobby.presetdata.usedCards];
+    lobby.decks.throwDeck = [];
+
+    // Kártyák indexeinek újrainicializálása
+    let i = 0;
+    lobby.decks.drawDeck.forEach((card) => {
+      card[2] = i; // Az indexet újra beállítjuk
+      i++;
+    });
+
+    // Játékosok kártyáinak törlése
+    lobby.players.forEach((player) => {
+      player.cards.onHand = [];
+      player.cards.onTableVisible = [];
+      player.cards.onTableHidden = [];
+    });
+
+    // Keverjük meg a drawDeck-et
+    shuffleArray(lobby.decks.drawDeck);
+
+    // Kártyák kiosztása a játékosoknak
+    for (let i = 0; i < lobby.players.length; i++) {
+      for (let j = 0; j < lobby.presetdata.startingCards; j++) {
+        lobby.players[i].cards.onHand.push(lobby.decks.drawDeck.pop());
+      }
+    }
+
+    // Ha vannak kártyák az asztalon, osszuk ki őket
+    if (lobby.presetdata.isCardsOnDesk) {
+      for (let i = 0; i < lobby.players.length; i++) {
+        for (let j = 0; j < lobby.presetdata.revealedCards; j++) {
+          lobby.players[i].cards.onTableVisible.push(
+            lobby.decks.drawDeck.pop()
+          );
+        }
+      }
+
+      for (let i = 0; i < lobby.players.length; i++) {
+        for (let j = 0; j < lobby.presetdata.hiddenCards; j++) {
+          lobby.players[i].cards.onTableHidden.push(lobby.decks.drawDeck.pop());
+        }
+      }
+    }
+
+    // Frissítjük a lobby állapotát
+    lobbies[code] = lobby;
+    io.to(code).emit("updateLobby", lobbies[code]);
+  });
+
+  socket.on("endGame", async (data) => {
+    const { code } = data;
+    lobbies[code].state = "ended";
+    io.to(code).emit("updateLobby", lobbies[code]);
   });
 
   socket.on("leaveGame", async (data) => {
@@ -389,12 +449,14 @@ io.on("connection", (socket) => {
     await user.update({ lobby_id: null });
 
     lobby.players.splice(playerIndex, 1);
+    io.to(code).emit("kicked", player_id);
     io.to(code).emit("updateLobby", lobby);
   });
 
   socket.on("revealCard", (data) => {
     console.log("REVEAL CARD");
     const { player_id, code, cardNo, playFrom } = data;
+    console.log("revealdata:",data);
     const lobby = lobbies[code];
     const player = lobby.players.find((player) => player.id === player_id);
     if (!player || !lobby) {
@@ -404,8 +466,9 @@ io.on("connection", (socket) => {
     let cardInd = -1;
     let card;
     if (playFrom === "onTableHidden") {
+      console.log(player.cards.onTableHidden)
       cardInd = player.cards.onTableHidden.findIndex(
-        ([name, _]) => name === cardNo
+        ([name, _, cardn]) => cardn === cardNo
       );
       if (cardInd >= 0) {
         [card] = player.cards.onTableHidden.splice(cardInd, 1);
@@ -413,7 +476,8 @@ io.on("connection", (socket) => {
     }
 
     if (playFrom === "onHand") {
-      cardInd = player.cards.onHand.findIndex(([name, _]) => name === cardNo);
+      console.log(player.cards.onHand)
+      cardInd = player.cards.onHand.findIndex(([name, _,cardn]) => cardn === cardNo);
       if (cardInd >= 0) {
         [card] = player.cards.onHand.splice(cardInd, 1);
       }
@@ -669,32 +733,30 @@ io.on("connection", (socket) => {
     const toPlayer = lobby.players.find((player) => player.id === to);
 
     io.to(code).emit("requestOnHandSwitch", {
-      from: from,
-      to: to,
+      from: fromPlayer,
+      to: toPlayer,
       code: code,
     });
   });
 
   socket.on("respondOnHandSwitch", (data) => {
     const { from, to, code, isAccepted } = data;
-
+    console.log("EZT KAPJA EGEAGJ: ", data);
     if (isAccepted) {
       const lobby = lobbies[code];
       const fromPlayer = lobby.players.find((player) => player.id === from);
+      console.log(fromPlayer);
       const toPlayer = lobby.players.find((player) => player.id === to);
-      const tmpFrom = [...fromPlayer.cards.onTableVisible];
-      const tmpTo = [...toPlayer.cards.onTableVisible];
-      fromPlayer.cards.onTableVisible = tmpTo;
-      toPlayer.cards.onTableVisible = tmpFrom;
+      console.log(toPlayer);
+
+      const tmpFrom = [...fromPlayer.cards.onHand];
+      const tmpTo = [...toPlayer.cards.onHand];
+      fromPlayer.cards.onHand = tmpTo;
+      toPlayer.cards.onHand = tmpFrom;
     }
 
     io.to(code).emit("updateLobby", lobbies[code]);
   });
-  /*
-
-  socket.on("revealCard");
-
-  socket.on("hideCard"); */
 
   socket.on("joinLobby", async (data) => {
     let { code, user, user_id } = data;
