@@ -212,7 +212,7 @@ function Desk({ socket }) {
           socket={socket}
           isHost={data.host === initialState.user_id}
         />
-        <div className="relative w-[90vw] h-[80vh] bg-green-600 rounded-2xl mx-auto flex items-center justify-center bottom-0 mb-2">
+        <div className="relative w-[90vw] h-[90vh] bg-green-600 rounded-2xl mx-auto grid grid-cols-3 grid-rows-3">
           {/* Középen a húzó- és dobópakli,  itt majd drag&drop-os téma lesz */}
           <div className="absolute bg-green-700 p-4 rounded-lg top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
             {data.host === initialState.user_id ? (
@@ -228,33 +228,25 @@ function Desk({ socket }) {
 
           {/* Játékosok elhelyezése */}
           {players
-            .filter((player) => player.id != initialState.user_id)
+            .filter((player) => player.id !== initialState.user_id)
             .map((player, index) => {
-              let positionStyle = {};
-              if (index < totalPlayers / 2) {
-                // Felső játékosok (elosztva)
-                positionStyle = {
-                  top: "3%",
-                  left: `${(index / (totalPlayers / 2)) * 80 + 10}%`,
-                };
-              } else {
-                // Oldalsó játékosok (bal/jobb)
-                const sideIndex = index - Math.floor(totalPlayers / 2);
-                const yPos = `${(sideIndex / (totalPlayers / 2)) * 70 + 10}%`;
-
-                positionStyle =
-                  index % 2 === 0
-                    ? { left: "2%", top: yPos } // Bal oldal
-                    : { right: "2%", top: yPos }; // Jobb oldal
-              }
+              const positionClasses = [
+                "top-5 left-5", // 0 - Bal felső
+                "top-5 left-1/3", // 1 - Bal középső felső
+                "top-5 right-1/3", // 2 - Jobb középső felső
+                "top-5 right-5", // 3 - Jobb felső
+                "left-5 top-1/2 -translate-y-1/2", // 4 - Bal oldal
+                "right-5 top-1/2 -translate-y-1/2", // 5 - Jobb oldal
+                "bottom-5 left-10", // 6 - Bal alsó
+                "bottom-5 right-10", // 7 - Jobb alsó
+              ];
 
               return (
                 <div
                   key={player.id}
-                  className="absolute flex flex-col items-center"
-                  style={positionStyle}
+                  className={`absolute ${positionClasses[index]}`}
                 >
-                  <div className="bg-blue-500 p-2 rounded-md">
+                  <div className="bg-blue-500 p-2 rounded-md shadow-md text-center">
                     {player.username}
                   </div>
                 </div>
@@ -367,10 +359,10 @@ function Desk({ socket }) {
         ) : (
           <></>
         )}
-        <div className="relative w-[90vw] h-[90vh] bg-green-600 rounded-2xl mx-auto flex items-center justify-center bottom-0 mb-2">
+        <div className="relative w-[90vw] h-[90vh] bg-green-600 rounded-2xl mx-auto grid grid-cols-3 grid-rows-3">
           {/* Középen a húzó- és dobópakli */}
 
-          <div className="absolute bg-green-600 p-4 rounded-lg top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-green-700 p-4 rounded-lg">
             <div className="relative flex gap-4">
               {data.decks.drawDeck.length > 0 ? (
                 <img
@@ -577,28 +569,21 @@ function Desk({ socket }) {
             .filter((player) => player.id !== initialState.user_id)
             .map((player, index) => {
               let positionStyle = {};
-              if (index < totalPlayers / 2) {
-                // Felső játékosok (elosztva)
-                positionStyle = {
-                  top: "3%",
-                  left: `${(index / (totalPlayers / 2)) * 80 + 10}%`,
-                };
-              } else {
-                // Oldalsó játékosok (bal/jobb)
-                const sideIndex = index - Math.floor(totalPlayers / 2);
-                const yPos = `${(sideIndex / (totalPlayers / 2)) * 70 + 10}%`;
-
-                positionStyle =
-                  index % 2 === 0
-                    ? { left: "2%", top: yPos } // Bal oldal
-                    : { right: "2%", top: yPos }; // Jobb oldal
-              }
+              const positionClasses = [
+                "top-5 left-5", // 0 - Bal felső
+                "top-5 left-1/3", // 1 - Bal középső felső
+                "top-5 right-1/3", // 2 - Jobb középső felső
+                "top-5 right-5", // 3 - Jobb felső
+                "left-5 top-1/2 -translate-y-1/2", // 4 - Bal oldal
+                "right-5 top-1/2 -translate-y-1/2", // 5 - Jobb oldal
+                "bottom-5 left-10", // 6 - Bal alsó
+                "bottom-5 right-10", // 7 - Jobb alsó
+              ];
 
               return (
                 <div
                   key={player.id}
-                  className="absolute flex flex-col items-center"
-                  style={positionStyle}
+                  className={`absolute ${positionClasses[index]}`}
                 >
                   <div
                     onClick={(e) => {
@@ -612,15 +597,15 @@ function Desk({ socket }) {
                         setSelectedPlayer(player.id);
                       }
                     }}
-                    className="bg-blue-500 p-2 rounded-md"
+                    className="bg-blue-500 p-2 rounded-md shadow-md text-center"
                   >
                     {player.username}
                   </div>
                   <div className="flex flex-col items-center">
                     {/* onHand (lefordítva) */}
-                    <div className="flex">
+                    <div className="flex grid grid-cols-10 gap-1 border rounded">
                       {player.cards.onHand.map((card, index) => (
-                        <div key={index} className="bg-blue-500 m-1 rounded-md">
+                        <div key={index} className="bg-blue-500 rounded-md">
                           <img
                             src={`/assets/cards/${
                               data.presetdata.cardType
@@ -630,18 +615,19 @@ function Desk({ socket }) {
                                 : "png"
                             }`}
                             alt=""
-                            style={{ width: "5vh" }}
+                            className="w-[5vh]"
                           />
                         </div>
                       ))}
                     </div>
+
                     {/* onTableVisible (felfordítva) */}
-                    <div className="flex">
+                    <div className="flex grid grid-cols-8 gap-1 border rounded">
                       {player.cards.onTableVisible.map(
                         ([cardname, cardfile, cardNo], index) => (
                           <div
                             key={index}
-                            className="bg-blue-500 m-1 rounded-md"
+                            className="bg-blue-500 rounded-md"
                           >
                             <img
                               src={`/assets/cards/${data.presetdata.cardType}/${cardfile}`}
@@ -671,14 +657,14 @@ function Desk({ socket }) {
                       ))}
                     </div>
                   </div>
-                  <div className="flex">
+                  {/* <div className="flex">
                     {console.log(data.presetdata.cardType)}
-                  </div>
+                  </div> */}
                 </div>
               );
             })}
 
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+          <div className="absolute bottom-5 left-1/2 transform -translate-x-1/2 bg-red-500 p-1 rounded-lg">
             <div className="flex flex-col items-center">
               {/* Saját onTableHidden (lefordítva) */}
               <div className="flex">
