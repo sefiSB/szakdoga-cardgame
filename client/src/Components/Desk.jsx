@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { initialState } from "../Store/store";
+import { initialState, setItem } from "../Store/store";
 import { useNavigate } from "react-router-dom";
 import SettingsMenu from "./SettingsMenu";
 
@@ -7,7 +7,7 @@ function Desk({ socket }) {
   const [settingsOpen, setSettingsOpen] = useState(false);
   //const [amIIn, setAmIIn] = useState(true);
   const [data, setData] = useState(null);
-  
+
   const [selectedCard, setSelectedCard] = useState(null);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [selectedDeck, setSelectedDeck] = useState(null);
@@ -59,21 +59,11 @@ function Desk({ socket }) {
     setPlayFrom("onHand");
   };
 
-  /* const isIn = () => {
-    if (data) {
-      if (data.players.find((p) => p.id === initialState.user_id)) {
-        setAmIIn(true);
-      }
-      setAmIIn(false);
-    }
-  }; */
-
   const playCard = (tc, pf) => {
-    console.log(tc);
     socket.emit("playCard", {
       code: initialState.code,
       player_id: initialState.user_id,
-      cardName: tc,
+      cardNo: tc,
       playFrom: pf,
     });
   };
@@ -113,9 +103,10 @@ function Desk({ socket }) {
     });
   };
 
-  console.log(initialState.code);
-
   const startingGame = () => {
+    console.log(socket.id);
+    console.log(localStorage.getItem("code"));
+    console.log(localStorage.getItem("user"));
     socket.emit("hostStarted", { code: initialState.code });
   };
 
@@ -146,7 +137,6 @@ function Desk({ socket }) {
     console.log(initialState.code);
     socket.emit("gameStart", { code: initialState.code });
 
-    
     return () => {
       socket.off("gameStart");
     };
@@ -154,6 +144,30 @@ function Desk({ socket }) {
 
   useEffect(() => {
     gameStart();
+
+    socket.on("connect", () => {
+      console.log("✅ Socket connected:", socket.id);
+
+      if (initialState.user_id) {
+        console.log(
+          "📤 Attempting to reconnect with user_id:",
+          initialState.user_id,
+          "and code:",
+          initialState.code
+        );
+
+        socket.emit("reconnectClient", {
+          user_id: initialState.user_id,
+          code: initialState.code,
+        });
+      } else {
+        console.log("⚠️ No user_id found, skipping reconnection.");
+      }
+    });
+
+    socket.on("reconnectClient", (data) => {
+      console.log("📥 Reconnection acknowledged by server:", data);
+    });
 
     socket.on("updateLobby", (response) => {
       console.log("Jött adat");
@@ -164,13 +178,14 @@ function Desk({ socket }) {
     socket.on("kicked", (data) => {
       if (data === initialState.user_id) {
         initialState.code = null;
+        setItem("code", null);
         navigate("/kicked");
       }
     });
 
     socket.on("requestOnHandSwitch", (d) => {
       const { from, to, code } = d;
-      
+
       console.log(to, " - ", initialState.user_id);
       if (to.id === initialState.user_id) {
         setOnHandSwapName(from.username);
@@ -189,7 +204,6 @@ function Desk({ socket }) {
   const players = data.players;
   const totalPlayers = players.length;
   const player = data.players.find((p) => p.id === initialState.user_id);
-  console.log(player);
 
   if (data.state === "waiting") {
     return (
@@ -206,7 +220,9 @@ function Desk({ socket }) {
                 Join code: <strong>{data.code}</strong>
               </h1>
             ) : (
-              <h1 className="text-white text-2xl mb-4">Waiting for host to start the game...</h1>
+              <h1 className="text-white text-2xl mb-4">
+                Waiting for host to start the game...
+              </h1>
             )}
           </div>
 
@@ -266,7 +282,10 @@ function Desk({ socket }) {
   if (data.state === "ended") {
     return (
       <>
-        <SettingsMenu socket={socket} isHost={initialState.user_id === data.host} />
+        <SettingsMenu
+          socket={socket}
+          isHost={initialState.user_id === data.host}
+        />
         <div className="relative w-[90vw] h-[80vh] bg-green-600 rounded-2xl mx-auto flex items-center justify-center bottom-0 mb-2">
           <div className="absolute bg-green-700 p-4 rounded-lg top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
             <h1 className="text-white text-2xl font-bold mb-4">Game ended</h1>
@@ -379,7 +398,7 @@ function Desk({ socket }) {
                   style={{ width: "5vh", height: "7vh" }}
                 ></div>
               )}
-              {console.log(data.decks.throwDeck)}
+
               <div className="relative">
                 {data.decks.throwDeck.length > 0 ? (
                   <img
@@ -421,6 +440,7 @@ function Desk({ socket }) {
                   <a
                     onClick={() => {
                       playCard(selectedCard, playFrom);
+                      console.log("kártya: ", selectedCard, playFrom);
                       setSelectedCard(null);
                       setPlayFrom(null);
                     }}
@@ -744,6 +764,8 @@ function Desk({ socket }) {
                             setSelectedCard(cardNo);
                             setPlayFrom("onHand");
                             console.log(cardname);
+                            console.log(cardNo);
+                            console.log(player.cards.onHand);
                           }
                         }}
                         key={index}

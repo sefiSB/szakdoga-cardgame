@@ -1,4 +1,4 @@
-import { initialState } from "../Store/store";
+import { initialState, setItem } from "../Store/store";
 import { useNavigate } from "react-router-dom";
 
 
@@ -30,8 +30,11 @@ function Kicked(socket) {
             className="btn btn-secondary w-40"
             onClick={() => {
             initialState.user=null;
+            setItem("user",null);
             initialState.user_id=null;
+            setItem("user_id",null);
             initialState.code=null;
+            setItem("code",null);
               setTimeout(() => navigate("/"), 0);
             }}
           >
