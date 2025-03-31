@@ -4,7 +4,9 @@ import "./App.css";
 import io from "socket.io-client";
 import { initialState } from "./Store/store";
 
-const socket = io.connect("http://127.0.0.1:3001");
+const socket = io.connect("http://127.0.0.1:3001",{
+  query:{user_id:initialState.user_id}
+});
 
 import Login from "./Components/Login";
 import CreateOrJoin from "./Components/CreateOrJoin";
@@ -32,7 +34,7 @@ function App() {
         <Route path="/joingame" element={<JoinGame socket={socket} />} />
         <Route path="/newgame" element={<NewGame socket={socket} />} />
         <Route path="/desk" element={<Desk socket={socket} />} />
-        <Route path="/kicked" element={<Kicked socket={socket}/>} />
+        <Route path="/kicked" element={<Kicked socket={socket} />} />
       </Routes>
     </>
   );

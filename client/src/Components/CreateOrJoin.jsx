@@ -9,7 +9,6 @@ function CreateOrJoin() {
   if (!initialState.user_id) {
     navigate("/login");
   }
-  //console.log("username" + initialState.user);
   return (
     <>
       

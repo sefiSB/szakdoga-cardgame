@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { initialState } from "../Store/store";
+import { initialState, setItem } from "../Store/store";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { frenchCardNames } from "../Utils/French";
@@ -133,6 +133,7 @@ function NewGame({ socket }) {
       alert("Game creation failed");
     } else {
       initialState.code = data.code;
+      setItem("code",data.code);
       socket.emit("joinLobby", {
         code: data.code,
         user: initialState.user,

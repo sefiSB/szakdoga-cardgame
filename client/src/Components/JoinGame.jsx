@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { initialState } from "../Store/store";
+import { initialState, setItem } from "../Store/store";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import SettingsMenu from "./SettingsMenu";
@@ -32,6 +32,7 @@ function JoinGame({socket}) {
     })
     socket.on("codeSuccess", (data) => {
       initialState.code = parseInt(data.code);
+      setItem("code",parseInt(data.code));
       navigate("/desk");
     });
 
@@ -46,10 +47,8 @@ function JoinGame({socket}) {
     socket.on("updateLobby", (data) => {
       console.log("Lobby frissült:", data.players);
       initialState.code = parseInt(data.code);
-      /* setTimeout(() => {
-        navigate("/desk");
-      }), */
-      setError(null); // Ha sikeres volt a csatlakozás, töröljük a hibát
+      setItem("code",parseInt(data.code));
+      setError(null);
       setLobby(data);
     });
 
@@ -66,7 +65,6 @@ function JoinGame({socket}) {
     };
   }, [socket]); // Csak akkor fut le újra, ha a socket változik
 
-  console.log("username" + initialState.user);
   return (
     <>
     <SettingsMenu />

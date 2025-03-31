@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { initialState } from "../Store/store";
+import { initialState, setItem } from "../Store/store";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import passwordValidator from "password-validator";
@@ -50,6 +50,7 @@ function Register({ socket }) {
       console.log(data.details);
     } else {
       initialState.user_id = data.id;
+      setItem("user_id",data.id);
       navigate("/createorjoin");
       console.log(data);
     }
@@ -199,8 +200,9 @@ function Register({ socket }) {
           onClick={() => {
             if(!checkCredentials()) return;
             initialState.user = name;
+            setItem("user",name);
             initialState.email = email;
-            initialState.password = password;
+            setItem("email",email);
             postUser();
           }}
         >

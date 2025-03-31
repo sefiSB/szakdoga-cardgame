@@ -1,4 +1,4 @@
-import { initialState } from "../Store/store";
+import { initialState, setItem } from "../Store/store";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
@@ -30,8 +30,11 @@ function SettingsMenu({ socket, isHost }) {
     });
     
     initialState.user_id = null;
+    setItem("user_id",null);
     initialState.user = null;
+    setItem("user",null);
     initialState.code = null;
+    setItem("code",null);
     navigate("/login");
   };
 
@@ -41,6 +44,7 @@ function SettingsMenu({ socket, isHost }) {
       code: initialState.code,
     });
     initialState.code = null;
+    setItem("code",null);
     navigate("/createorjoin");
   };
 

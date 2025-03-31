@@ -1,5 +1,5 @@
 import { data, useNavigate } from "react-router-dom";
-import { initialState } from "../Store/store";
+import { initialState,setItem } from "../Store/store";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
@@ -28,6 +28,7 @@ function Login({ socket }) {
           alert("User not found");
         } else {
           initialState.user_id = data.id;
+          setItem("user_id",data.id);
           navigate("/createorjoin");
         }
       })
@@ -94,6 +95,7 @@ function Login({ socket }) {
           className="btn btn-outline btn-primary"
           onClick={() => {
             initialState.user = name;
+            setItem("user",name);
             validateUser();
           }}
         >
