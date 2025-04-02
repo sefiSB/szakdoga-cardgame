@@ -425,7 +425,7 @@ function Desk({ socket }) {
           </div>
 
           {selectedCard !== null ? (
-            <div className="absolute top-1 right-1 bg-gray-700 rounded-lg">
+            <div className="absolute top-1 right-1 bg-gray-700 rounded-lg z-50">
               <h1 className="ml-3 mt-1">Card actions</h1>
               <ul class="menu menu-sm bg-base-200 rounded-box w-56">
                 <li>
@@ -483,7 +483,7 @@ function Desk({ socket }) {
           )}
 
           {selectedDeck !== null ? (
-            <div className="absolute top-1 right-1 bg-gray-700 rounded-lg">
+            <div className="absolute top-1 right-1 bg-gray-700 rounded-lg z-50">
               <h1 className="ml-3 mt-1">Deck actions</h1>
               <ul class="menu menu-sm bg-base-200 rounded-box w-56">
                 {selectedDeck === "drawDeck" ? (
@@ -531,7 +531,7 @@ function Desk({ socket }) {
           )}
 
           {selectedPlayer !== null ? (
-            <div className="absolute top-1 right-1 bg-gray-700 rounded-lg">
+            <div className="absolute top-1 right-1 bg-gray-700 rounded-lg z-50">
               <h1 className="ml-3 mt-1">Player actions</h1>
               <ul className="menu menu-sm bg-base-200 rounded-box w-56">
                 <li>
@@ -625,10 +625,7 @@ function Desk({ socket }) {
                     <div className="flex grid grid-cols-8 gap-1 border rounded">
                       {player.cards.onTableVisible.map(
                         ([cardname, cardfile, cardNo], index) => (
-                          <div
-                            key={index}
-                            className="bg-blue-500 rounded-md"
-                          >
+                          <div key={index} className="bg-blue-500 rounded-md">
                             <img
                               src={`/assets/cards/${data.presetdata.cardType}/${cardfile}`}
                               alt={cardname}
@@ -736,40 +733,42 @@ function Desk({ socket }) {
                 )}
               </div>
 
-              <div className="flex">
-                {player.cards.onHand.map(
-                  ([cardname, cardfile, cardNo], index) => {
-                    return (
-                      <div
-                        onClick={(e) => {
-                          if (selectedCard === cardNo) {
-                            setSelectedCard(null);
-                          } else {
-                            setSelectedDeck(null);
-                            setSelectedPlayer(null);
-                            setSelectedCard(cardNo);
-                            setPlayFrom("onHand");
-                            console.log(cardname);
-                            console.log(cardNo);
-                            console.log(player.cards.onHand);
-                          }
-                        }}
-                        key={index}
-                        className={`bg-red-500 p-0 rounded-lg ${
-                          selectedCard === cardNo
-                            ? "outline outline-4 outline-yellow-500"
-                            : ""
-                        }`}
-                      >
-                        <img
-                          className="w-[10vh]"
-                          src={`/assets/cards/${data.presetdata.cardType}/${cardfile}`}
-                          alt=""
-                        />
-                      </div>
-                    );
-                  }
-                )}
+              <div className="flex justify-center">
+                <div className="grid grid-cols-10 max-w-[90vw]">
+                  {player.cards.onHand.map(
+                    ([cardname, cardfile, cardNo], index) => {
+                      return (
+                        <div
+                          onClick={(e) => {
+                            if (selectedCard === cardNo) {
+                              setSelectedCard(null);
+                            } else {
+                              setSelectedDeck(null);
+                              setSelectedPlayer(null);
+                              setSelectedCard(cardNo);
+                              setPlayFrom("onHand");
+                              console.log(cardname);
+                              console.log(cardNo);
+                              console.log(player.cards.onHand);
+                            }
+                          }}
+                          key={index}
+                          className={`bg-red-500 p-0 rounded-lg ${
+                            selectedCard === cardNo
+                              ? "outline outline-4 outline-yellow-500"
+                              : ""
+                          }`}
+                        >
+                          <img
+                            className="w-[7vh]"
+                            src={`/assets/cards/${data.presetdata.cardType}/${cardfile}`}
+                            alt=""
+                          />
+                        </div>
+                      );
+                    }
+                  )}
+                </div>
               </div>
             </div>
           </div>

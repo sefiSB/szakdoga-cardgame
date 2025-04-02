@@ -6,7 +6,6 @@ const cors = require("cors");
 const { Sequelize, where } = require("sequelize");
 const { User, Lobby, Preset, Host } = require("./models");
 const { on } = require("events");
-const { platform } = require("os");
 const user = require("./models/user");
 const { create } = require("domain");
 const bcrypt = require("bcryptjs");
@@ -73,6 +72,7 @@ const initLobbies = async () => {
 
 app.use(cors());
 app.use(express.json());
+
 const server = http.createServer(app);
 
 const io = new Server(server, {
