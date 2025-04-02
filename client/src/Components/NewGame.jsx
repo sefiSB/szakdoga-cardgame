@@ -197,7 +197,9 @@ function NewGame({ socket }) {
               placeholder="Place a number here"
               className="input input-bordered w-full max-w-xs"
               onChange={(e) => {
-                setMaxplayers(parseInt(e.target.value));
+                if(e.target.value<8){
+                  setMaxplayers(parseInt(e.target.value));
+                }
               }}
             />
             {/* <div className="label">

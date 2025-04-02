@@ -229,16 +229,16 @@ function Desk({ socket }) {
           {/* Játékosok elhelyezése */}
           {players
             .filter((player) => player.id !== initialState.user_id)
+            .slice(0, 7) // Csak 7 ellenfelet engedélyezünk
             .map((player, index) => {
               const positionClasses = [
-                "top-5 left-5", // 0 - Bal felső
-                "top-5 left-1/3", // 1 - Bal középső felső
-                "top-5 right-1/3", // 2 - Jobb középső felső
-                "top-5 right-5", // 3 - Jobb felső
-                "left-5 top-1/2 -translate-y-1/2", // 4 - Bal oldal
-                "right-5 top-1/2 -translate-y-1/2", // 5 - Jobb oldal
-                "bottom-5 left-10", // 6 - Bal alsó
-                "bottom-5 right-10", // 7 - Jobb alsó
+                "top-5 left-10", // 0 - Bal felső
+                "top-5 left-1/2 -translate-x-1/2", // 1 - Középső felső
+                "top-5 right-10", // 2 - Jobb felső
+                "left-5 top-1/3 -translate-y-1/2", // 3 - Bal középső oldal
+                "right-5 top-1/3 -translate-y-1/2", // 4 - Jobb középső oldal
+                "left-5 bottom-1/3 translate-y-1/2", // 5 - Bal alsó oldal
+                "right-5 bottom-1/3 translate-y-1/2", // 6 - Jobb alsó sarok
               ];
 
               return (
@@ -566,19 +566,19 @@ function Desk({ socket }) {
           <div className="absolute top-1 right-1 bg-gray-700 rounded-lg"></div>
 
           {players
-            .filter((player) => player.id !== initialState.user_id)
-            .map((player, index) => {
-              let positionStyle = {};
-              const positionClasses = [
-                "top-5 left-5", // 0 - Bal felső
-                "top-5 left-1/3", // 1 - Bal középső felső
-                "top-5 right-1/3", // 2 - Jobb középső felső
-                "top-5 right-5", // 3 - Jobb felső
-                "left-5 top-1/2 -translate-y-1/2", // 4 - Bal oldal
-                "right-5 top-1/2 -translate-y-1/2", // 5 - Jobb oldal
-                "bottom-5 left-10", // 6 - Bal alsó
-                "bottom-5 right-10", // 7 - Jobb alsó
-              ];
+           .filter((player) => player.id !== initialState.user_id)
+           .slice(0, 7) // Csak 7 ellenfelet engedélyezünk
+           .map((player, index) => {
+              
+            const positionClasses = [
+              "top-2 left-10", // 0 - Bal felső
+              "top-2 left-1/2 -translate-x-1/2", // 1 - Középső felső
+              "top-2 right-10", // 2 - Jobb felső
+              "left-5 top-1/2 -translate-y-1/2", // 3 - Bal középső oldal
+              "right-5 top-1/2 -translate-y-1/2", // 4 - Jobb középső oldal
+              "left-5 bottom-[15%] translate-y-1/2", // 5 - Bal alsó oldal
+              "right-5 bottom-[15%] translate-y-1/2", // 6 - Jobb alsó sarok
+            ];
 
               return (
                 <div
@@ -603,7 +603,7 @@ function Desk({ socket }) {
                   </div>
                   <div className="flex flex-col items-center">
                     {/* onHand (lefordítva) */}
-                    <div className="flex grid grid-cols-10 gap-1 border rounded">
+                    <div className="flex grid grid-cols-10 gap-1 ">
                       {player.cards.onHand.map((card, index) => (
                         <div key={index} className="bg-blue-500 rounded-md">
                           <img
@@ -615,21 +615,21 @@ function Desk({ socket }) {
                                 : "png"
                             }`}
                             alt=""
-                            className="w-[5vh]"
+                            className="w-[2vh]"
                           />
                         </div>
                       ))}
                     </div>
 
                     {/* onTableVisible (felfordítva) */}
-                    <div className="flex grid grid-cols-8 gap-1 border rounded">
+                    <div className="flex grid grid-cols-8 gap-1 ">
                       {player.cards.onTableVisible.map(
                         ([cardname, cardfile, cardNo], index) => (
                           <div key={index} className="bg-blue-500 rounded-md">
                             <img
                               src={`/assets/cards/${data.presetdata.cardType}/${cardfile}`}
                               alt={cardname}
-                              style={{ width: "5vh" }}
+                              className="w-[4vh] sm:w-[6vh] md:w-[5vh]"
                             />
                           </div>
                         )
@@ -648,7 +648,8 @@ function Desk({ socket }) {
                                 : "png"
                             }`}
                             alt=""
-                            style={{ width: "5vh" }}
+                            
+                            className="w-[4vh] sm:w-[6vh] md:w-[5vh]"
                           />
                         </div>
                       ))}
