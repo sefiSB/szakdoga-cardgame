@@ -369,7 +369,6 @@ function NewGame({ socket }) {
               <span className="label-text">
                 Number of starting cards in hand
               </span>
-              {/* <span className="label-text-alt">Top Right label</span> */}
             </div>
             <input
               type="number"
@@ -380,10 +379,6 @@ function NewGame({ socket }) {
                 setStartingCards(parseInt(e.target.value));
               }}
             />
-            {/* <div className="label">
-            <span className="label-text-alt">Bottom Left label</span>
-            <span className="label-text-alt">Bottom Right label</span>
-            </div> */}
           </label>
 
           <label className="form-control w-full max-w-xs">

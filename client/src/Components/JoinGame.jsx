@@ -43,7 +43,7 @@ function JoinGame({socket}) {
 
   
   useEffect(() => {
-    // EZ SZTM NEM IS FOG KELLENI
+    
     socket.on("updateLobby", (data) => {
       console.log("Lobby frissült:", data.players);
       initialState.code = parseInt(data.code);
@@ -58,7 +58,6 @@ function JoinGame({socket}) {
       setError("Invalid lobby code!"); // Állapot frissítés hiba esetén
     });
 
-    // Cleanup (ha a komponens újra renderelődik, töröljük a régi hallgatókat)
     return () => {
       socket.off("updateLobby");
       socket.off("codeError");

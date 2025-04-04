@@ -219,7 +219,6 @@ app.post("/addlobby", async (req, res) => {
 });
 
 app.post("/gamestart", async (req, res) => {
-  //ALAP ADATOK NINCSENEK FENT AZ ADATBÁZISON
 
   if (lobbies[req.body.code]) {
     res.json(lobbies[req.body.code]);
@@ -235,26 +234,25 @@ io.on("connection", (socket) => {
     console.log(
       `User connected/reconnected: ${userId}, Socket ID: ${socket.id}`
     );
-
-    // A szerver az új socket ID-re küld egy eseményt
     socket.emit("reconnectClient", { user_id: userId });
+    // A szerver az új socket ID-re küld egy eseményt
   } else {
     console.log(`New connection without user_id ${socket.id}`);
   }
 
+
   console.log(io.engine.clientsCount);
 
-  socket.on("reconnectClient", (data) => {
-    console.log("📥 Reconnect client kérés megkapva!!!", data);
 
+  socket.on("reconnectClient", (data) => {
     const { user_id, code } = data;
     if (!code) {
-      console.log("⚠️ HIBA: A reconnectClient kérésben nincs code!");
+      console.log("A reconnectClient kérésben nincs code!");
       return;
     }
 
     socket.join(code);
-    console.log(`🔄 Socket ${socket.id} belépett a ${code} szobába`);
+    console.log(`Socket ${socket.id} belépett a ${code} szobába`);
 
     io.to(socket.id).emit("updateLobby", lobbies[code]);
   });
