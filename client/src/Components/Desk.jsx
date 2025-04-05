@@ -146,27 +146,21 @@ function Desk({ socket }) {
     gameStart();
 
     socket.on("connect", () => {
-      console.log("✅ Socket connected:", socket.id);
+      console.log("Socket connected:", socket.id);
 
       if (initialState.user_id) {
-        console.log(
-          "📤 Attempting to reconnect with user_id:",
-          initialState.user_id,
-          "and code:",
-          initialState.code
-        );
 
         socket.emit("reconnectClient", {
           user_id: initialState.user_id,
           code: initialState.code,
         });
       } else {
-        console.log("⚠️ No user_id found, skipping reconnection.");
+        console.log("No user_id found");
       }
     });
 
     socket.on("reconnectClient", (data) => {
-      console.log("📥 Reconnection acknowledged by server:", data);
+      console.log("Reconnection acknowledged by server:", data);
     });
 
     socket.on("updateLobby", (response) => {
@@ -212,7 +206,7 @@ function Desk({ socket }) {
           socket={socket}
           isHost={data.host === initialState.user_id}
         />
-        <div className="relative w-[90vw] h-[80vh] bg-green-600 rounded-2xl mx-auto flex items-center justify-center bottom-0 mb-2">
+        <div className="relative w-[90vw] h-[90vh] bg-green-600 rounded-2xl mx-auto grid grid-cols-3 grid-rows-3">
           {/* Középen a húzó- és dobópakli,  itt majd drag&drop-os téma lesz */}
           <div className="absolute bg-green-700 p-4 rounded-lg top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
             {data.host === initialState.user_id ? (
@@ -228,33 +222,25 @@ function Desk({ socket }) {
 
           {/* Játékosok elhelyezése */}
           {players
-            .filter((player) => player.id != initialState.user_id)
+            .filter((player) => player.id !== initialState.user_id)
+            .slice(0, 7) // Csak 7 ellenfelet engedélyezünk
             .map((player, index) => {
-              let positionStyle = {};
-              if (index < totalPlayers / 2) {
-                // Felső játékosok (elosztva)
-                positionStyle = {
-                  top: "3%",
-                  left: `${(index / (totalPlayers / 2)) * 80 + 10}%`,
-                };
-              } else {
-                // Oldalsó játékosok (bal/jobb)
-                const sideIndex = index - Math.floor(totalPlayers / 2);
-                const yPos = `${(sideIndex / (totalPlayers / 2)) * 70 + 10}%`;
-
-                positionStyle =
-                  index % 2 === 0
-                    ? { left: "2%", top: yPos } // Bal oldal
-                    : { right: "2%", top: yPos }; // Jobb oldal
-              }
+              const positionClasses = [
+                "top-5 left-10", // 0 - Bal felső
+                "top-5 left-1/2 -translate-x-1/2", // 1 - Középső felső
+                "top-5 right-10", // 2 - Jobb felső
+                "left-5 top-1/3 -translate-y-1/2", // 3 - Bal középső oldal
+                "right-5 top-1/3 -translate-y-1/2", // 4 - Jobb középső oldal
+                "left-5 bottom-1/3 translate-y-1/2", // 5 - Bal alsó oldal
+                "right-5 bottom-1/3 translate-y-1/2", // 6 - Jobb alsó sarok
+              ];
 
               return (
                 <div
                   key={player.id}
-                  className="absolute flex flex-col items-center"
-                  style={positionStyle}
+                  className={`absolute ${positionClasses[index]}`}
                 >
-                  <div className="bg-blue-500 p-2 rounded-md">
+                  <div className="bg-blue-500 p-2 rounded-md shadow-md text-center">
                     {player.username}
                   </div>
                 </div>
@@ -367,10 +353,10 @@ function Desk({ socket }) {
         ) : (
           <></>
         )}
-        <div className="relative w-[90vw] h-[90vh] bg-green-600 rounded-2xl mx-auto flex items-center justify-center bottom-0 mb-2">
+        <div className="relative w-[90vw] h-[90vh] bg-green-600 rounded-2xl mx-auto grid grid-cols-3 grid-rows-3">
           {/* Középen a húzó- és dobópakli */}
 
-          <div className="absolute bg-green-600 p-4 rounded-lg top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-green-700 p-4 rounded-lg">
             <div className="relative flex gap-4">
               {data.decks.drawDeck.length > 0 ? (
                 <img
@@ -433,7 +419,7 @@ function Desk({ socket }) {
           </div>
 
           {selectedCard !== null ? (
-            <div className="absolute top-1 right-1 bg-gray-700 rounded-lg">
+            <div className="absolute top-1 right-1 bg-gray-700 rounded-lg z-50">
               <h1 className="ml-3 mt-1">Card actions</h1>
               <ul class="menu menu-sm bg-base-200 rounded-box w-56">
                 <li>
@@ -491,7 +477,7 @@ function Desk({ socket }) {
           )}
 
           {selectedDeck !== null ? (
-            <div className="absolute top-1 right-1 bg-gray-700 rounded-lg">
+            <div className="absolute top-1 right-1 bg-gray-700 rounded-lg z-50">
               <h1 className="ml-3 mt-1">Deck actions</h1>
               <ul class="menu menu-sm bg-base-200 rounded-box w-56">
                 {selectedDeck === "drawDeck" ? (
@@ -539,7 +525,7 @@ function Desk({ socket }) {
           )}
 
           {selectedPlayer !== null ? (
-            <div className="absolute top-1 right-1 bg-gray-700 rounded-lg">
+            <div className="absolute top-1 right-1 bg-gray-700 rounded-lg z-50">
               <h1 className="ml-3 mt-1">Player actions</h1>
               <ul className="menu menu-sm bg-base-200 rounded-box w-56">
                 <li>
@@ -574,31 +560,24 @@ function Desk({ socket }) {
           <div className="absolute top-1 right-1 bg-gray-700 rounded-lg"></div>
 
           {players
-            .filter((player) => player.id !== initialState.user_id)
-            .map((player, index) => {
-              let positionStyle = {};
-              if (index < totalPlayers / 2) {
-                // Felső játékosok (elosztva)
-                positionStyle = {
-                  top: "3%",
-                  left: `${(index / (totalPlayers / 2)) * 80 + 10}%`,
-                };
-              } else {
-                // Oldalsó játékosok (bal/jobb)
-                const sideIndex = index - Math.floor(totalPlayers / 2);
-                const yPos = `${(sideIndex / (totalPlayers / 2)) * 70 + 10}%`;
-
-                positionStyle =
-                  index % 2 === 0
-                    ? { left: "2%", top: yPos } // Bal oldal
-                    : { right: "2%", top: yPos }; // Jobb oldal
-              }
+           .filter((player) => player.id !== initialState.user_id)
+           .slice(0, 7) // Csak 7 ellenfelet engedélyezünk
+           .map((player, index) => {
+              
+            const positionClasses = [
+              "top-2 left-10", // 0 - Bal felső
+              "top-2 left-1/2 -translate-x-1/2", // 1 - Középső felső
+              "top-2 right-10", // 2 - Jobb felső
+              "left-5 top-1/2 -translate-y-1/2", // 3 - Bal középső oldal
+              "right-5 top-1/2 -translate-y-1/2", // 4 - Jobb középső oldal
+              "left-5 bottom-[15%] translate-y-1/2", // 5 - Bal alsó oldal
+              "right-5 bottom-[15%] translate-y-1/2", // 6 - Jobb alsó sarok
+            ];
 
               return (
                 <div
                   key={player.id}
-                  className="absolute flex flex-col items-center"
-                  style={positionStyle}
+                  className={`absolute ${positionClasses[index]}`}
                 >
                   <div
                     onClick={(e) => {
@@ -612,15 +591,15 @@ function Desk({ socket }) {
                         setSelectedPlayer(player.id);
                       }
                     }}
-                    className="bg-blue-500 p-2 rounded-md"
+                    className="bg-blue-500 p-2 rounded-md shadow-md text-center"
                   >
                     {player.username}
                   </div>
                   <div className="flex flex-col items-center">
                     {/* onHand (lefordítva) */}
-                    <div className="flex">
+                    <div className="flex grid grid-cols-10 gap-1 ">
                       {player.cards.onHand.map((card, index) => (
-                        <div key={index} className="bg-blue-500 m-1 rounded-md">
+                        <div key={index} className="bg-blue-500 rounded-md">
                           <img
                             src={`/assets/cards/${
                               data.presetdata.cardType
@@ -630,23 +609,21 @@ function Desk({ socket }) {
                                 : "png"
                             }`}
                             alt=""
-                            style={{ width: "5vh" }}
+                            className="w-[2vh]"
                           />
                         </div>
                       ))}
                     </div>
+
                     {/* onTableVisible (felfordítva) */}
-                    <div className="flex">
+                    <div className="flex grid grid-cols-8 gap-1 ">
                       {player.cards.onTableVisible.map(
                         ([cardname, cardfile, cardNo], index) => (
-                          <div
-                            key={index}
-                            className="bg-blue-500 m-1 rounded-md"
-                          >
+                          <div key={index} className="bg-blue-500 rounded-md">
                             <img
                               src={`/assets/cards/${data.presetdata.cardType}/${cardfile}`}
                               alt={cardname}
-                              style={{ width: "5vh" }}
+                              className="w-[4vh] sm:w-[6vh] md:w-[5vh]"
                             />
                           </div>
                         )
@@ -665,20 +642,21 @@ function Desk({ socket }) {
                                 : "png"
                             }`}
                             alt=""
-                            style={{ width: "5vh" }}
+                            
+                            className="w-[4vh] sm:w-[6vh] md:w-[5vh]"
                           />
                         </div>
                       ))}
                     </div>
                   </div>
-                  <div className="flex">
+                  {/* <div className="flex">
                     {console.log(data.presetdata.cardType)}
-                  </div>
+                  </div> */}
                 </div>
               );
             })}
 
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+          <div className="absolute bottom-5 left-1/2 transform -translate-x-1/2 bg-red-500 p-1 rounded-lg">
             <div className="flex flex-col items-center">
               {/* Saját onTableHidden (lefordítva) */}
               <div className="flex">
@@ -750,40 +728,42 @@ function Desk({ socket }) {
                 )}
               </div>
 
-              <div className="flex">
-                {player.cards.onHand.map(
-                  ([cardname, cardfile, cardNo], index) => {
-                    return (
-                      <div
-                        onClick={(e) => {
-                          if (selectedCard === cardNo) {
-                            setSelectedCard(null);
-                          } else {
-                            setSelectedDeck(null);
-                            setSelectedPlayer(null);
-                            setSelectedCard(cardNo);
-                            setPlayFrom("onHand");
-                            console.log(cardname);
-                            console.log(cardNo);
-                            console.log(player.cards.onHand);
-                          }
-                        }}
-                        key={index}
-                        className={`bg-red-500 p-0 rounded-lg ${
-                          selectedCard === cardNo
-                            ? "outline outline-4 outline-yellow-500"
-                            : ""
-                        }`}
-                      >
-                        <img
-                          className="w-[10vh]"
-                          src={`/assets/cards/${data.presetdata.cardType}/${cardfile}`}
-                          alt=""
-                        />
-                      </div>
-                    );
-                  }
-                )}
+              <div className="flex justify-center">
+                <div className="grid grid-cols-10 max-w-[90vw]">
+                  {player.cards.onHand.map(
+                    ([cardname, cardfile, cardNo], index) => {
+                      return (
+                        <div
+                          onClick={(e) => {
+                            if (selectedCard === cardNo) {
+                              setSelectedCard(null);
+                            } else {
+                              setSelectedDeck(null);
+                              setSelectedPlayer(null);
+                              setSelectedCard(cardNo);
+                              setPlayFrom("onHand");
+                              console.log(cardname);
+                              console.log(cardNo);
+                              console.log(player.cards.onHand);
+                            }
+                          }}
+                          key={index}
+                          className={`bg-red-500 p-0 rounded-lg ${
+                            selectedCard === cardNo
+                              ? "outline outline-4 outline-yellow-500"
+                              : ""
+                          }`}
+                        >
+                          <img
+                            className="w-[7vh]"
+                            src={`/assets/cards/${data.presetdata.cardType}/${cardfile}`}
+                            alt=""
+                          />
+                        </div>
+                      );
+                    }
+                  )}
+                </div>
               </div>
             </div>
           </div>

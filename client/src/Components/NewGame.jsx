@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { frenchCardNames } from "../Utils/French";
 import { hungarianCardNames } from "../Utils/Hungarian";
 import { unoCardNames } from "../Utils/Uno";
-/* import { SettingsMenu } from "./SettingsMenu"; */
+import SettingsMenu  from "./SettingsMenu";
 
 function NewGame({ socket }) {
   const [isCardsOnDesk, setIsCardsOnDesk] = useState(false);
@@ -99,10 +99,10 @@ function NewGame({ socket }) {
     const neededCards =
       maxplayers * (startingCards + hiddenCards + revealedCards);
 
-      if (usedCards.length < neededCards) {
-      console.log(maxplayers,startingCards,hiddenCards,revealedCards)  
-      console.log("Kártyák száma: ",usedCards.length)
-      console.log("Kellene: ",neededCards)
+    if (usedCards.length < neededCards) {
+      console.log(maxplayers, startingCards, hiddenCards, revealedCards);
+      console.log("Kártyák száma: ", usedCards.length);
+      console.log("Kellene: ", neededCards);
       setError(
         "The number of used cards are not enough for the given player count."
       );
@@ -133,7 +133,7 @@ function NewGame({ socket }) {
       alert("Game creation failed");
     } else {
       initialState.code = data.code;
-      setItem("code",data.code);
+      setItem("code", data.code);
       socket.emit("joinLobby", {
         code: data.code,
         user: initialState.user,
@@ -163,7 +163,7 @@ function NewGame({ socket }) {
 
   return (
     <>
-      {/* <SettingsMenu /> */}
+      <SettingsMenu socket={socket}/>
       <div className="flex flex-row justify-center items-start  gap-4 ">
         <div className="flex flex-col justify-center items-center h-screen gap-4 flex-grow">
           <label className="form-control w-full max-w-xs">
@@ -197,7 +197,9 @@ function NewGame({ socket }) {
               placeholder="Place a number here"
               className="input input-bordered w-full max-w-xs"
               onChange={(e) => {
-                setMaxplayers(parseInt(e.target.value));
+                if (e.target.value < 8) {
+                  setMaxplayers(parseInt(e.target.value));
+                }
               }}
             />
             {/* <div className="label">
@@ -367,7 +369,6 @@ function NewGame({ socket }) {
               <span className="label-text">
                 Number of starting cards in hand
               </span>
-              {/* <span className="label-text-alt">Top Right label</span> */}
             </div>
             <input
               type="number"
@@ -378,10 +379,6 @@ function NewGame({ socket }) {
                 setStartingCards(parseInt(e.target.value));
               }}
             />
-            {/* <div className="label">
-            <span className="label-text-alt">Bottom Left label</span>
-            <span className="label-text-alt">Bottom Right label</span>
-            </div> */}
           </label>
 
           <label className="form-control w-full max-w-xs">
@@ -497,8 +494,9 @@ function NewGame({ socket }) {
             <></>
           )}
         </div>
-        <div className="flex flex-col mt-10 items-center gap-4 w-1/4 border p-5 rounded-xl">
-          <div role="tablist" className="tabs tabs-boxed">
+        <div className="flex flex-col w-1/4 mt-10 border p-5 rounded-xl max-h-[calc(100vh-5rem)]">
+          {/* Tabs - fix magasságú rész */}
+          <div role="tablist" className="tabs tabs-boxed mb-4">
             <a
               role="tab"
               className={`tab ${activeTab === 1 ? "tab-active" : ""}`}
@@ -514,14 +512,17 @@ function NewGame({ socket }) {
               Explore
             </a>
           </div>
-          <div className="h-60 overflow-y-auto">
+
+          {/* Görgethető rész - kitölti a maradék helyet */}
+          <div className="overflow-y-auto flex-1">
             {activeTab === 1 ? (
               <>
                 {presetsData.map((preset) => {
                   if (preset.user_id === initialState.user_id) {
                     return (
                       <div
-                        className="border p-5"
+                        key={preset.id}
+                        className="border p-5 mb-2 cursor-pointer"
                         onClick={() => {
                           setPresetSettings(preset);
                         }}
@@ -540,22 +541,21 @@ function NewGame({ socket }) {
               </>
             ) : (
               <>
-                {presetsData.map((preset) => {
-                  console.log(preset);
-                  return (
-                    <div className="border p-5">
-                      <strong>
-                        {preset.name} - {preset.User.username}
-                      </strong>
-                      <p>
-                        Starting cards:{preset.startingcards}, Max players:{" "}
-                        {preset.maxplayers}, Pack count: {preset.packNumber},{" "}
-                        <br />
-                        Card type: {preset.cardType}
-                      </p>
-                    </div>
-                  );
-                })}
+                {presetsData.map((preset) => (
+                  <div key={preset.id} className="border p-5 mb-2" onClick={() => {
+                    setPresetSettings(preset);
+                  }}>
+                    <strong>
+                      {preset.name} - {preset.User.username}
+                    </strong>
+                    <p>
+                      Starting cards:{preset.startingcards}, Max players:{" "}
+                      {preset.maxplayers}, Pack count: {preset.packNumber},{" "}
+                      <br />
+                      Card type: {preset.cardType}
+                    </p>
+                  </div>
+                ))}
               </>
             )}
           </div>

@@ -1,0 +1,6 @@
+HTML 5 - https://www.geeksforgeeks.org/html5-introduction/
+React - https://www.w3schools.com/whatis/whatis_react.asp
+uno - https://github.com/AlexKeith5353/UNO.git
+uno2 - https://github.com/celsiusnarhwal/uno
+tailwind - https://tailwindcss.com/
+socket.io - socket.io
