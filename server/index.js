@@ -80,10 +80,6 @@ const io = new Server(server, {
     //origin:"http://192.168.0.59:5173",
     origin: "*",
     methods: ["GET", "POST"],
-    /* connectionStateRecovery: {
-      maxDisconnectionDuration: 2 * 60 * 1000,
-      skipMiddlewares: true,
-    } */
   },
 });
 
@@ -296,7 +292,6 @@ io.on("connection", (socket) => {
       }
     }
     io.to(data.code).emit("updateLobby", lobbies[data.code]);
-    //io.emit("updateLobby", lobbies[data.code]);
   });
 
   socket.on("presetAdded", () => {
@@ -348,8 +343,6 @@ io.on("connection", (socket) => {
         }
       }
     }
-
-    // Frissítjük a lobby állapotát
     lobbies[code] = lobby;
 
     io.to(code).emit("updateLobby", lobbies[code]);
@@ -372,7 +365,6 @@ io.on("connection", (socket) => {
       if (playerIndex < 0) {
         return;
       }
-
       lobby.players.splice(playerIndex, 1);
 
       const user = await User.findOne({
@@ -388,15 +380,13 @@ io.on("connection", (socket) => {
           },
         });
         delete lobbies[code];
-        return; // Kilépés, mert nincs több játékos
+        return;
       }
 
       if (lobby.host === user_id) {
         if (lobby.players.length > 0) {
           const player_id = lobby.players[0].id;
-          /* if (player_id === user_id) {
-            return; */
-          const player = await User.findOne({
+                    const player = await User.findOne({
             where: {
               id: player_id,
             },
@@ -410,21 +400,13 @@ io.on("connection", (socket) => {
           await host.update({ host_id: player_id });
           lobby.host = player_id;
         } else {
-          //MÉG TESZT JELLEGGEL KINT HAGYOM
-          /* await Host.destroy({
-            where: {
-              host_id: user_id,
-            },
-          }); */
+          
         }
       }
       await user.update({ lobby_id: null });
 
       lobbies[code] = lobby;
 
-      // Töröljük az előző hostot az adatbázisból
-
-      // Csak akkor hozzuk létre az új hostot, ha megváltozott
       const existingHost = await Host.findOne({
         where: {
           host_id: lobby.host,
@@ -726,17 +708,7 @@ io.on("connection", (socket) => {
     io.to(code).emit("updateLobby", lobby);
   });
 
-  /* socket.on("switchCard",(data)=>{
-      const {from, to, cardName, code} = data
-
-      
-      const lobby = lobbies[code];
-      const fromPlayer = lobby.players.find((player) => player.id === from);
-      const toPlayer = lobby.players.find((player) => player.id === to);
-      
-
-  }); */
-
+  
   socket.on("switchOnHand", (data) => {
     const { from, to, code } = data;
     const lobby = lobbies[code];
@@ -817,7 +789,6 @@ io.on("connection", (socket) => {
     } catch (error) {
       console.log(error);
       io.to(socket.id).emit("codeError", { error: "An error occurred" });
-      //socket.emit("updateLobby", lobbies[code]);
     }
   });
 
@@ -834,7 +805,6 @@ io.on("connection", (socket) => {
         onTable: [],
       },
     };
-
     socket.join(code);
 
     const newLobby = await Lobby.create({
@@ -842,8 +812,6 @@ io.on("connection", (socket) => {
       code: code,
       status: "waiting",
     });
-
-    //io.to(code).emit("updateLobby", lobbies[code]);
     socket.emit("updateLobby", lobbies[code]);
   });
 
@@ -851,11 +819,6 @@ io.on("connection", (socket) => {
     console.log("Szerver megkapta a kódot");
     io.to(data.code).emit("gameStart", lobbies[data.code]);
   });
-
-  /* socket.on("disconnect", function () {
-    console.log("JELENLEGI SOCKETEK:", io.sockets.adapter.rooms);
-    
-  }); */
 });
 
 server.listen(3001, "127.0.0.1", async () => {

@@ -5,10 +5,9 @@ import { Link } from "react-router-dom";
 
 function Login({ socket }) {
   const [name, setName] = useState("");
+  const [error, setError] = useState(); // Tárolja a hibát, ha van
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
-
-  console.log(localStorage);
 
   const validateUser = () => {
     const response = fetch("http://127.0.0.1:3001/loginuser", {
@@ -25,7 +24,7 @@ function Login({ socket }) {
       .then((data) => {
         if (data.error) {
           console.log(data.error);
-          alert("User not found");
+          setError(data.error);
         } else {
           initialState.user_id = data.id;
           setItem("user_id",data.id);
@@ -33,19 +32,6 @@ function Login({ socket }) {
         }
       })
   }
-
-
-  /* const postUser = () => {
-    socket.emit("loginUser", {
-      name,
-      password,
-    })
-
-    socket.on("loginSuccess", (data) => {
-      
-    })
-  } */
-
 
   return (
     <>
@@ -104,7 +90,9 @@ function Login({ socket }) {
 
         <p>Still don't have an account? <Link className="link link-success" to="/register">Sign up!</Link></p>
 
-
+        {error && (
+          <div className="text-red-500">{error}</div>
+        )}
       </div>
     </>
   );

@@ -24,13 +24,12 @@ function Register({ socket }) {
     var schema2 = new passwordValidator();
     schema2
       .is().min(3)
-      .is().max(100)
+      .is().max(20)
       .has().not().spaces();
 
   const navigate = useNavigate();
 
   const postUser = async () => {
-    console.log("POSZTOLTAM A USERT")
     const response = await fetch("http://localhost:3001/adduser", {
       method: "POST",
       headers: {
@@ -68,7 +67,7 @@ function Register({ socket }) {
       console.log(nameerrorlist);
       nameerrorlist.forEach((e) => {
         if(e === "min") errors=[...errors, "Username must be at least 3 characters long"];
-        if(e === "max") errors=[...errors, "Username must be at most 100 characters long"];
+        if(e === "max") errors=[...errors, "Username must be at most 20 characters long"];
         if(e === "spaces") errors=[...errors, "Username cannot contain spaces"];
       })
     }

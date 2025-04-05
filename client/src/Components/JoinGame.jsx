@@ -35,12 +35,7 @@ function JoinGame({socket}) {
       setItem("code",parseInt(data.code));
       navigate("/desk");
     });
-
   }
-  
- 
-
-
   
   useEffect(() => {
     
@@ -66,7 +61,7 @@ function JoinGame({socket}) {
 
   return (
     <>
-    <SettingsMenu />
+    <SettingsMenu socket={socket}/>
       <div className="flex flex-col justify-center items-center h-screen gap-4">
         <div className="form-control">
           <label className="label">

@@ -146,27 +146,21 @@ function Desk({ socket }) {
     gameStart();
 
     socket.on("connect", () => {
-      console.log("✅ Socket connected:", socket.id);
+      console.log("Socket connected:", socket.id);
 
       if (initialState.user_id) {
-        console.log(
-          "📤 Attempting to reconnect with user_id:",
-          initialState.user_id,
-          "and code:",
-          initialState.code
-        );
 
         socket.emit("reconnectClient", {
           user_id: initialState.user_id,
           code: initialState.code,
         });
       } else {
-        console.log("⚠️ No user_id found, skipping reconnection.");
+        console.log("No user_id found");
       }
     });
 
     socket.on("reconnectClient", (data) => {
-      console.log("📥 Reconnection acknowledged by server:", data);
+      console.log("Reconnection acknowledged by server:", data);
     });
 
     socket.on("updateLobby", (response) => {
