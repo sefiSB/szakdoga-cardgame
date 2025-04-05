@@ -35,15 +35,10 @@ function JoinGame({socket}) {
       setItem("code",parseInt(data.code));
       navigate("/desk");
     });
-
   }
   
- 
-
-
-  
   useEffect(() => {
-    // EZ SZTM NEM IS FOG KELLENI
+    
     socket.on("updateLobby", (data) => {
       console.log("Lobby frissült:", data.players);
       initialState.code = parseInt(data.code);
@@ -58,7 +53,6 @@ function JoinGame({socket}) {
       setError("Invalid lobby code!"); // Állapot frissítés hiba esetén
     });
 
-    // Cleanup (ha a komponens újra renderelődik, töröljük a régi hallgatókat)
     return () => {
       socket.off("updateLobby");
       socket.off("codeError");
@@ -67,7 +61,7 @@ function JoinGame({socket}) {
 
   return (
     <>
-    <SettingsMenu />
+    <SettingsMenu socket={socket}/>
       <div className="flex flex-col justify-center items-center h-screen gap-4">
         <div className="form-control">
           <label className="label">
