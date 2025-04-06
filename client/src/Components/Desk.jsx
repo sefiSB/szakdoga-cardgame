@@ -4,18 +4,13 @@ import { useNavigate } from "react-router-dom";
 import SettingsMenu from "./SettingsMenu";
 
 function Desk({ socket }) {
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  //const [amIIn, setAmIIn] = useState(true);
   const [data, setData] = useState(null);
-
   const [selectedCard, setSelectedCard] = useState(null);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [selectedDeck, setSelectedDeck] = useState(null);
-  //const [swapOnHandRequest, setSwapOnHandRequest]= useState(false);
   const [onHandSwapName, setOnHandSwapName] = useState(null);
   const [onHandSwapId, setOnHandSwapId] = useState(null);
   const [playFrom, setPlayFrom] = useState(null);
-  const [kicked, setKicked] = useState(false);
 
   const navigate = useNavigate();
   if (!initialState.user_id) {
@@ -104,9 +99,6 @@ function Desk({ socket }) {
   };
 
   const startingGame = () => {
-    console.log(socket.id);
-    console.log(localStorage.getItem("code"));
-    console.log(localStorage.getItem("user"));
     socket.emit("hostStarted", { code: initialState.code });
   };
 
@@ -363,7 +355,7 @@ function Desk({ socket }) {
                   className="w-[5vh]"
                   src={`assets/cards/${data.presetdata.cardType}/card_back.${
                     data.presetdata.cardType === "french" ? "svg" : "png"
-                  }`} //EZT IS ÁT KELL GONDOLNI SZINTÉN
+                  }`}
                   alt="drawDeck"
                   deckdata="drawDeck"
                   onClick={(e) => {
@@ -442,9 +434,6 @@ function Desk({ socket }) {
                 </li>
                 <li>
                   <a onClick={toOnHand}>Pick up to hand</a>
-                </li>
-                <li>
-                  <a>Switch with other player</a>
                 </li>
                 {data.host === initialState.user_id ? (
                   <li>
@@ -649,9 +638,6 @@ function Desk({ socket }) {
                       ))}
                     </div>
                   </div>
-                  {/* <div className="flex">
-                    {console.log(data.presetdata.cardType)}
-                  </div> */}
                 </div>
               );
             })}

@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { frenchCardNames } from "../Utils/French";
 import { hungarianCardNames } from "../Utils/Hungarian";
 import { unoCardNames } from "../Utils/Uno";
-import SettingsMenu  from "./SettingsMenu";
+import SettingsMenu from "./SettingsMenu";
 
 function NewGame({ socket }) {
   const [isCardsOnDesk, setIsCardsOnDesk] = useState(false);
@@ -130,7 +130,7 @@ function NewGame({ socket }) {
     });
     const data = await response.json();
     if (data.error) {
-      alert("Game creation failed");
+      setError("Game creation failed");
     } else {
       initialState.code = data.code;
       setItem("code", data.code);
@@ -163,13 +163,12 @@ function NewGame({ socket }) {
 
   return (
     <>
-      <SettingsMenu socket={socket}/>
+      <SettingsMenu socket={socket} />
       <div className="flex flex-row justify-center items-start  gap-4 ">
         <div className="flex flex-col justify-center items-center h-screen gap-4 flex-grow">
           <label className="form-control w-full max-w-xs">
             <div className="label">
               <span className="label-text">What's the game called?</span>
-              {/* <span className="label-text-alt">Top Right label</span> */}
             </div>
             <input
               type="text"
@@ -180,32 +179,23 @@ function NewGame({ socket }) {
                 setGameName(e.target.value);
               }}
             />
-            {/* <div className="label">
-            <span className="label-text-alt">Bottom Left label</span>
-            <span className="label-text-alt">Bottom Right label</span>
-            </div> */}
           </label>
 
           <label className="form-control w-full max-w-xs">
             <div className="label">
               <span className="label-text">Max players</span>
-              {/* <span className="label-text-alt">Top Right label</span> */}
             </div>
             <input
               type="number"
+              max={8}
+              min={2}
               value={maxplayers}
               placeholder="Place a number here"
               className="input input-bordered w-full max-w-xs"
               onChange={(e) => {
-                if (e.target.value < 8) {
-                  setMaxplayers(parseInt(e.target.value));
-                }
+                setMaxplayers(parseInt(e.target.value));
               }}
             />
-            {/* <div className="label">
-            <span className="label-text-alt">Bottom Left label</span>
-            <span className="label-text-alt">Bottom Right label</span>
-            </div> */}
           </label>
 
           <label className="form-control w-full max-w-xs">
@@ -215,7 +205,7 @@ function NewGame({ socket }) {
             <div className="flex gap-10">
               <fieldset class="fieldset">
                 <select
-                  defaultValue="Pick a browser"
+                  defaultValue="Pick a card type"
                   value={cardType}
                   class="select select-secondary"
                   onChange={(e) => setCardType(e.target.value)}
@@ -226,8 +216,6 @@ function NewGame({ socket }) {
                   <option>uno</option>
                 </select>
               </fieldset>
-
-              {/* Open the modal using document.getElementById('ID').showModal() method */}
               <button
                 className="btn"
                 onClick={() =>
@@ -384,7 +372,6 @@ function NewGame({ socket }) {
           <label className="form-control w-full max-w-xs">
             <div className="label">
               <span className="label-text">Cards on desk/player</span>
-              {/* <span className="label-text-alt">Top Right label</span> */}
             </div>
             <input
               type="checkbox"
@@ -405,7 +392,6 @@ function NewGame({ socket }) {
                     <span className="label-text">
                       Number of revealed cards on desk/player
                     </span>
-                    {/* <span className="label-text-alt">Top Right label</span> */}
                   </div>
                   <input
                     type="number"
@@ -416,10 +402,6 @@ function NewGame({ socket }) {
                       setRevealedCards(parseInt(e.target.value));
                     }}
                   />
-                  {/* <div className="label">
-            <span className="label-text-alt">Bottom Left label</span>
-            <span className="label-text-alt">Bottom Right label</span>
-            </div> */}
                 </label>
 
                 <label className="form-control w-full max-w-xs">
@@ -427,7 +409,6 @@ function NewGame({ socket }) {
                     <span className="label-text">
                       Number of hidden cards on desk/player
                     </span>
-                    {/* <span className="label-text-alt">Top Right label</span> */}
                   </div>
                   <input
                     type="number"
@@ -438,10 +419,6 @@ function NewGame({ socket }) {
                       setHiddenCards(parseInt(e.target.value));
                     }}
                   />
-                  {/* <div className="label">
-            <span className="label-text-alt">Bottom Left label</span>
-            <span className="label-text-alt">Bottom Right label</span>
-            </div> */}
                 </label>
               </div>
             </>
@@ -453,9 +430,7 @@ function NewGame({ socket }) {
             <button
               className="btn btn-outline btn-primary"
               onClick={() => {
-                //postGame();
                 postGame();
-                //redirect to desk
               }}
             >
               Submit
@@ -542,9 +517,13 @@ function NewGame({ socket }) {
             ) : (
               <>
                 {presetsData.map((preset) => (
-                  <div key={preset.id} className="border p-5 mb-2" onClick={() => {
-                    setPresetSettings(preset);
-                  }}>
+                  <div
+                    key={preset.id}
+                    className="border p-5 mb-2"
+                    onClick={() => {
+                      setPresetSettings(preset);
+                    }}
+                  >
                     <strong>
                       {preset.name} - {preset.User.username}
                     </strong>
@@ -564,5 +543,4 @@ function NewGame({ socket }) {
     </>
   );
 }
-
 export default NewGame;

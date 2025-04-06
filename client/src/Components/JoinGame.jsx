@@ -24,7 +24,6 @@ function JoinGame({socket}) {
     });
     socket.on("codeError", (data) => {
       setError(data.error);
-      console.log("Invalid lobby code!");
     });
     socket.on("lobbyFull",(data)=>{
       setError(data.error);
