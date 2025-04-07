@@ -2,8 +2,6 @@ import { initialState, setItem } from "../Store/store";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
-import { useEffect } from "react";
-
 function SettingsMenu({ socket, isHost }) {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
@@ -17,6 +15,7 @@ function SettingsMenu({ socket, isHost }) {
     socket.emit("endGame",{
       code:initialState.code,
     })
+    setIsOpen(false);
   }
 
   const toggleMenu = () => {
@@ -36,6 +35,7 @@ function SettingsMenu({ socket, isHost }) {
     initialState.code = null;
     setItem("code",null);
     navigate("/login");
+    setIsOpen(false);
   };
 
   const leaveGame = () => {
@@ -46,6 +46,7 @@ function SettingsMenu({ socket, isHost }) {
     initialState.code = null;
     setItem("code",null);
     navigate("/createorjoin");
+    setIsOpen(false);
   };
 
   return (
@@ -69,6 +70,7 @@ function SettingsMenu({ socket, isHost }) {
                     <li>
                       <a onClick={()=>{
                         socket.emit("restartGame",{code:initialState.code})
+                        setIsOpen(false);
                       }}>Restart game</a>
                     </li>
                     <li>

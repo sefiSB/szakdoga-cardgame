@@ -215,7 +215,6 @@ app.post("/addlobby", async (req, res) => {
 });
 
 app.post("/gamestart", async (req, res) => {
-
   if (lobbies[req.body.code]) {
     res.json(lobbies[req.body.code]);
   } else {
@@ -236,9 +235,7 @@ io.on("connection", (socket) => {
     console.log(`New connection without user_id ${socket.id}`);
   }
 
-
   console.log(io.engine.clientsCount);
-
 
   socket.on("reconnectClient", (data) => {
     const { user_id, code } = data;
@@ -386,7 +383,7 @@ io.on("connection", (socket) => {
       if (lobby.host === user_id) {
         if (lobby.players.length > 0) {
           const player_id = lobby.players[0].id;
-                    const player = await User.findOne({
+          const player = await User.findOne({
             where: {
               id: player_id,
             },
@@ -400,7 +397,6 @@ io.on("connection", (socket) => {
           await host.update({ host_id: player_id });
           lobby.host = player_id;
         } else {
-          
         }
       }
       await user.update({ lobby_id: null });
@@ -680,6 +676,8 @@ io.on("connection", (socket) => {
     lobby.decks.throwDeck.push(card);
 
     lobbies[code] = lobby;
+    console.log(lobby.decks.throwDeck);
+    console.log(lobby.players);
     io.to(code).emit("updateLobby", lobby);
   });
 
@@ -689,6 +687,28 @@ io.on("connection", (socket) => {
     lobby.decks.drawDeck = [...lobby.decks.drawDeck, ...lobby.decks.throwDeck];
     shuffleArray(lobby.decks.drawDeck);
     lobby.decks.throwDeck = [];
+    lobbies[code] = lobby;
+    io.to(code).emit("updateLobby", lobby);
+  });
+
+  socket.on("giveLastCard", (data) => {
+    const { code, player_id, playFrom } = data;
+    console.log(data);
+    const lobby = lobbies[code];
+    const player = lobby.players.find((player) => player.id === player_id);
+    if (!player || !lobby) {
+      console.log("vmi nemjó");
+    }
+
+    let card;
+    if (playFrom === "throwDeck") {
+      card = lobby.decks.throwDeck.pop();
+    }
+    if (playFrom === "drawDeck") {
+      card = lobby.decks.drawDeck.pop();
+    }
+    console.log("ITTAKÁRTYA:", card);
+    player.cards.onHand.push(card);
     lobbies[code] = lobby;
     io.to(code).emit("updateLobby", lobby);
   });
@@ -708,7 +728,6 @@ io.on("connection", (socket) => {
     io.to(code).emit("updateLobby", lobby);
   });
 
-  
   socket.on("switchOnHand", (data) => {
     const { from, to, code } = data;
     const lobby = lobbies[code];

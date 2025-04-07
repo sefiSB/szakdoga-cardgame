@@ -17,11 +17,21 @@ function Desk({ socket }) {
     navigate("/login");
   }
 
+  const giveLastToPlayer = (player_id) => {
+    socket.emit("giveLastCard", {
+      code: initialState.code,
+      player_id: player_id,
+      playFrom: selectedDeck,
+    });
+    setSelectedDeck(null);
+  };
+
   const kickPlayer = () => {
     socket.emit("kickPlayer", {
       code: initialState.code,
       player_id: selectedPlayer,
     });
+    setSelectedPlayer(null);
   };
 
   const revealCard = () => {
@@ -32,6 +42,7 @@ function Desk({ socket }) {
       playFrom: playFrom,
     });
     setPlayFrom("onTableVisible");
+    setSelectedCard(null);
   };
 
   const hideCard = () => {
@@ -42,6 +53,7 @@ function Desk({ socket }) {
       playFrom: playFrom,
     });
     setPlayFrom("onTableHidden");
+    setSelectedCard(null);
   };
 
   const toOnHand = () => {
@@ -52,6 +64,7 @@ function Desk({ socket }) {
       playFrom: playFrom,
     });
     setPlayFrom("onHand");
+    setSelectedCard(null);
   };
 
   const playCard = (tc, pf) => {
@@ -107,6 +120,7 @@ function Desk({ socket }) {
       player_id: selectedPlayer,
       code: initialState.code,
     });
+    setSelectedPlayer(null);
   };
 
   const shuffleThrowDeckIn = () => {
@@ -141,7 +155,6 @@ function Desk({ socket }) {
       console.log("Socket connected:", socket.id);
 
       if (initialState.user_id) {
-
         socket.emit("reconnectClient", {
           user_id: initialState.user_id,
           code: initialState.code,
@@ -198,6 +211,175 @@ function Desk({ socket }) {
           socket={socket}
           isHost={data.host === initialState.user_id}
         />
+
+        {selectedCard !== null ? (
+          <div className="absolute top-1 right-1 bg-gray-700 rounded-lg z-50">
+            <h1 className="ml-3 mt-1">Card actions</h1>
+            <ul class="menu menu-sm bg-base-200 rounded-box w-56">
+              <li>
+                <a
+                  onClick={() => {
+                    playCard(selectedCard, playFrom);
+                    console.log("kártya: ", selectedCard, playFrom);
+                    setSelectedCard(null);
+                    setPlayFrom(null);
+                  }}
+                >
+                  Play card (throwdeck)
+                </a>
+              </li>
+              <li>
+                <a onClick={revealCard}>Reveal card</a>
+              </li>
+              <li>
+                <a onClick={hideCard}>Hide card</a>
+              </li>
+              <li>
+                <a onClick={toOnHand}>Pick up to hand</a>
+              </li>
+              {data.host === initialState.user_id ? (
+                <li>
+                  <a>Give to other player</a>
+                  <ul className="menu menu-sm bg-base-200 rounded-box w-56 ml-4">
+                    {data.players
+                      .filter((player) => player.id !== initialState.user_id)
+                      .map((player) => (
+                        <li key={player.id}>
+                          <a
+                            onClick={() => {
+                              giveCardToPlayer(player.id);
+                              setSelectedCard(null);
+                              setPlayFrom(null);
+                            }}
+                          >
+                            {player.username}
+                          </a>
+                        </li>
+                      ))}
+                  </ul>
+                </li>
+              ) : (
+                <></>
+              )}
+            </ul>
+          </div>
+        ) : (
+          <></>
+        )}
+        {selectedDeck !== null ? (
+          <div className="absolute top-1 right-1 bg-gray-700 rounded-lg z-50">
+            <h1 className="ml-3 mt-1">Deck actions</h1>
+            <ul class="menu menu-sm bg-base-200 rounded-box w-56">
+              {selectedDeck === "drawDeck" ? (
+                <>
+                  <li>
+                    <a
+                      onClick={() => {
+                        drawOne();
+                        setSelectedDeck(null);
+                      }}
+                    >
+                      Draw ONE (draw deck)
+                    </a>
+                  </li>
+
+                  {data.host === initialState.user_id ? (
+                    <>
+                      <li>
+                        <a>Give last card to player</a>
+                        <ul className="menu menu-sm bg-base-200 rounded-box w-56 ml-4">
+                          {data.players
+                            .filter(
+                              (player) => player.id !== initialState.user_id
+                            )
+                            .map((player) => (
+                              <li key={player.id}>
+                                <a
+                                  onClick={() => {
+                                    giveLastToPlayer(player.id);
+                                  }}
+                                >
+                                  {player.username}
+                                </a>
+                              </li>
+                            ))}
+                        </ul>
+                      </li>
+                    </>
+                  ) : (
+                    <> </>
+                  )}
+                </>
+              ) : (
+                <></>
+              )}
+
+              {selectedDeck === "throwDeck" ? (
+                <>
+                  {data.host === initialState.user_id ? (
+                    <>
+                      <li>
+                        <a onClick={shuffleThrowDeckIn}>
+                          Shuffle throw deck into draw deck
+                        </a>
+                      </li>
+                      <li>
+                        <a>Give last card to player</a>
+                        <ul className="menu menu-sm bg-base-200 rounded-box w-56 ml-4">
+                          {data.players
+                            .filter(
+                              (player) => player.id !== initialState.user_id
+                            )
+                            .map((player) => (
+                              <li key={player.id}>
+                                <a
+                                  onClick={() => {
+                                    giveLastToPlayer(player.id);
+                                  }}
+                                >
+                                  {player.username}
+                                </a>
+                              </li>
+                            ))}
+                        </ul>
+                      </li>
+                    </>
+                  ) : (
+                    <> </>
+                  )}
+                </>
+              ) : (
+                <></>
+              )}
+            </ul>
+          </div>
+        ) : (
+          <></>
+        )}
+
+        {selectedPlayer !== null && initialState.user_id === data.host ? (
+          <div className="absolute top-1 right-1 bg-gray-700 rounded-lg z-50">
+            <h1 className="ml-3 mt-1">Player actions</h1>
+            <ul className="menu menu-sm bg-base-200 rounded-box w-56">
+              {data.host === initialState.user_id ? (
+                <li>
+                  <a onClick={kickPlayer}>Kick player</a>
+                </li>
+              ) : (
+                <></>
+              )}
+              {data.host === initialState.user_id ? (
+                <li>
+                  <a onClick={giveHost}>Give host</a>
+                </li>
+              ) : (
+                <></>
+              )}
+            </ul>
+          </div>
+        ) : (
+          <></>
+        )}
         <div className="relative w-[90vw] h-[90vh] bg-green-600 rounded-2xl mx-auto grid grid-cols-3 grid-rows-3">
           {/* Középen a húzó- és dobópakli,  itt majd drag&drop-os téma lesz */}
           <div className="absolute bg-green-700 p-4 rounded-lg top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
@@ -232,7 +414,19 @@ function Desk({ socket }) {
                   key={player.id}
                   className={`absolute ${positionClasses[index]}`}
                 >
-                  <div className="bg-blue-500 p-2 rounded-md shadow-md text-center">
+                  <div
+                    className="bg-blue-500 p-2 rounded-md shadow-md text-center"
+                    onClick={(e) => {
+                      if (selectedPlayer === player.id) {
+                        setSelectedPlayer(null);
+                      } else {
+                        setSelectedDeck(null);
+                        setSelectedCard(null);
+                        setPlayFrom(null);
+                        setSelectedPlayer(player.id);
+                      }
+                    }}
+                  >
                     {player.username}
                   </div>
                 </div>
@@ -366,7 +560,7 @@ function Desk({ socket }) {
                       setSelectedDeck(deckType);
                       setSelectedPlayer(null);
                       setSelectedCard(null);
-                      setPllayFrom(null);
+                      setPlayFrom(null);
                     }
                   }}
                 />
@@ -470,16 +664,40 @@ function Desk({ socket }) {
               <h1 className="ml-3 mt-1">Deck actions</h1>
               <ul class="menu menu-sm bg-base-200 rounded-box w-56">
                 {selectedDeck === "drawDeck" ? (
-                  <li>
-                    <a
-                      onClick={() => {
-                        drawOne();
-                        setSelectedDeck(null);
-                      }}
-                    >
-                      Draw ONE (draw deck)
-                    </a>
-                  </li>
+                  <>
+                    <li>
+                      <a
+                        onClick={() => {
+                          drawOne();
+                          setSelectedDeck(null);
+                        }}
+                      >
+                        Draw ONE (draw deck)
+                      </a>
+                    </li>
+                    {data.host === initialState.user_id ? <>
+                      <li>
+                        <a>Give last card to player</a>
+                        <ul className="menu menu-sm bg-base-200 rounded-box w-56 ml-4">
+                          {data.players
+                            .filter(
+                              (player) => player.id !== initialState.user_id
+                            )
+                            .map((player) => (
+                              <li key={player.id}>
+                                <a
+                                  onClick={() => {
+                                    giveLastToPlayer(player.id);
+                                  }}
+                                >
+                                  {player.username}
+                                </a>
+                              </li>
+                            ))}
+                        </ul>
+                      </li>
+                    </> : <></>}
+                  </>
                 ) : (
                   <></>
                 )}
@@ -498,6 +716,23 @@ function Desk({ socket }) {
                         </li>
                         <li>
                           <a>Give last card to player</a>
+                          <ul className="menu menu-sm bg-base-200 rounded-box w-56 ml-4">
+                            {data.players
+                              .filter(
+                                (player) => player.id !== initialState.user_id
+                              )
+                              .map((player) => (
+                                <li key={player.id}>
+                                  <a
+                                    onClick={() => {
+                                      giveLastToPlayer(player.id);
+                                    }}
+                                  >
+                                    {player.username}
+                                  </a>
+                                </li>
+                              ))}
+                          </ul>
                         </li>
                       </>
                     ) : (
@@ -549,19 +784,18 @@ function Desk({ socket }) {
           <div className="absolute top-1 right-1 bg-gray-700 rounded-lg"></div>
 
           {players
-           .filter((player) => player.id !== initialState.user_id)
-           .slice(0, 7) // Csak 7 ellenfelet engedélyezünk
-           .map((player, index) => {
-              
-            const positionClasses = [
-              "top-2 left-10", // 0 - Bal felső
-              "top-2 left-1/2 -translate-x-1/2", // 1 - Középső felső
-              "top-2 right-10", // 2 - Jobb felső
-              "left-5 top-1/2 -translate-y-1/2", // 3 - Bal középső oldal
-              "right-5 top-1/2 -translate-y-1/2", // 4 - Jobb középső oldal
-              "left-5 bottom-[15%] translate-y-1/2", // 5 - Bal alsó oldal
-              "right-5 bottom-[15%] translate-y-1/2", // 6 - Jobb alsó sarok
-            ];
+            .filter((player) => player.id !== initialState.user_id)
+            .slice(0, 7) // Csak 7 ellenfelet engedélyezünk
+            .map((player, index) => {
+              const positionClasses = [
+                "top-2 left-10", // 0 - Bal felső
+                "top-2 left-1/2 -translate-x-1/2", // 1 - Középső felső
+                "top-2 right-10", // 2 - Jobb felső
+                "left-5 top-1/2 -translate-y-1/2", // 3 - Bal középső oldal
+                "right-5 top-1/2 -translate-y-1/2", // 4 - Jobb középső oldal
+                "left-5 bottom-[15%] translate-y-1/2", // 5 - Bal alsó oldal
+                "right-5 bottom-[15%] translate-y-1/2", // 6 - Jobb alsó sarok
+              ];
 
               return (
                 <div
@@ -573,7 +807,6 @@ function Desk({ socket }) {
                       if (selectedPlayer === player.id) {
                         setSelectedPlayer(null);
                       } else {
-                        console.log("mivan");
                         setSelectedDeck(null);
                         setSelectedCard(null);
                         setPlayFrom(null);
@@ -631,7 +864,6 @@ function Desk({ socket }) {
                                 : "png"
                             }`}
                             alt=""
-                            
                             className="w-[4vh] sm:w-[6vh] md:w-[5vh]"
                           />
                         </div>
