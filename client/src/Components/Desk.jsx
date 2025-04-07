@@ -12,6 +12,10 @@ function Desk({ socket }) {
   const [onHandSwapId, setOnHandSwapId] = useState(null);
   const [playFrom, setPlayFrom] = useState(null);
 
+  /* window.addEventListener("beforeunload", () => {
+    sessionStorage.setItem("refreshing", "true");
+  }); */
+
   const navigate = useNavigate();
   if (!initialState.user_id) {
     navigate("/login");
@@ -150,6 +154,7 @@ function Desk({ socket }) {
 
   useEffect(() => {
     gameStart();
+
 
     socket.on("connect", () => {
       console.log("Socket connected:", socket.id);
@@ -675,28 +680,32 @@ function Desk({ socket }) {
                         Draw ONE (draw deck)
                       </a>
                     </li>
-                    {data.host === initialState.user_id ? <>
-                      <li>
-                        <a>Give last card to player</a>
-                        <ul className="menu menu-sm bg-base-200 rounded-box w-56 ml-4">
-                          {data.players
-                            .filter(
-                              (player) => player.id !== initialState.user_id
-                            )
-                            .map((player) => (
-                              <li key={player.id}>
-                                <a
-                                  onClick={() => {
-                                    giveLastToPlayer(player.id);
-                                  }}
-                                >
-                                  {player.username}
-                                </a>
-                              </li>
-                            ))}
-                        </ul>
-                      </li>
-                    </> : <></>}
+                    {data.host === initialState.user_id ? (
+                      <>
+                        <li>
+                          <a>Give last card to player</a>
+                          <ul className="menu menu-sm bg-base-200 rounded-box w-56 ml-4">
+                            {data.players
+                              .filter(
+                                (player) => player.id !== initialState.user_id
+                              )
+                              .map((player) => (
+                                <li key={player.id}>
+                                  <a
+                                    onClick={() => {
+                                      giveLastToPlayer(player.id);
+                                    }}
+                                  >
+                                    {player.username}
+                                  </a>
+                                </li>
+                              ))}
+                          </ul>
+                        </li>
+                      </>
+                    ) : (
+                      <></>
+                    )}
                   </>
                 ) : (
                   <></>

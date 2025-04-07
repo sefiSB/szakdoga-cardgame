@@ -14,7 +14,7 @@ function NewGame({ socket }) {
   const [revealedCards, setRevealedCards] = useState(0);
   const [hiddenCards, setHiddenCards] = useState(0);
   const [cardType, setCardType] = useState("french");
-  const [maxplayers, setMaxplayers] = useState(4);
+  const [maxplayers, setMaxplayers] = useState(2);
   const [notUsed, setNotUsed] = useState(["card back"]);
   const [packNumber, setPackNumber] = useState(1);
   const [presetSuccesful, setPresetSuccesful] = useState(null);
@@ -343,6 +343,8 @@ function NewGame({ socket }) {
             </div>
             <input
               type="number"
+              min={1}
+              max={5}
               placeholder="Place a number here"
               className="input input-bordered w-full max-w-xs"
               value={packNumber}
@@ -376,6 +378,8 @@ function NewGame({ socket }) {
             <input
               type="checkbox"
               checked={isCardsOnDesk}
+              min={0}
+              max={10}
               className="toggle border-indigo-600 bg-indigo-500 checked:bg-orange-400 checked:text-orange-800 checked:border-orange-500"
               onClick={(e) => {
                 console.log(e.target.checked);

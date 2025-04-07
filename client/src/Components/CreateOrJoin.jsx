@@ -1,11 +1,13 @@
+import { useEffect } from "react";
 import { initialState } from "../Store/store";
 import { useNavigate } from "react-router-dom";
 
-function CreateOrJoin() {
+function CreateOrJoin({socket}) {
   const navigate = useNavigate();
   if (!initialState.user_id) {
     navigate("/login");
   }
+  
   return (
     <>
       

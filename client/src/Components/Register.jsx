@@ -15,7 +15,7 @@ function Register({ socket }) {
   var schema = new passwordValidator();
   schema
     .is().min(8)
-    .is().max(100)
+    .is().max(20)
     .has().uppercase()
     .has().lowercase()
     .has().digits()

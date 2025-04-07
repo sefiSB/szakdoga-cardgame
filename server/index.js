@@ -17,6 +17,7 @@ const {
   canJoin,
 } = require("./memory/lobbies");
 const { emit } = require("process");
+const { parse } = require("path");
 
 const app = express();
 
@@ -222,15 +223,21 @@ app.post("/gamestart", async (req, res) => {
   }
 });
 
+const reconnects={};
+
 io.on("connection", (socket) => {
   const userId = socket.handshake.query.user_id;
 
   if (userId) {
+    if (userId in reconnects) {
+      clearTimeout(reconnects[userId]);
+      delete reconnects[userId];
+    }
     console.log(
       `User connected/reconnected: ${userId}, Socket ID: ${socket.id}`
     );
     socket.emit("reconnectClient", { user_id: userId });
-    // A szerver az új socket ID-re küld egy eseményt
+    
   } else {
     console.log(`New connection without user_id ${socket.id}`);
   }
@@ -832,6 +839,48 @@ io.on("connection", (socket) => {
       status: "waiting",
     });
     socket.emit("updateLobby", lobbies[code]);
+  });
+
+  socket.on("disconnect", () => {
+    const userID = parseInt(socket.handshake.query.user_id);
+    let code;
+    reconnects[userID] = setTimeout( async () => {
+    const user= await User.findOne({
+        where: {
+          id: userID,
+        },
+        attributes:["lobby_id"]
+      });
+      const lobbyId = user ? user.lobby_id : null;
+    User.update(
+      { lobby_id: null },
+      {
+        where: {
+          id: userID,
+        },
+      }
+    );
+    if (lobbyId) {
+      const lobby = await Lobby.findOne({
+        where: {
+          id: lobbyId,
+        },
+      });
+      if (lobby) {
+        code=parseInt(lobby.code);
+        const playerIndex = lobbies[code].players.findIndex(
+          (player) => player.id === userID
+        );
+        if (playerIndex >= 0) {
+          lobbies[code].players.splice(playerIndex, 1);
+          io.to(code).emit("updateLobby", lobbies[code]);
+        }
+      }
+    }
+    delete reconnects[userID];
+    }, 5000);
+    io.to(code).emit("updateLobby", lobbies[code]);
+    console.log("Disconnected user:", userID);
   });
 
   socket.on("gameStart", async (data) => {
