@@ -1,13 +1,46 @@
-import { useEffect } from "react";
+import { useEffect,useState } from "react";
 import { initialState } from "../Store/store";
 import { useNavigate } from "react-router-dom";
 
 function CreateOrJoin({socket}) {
+
+  const [userData, setUserData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
   if (!initialState.user_id) {
     navigate("/login");
   }
-  
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:3001/users/${initialState.user_id}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        const data = await response.json();
+        console.log(data);
+        if (data.code){
+          initialState.code = parseInt(data.code);
+          setItem("code",parseInt(data.code));
+          navigate("/desk");
+        }
+        setUserData(data);
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        setIsLoading(false);
+      }
+    };
+    fetchUserData();
+  }, [navigate]);
+
   return (
     <>
       

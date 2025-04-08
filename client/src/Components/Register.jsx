@@ -68,7 +68,7 @@ function Register({ socket }) {
       nameerrorlist.forEach((e) => {
         if(e === "min") errors=[...errors, "Username must be at least 3 characters long"];
         if(e === "max") errors=[...errors, "Username must be at most 20 characters long"];
-        if(e === "spaces") errors=[...errors, "Username cannot contain spaces"];
+        if(e === "spaces") errors=[...errors, "Username cannot contain whitespaces"];
       })
     }
     if (password !== confirmPassword) {
@@ -78,11 +78,11 @@ function Register({ socket }) {
       const errorlist = schema.validate(password, { list: true });
       errorlist.forEach((e) => {
         if(e === "min") errors=[...errors, "Password must be at least 8 characters long"];
-        if(e === "max") errors=[...errors, "Password must be at most 100 characters long"];
+        if(e === "max") errors=[...errors, "Password must be at most 20 characters long"];
         if(e === "uppercase") errors=[...errors, "Password must contain at least one uppercase letter"];
         if(e === "lowercase") errors=[...errors, "Password must contain at least one lowercase letter"];
         if(e === "digits") errors=[...errors, "Password must contain at least one digit"];
-        if(e === "spaces") errors=[...errors, "Password cannot contain spaces"];
+        if(e === "spaces") errors=[...errors, "Password cannot contain whitespaces"];
       })
       
     }
@@ -210,7 +210,9 @@ function Register({ socket }) {
         <ul>
           {error.map((e)=>{
           return <li className="text-red-500">{e}</li>
-        })}</ul>
+        })}
+        <li className="text-red-500">{serverError}</li>
+        </ul>
 
         <p>
           Already have an account?{" "}

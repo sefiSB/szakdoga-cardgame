@@ -96,9 +96,28 @@ const io = new Server(server, {
   },
 });
 
-app.get("/users", async (req, res) => {
-  const users = await User.findAll();
-  res.json(users);
+app.get("/users/:id", async (req, res) => {
+  try {
+    const userId = parseInt(req.params.id);
+    
+    if (isNaN(userId)) {
+      return res.status(400).json({ error: "Invalid user ID format" });
+    }
+
+    const user = await User.findOne({
+      where: { id: userId },
+      attributes: ['id', 'username', 'lobby_id'], // csak a szükséges mezők
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.json(user);
+  } catch (error) {
+    console.error("Error fetching user:", error);
+    res.status(500).json({ error: "Database error", details: error.message });
+  }
 });
 
 app.post("/loginuser", async (req, res) => {
@@ -235,7 +254,7 @@ app.post("/gamestart", async (req, res) => {
   }
 });
 
-const reconnects={};
+const reconnects = {};
 
 io.on("connection", (socket) => {
   const userId = socket.handshake.query.user_id;
@@ -249,7 +268,6 @@ io.on("connection", (socket) => {
       `User connected/reconnected: ${userId}, Socket ID: ${socket.id}`
     );
     socket.emit("reconnectClient", { user_id: userId });
-    
   } else {
     console.log(`New connection without user_id ${socket.id}`);
   }
@@ -853,46 +871,84 @@ io.on("connection", (socket) => {
     socket.emit("updateLobby", lobbies[code]);
   });
 
-  socket.on("disconnect", () => {
-    const userID = parseInt(socket.handshake.query.user_id);
-    let code;
-    reconnects[userID] = setTimeout( async () => {
-    const user= await User.findOne({
-        where: {
-          id: userID,
-        },
-        attributes:["lobby_id"]
-      });
-      const lobbyId = user ? user.lobby_id : null;
-    User.update(
-      { lobby_id: null },
-      {
-        where: {
-          id: userID,
-        },
-      }
-    );
-    if (lobbyId) {
-      const lobby = await Lobby.findOne({
-        where: {
-          id: lobbyId,
-        },
-      });
-      if (lobby) {
-        code=parseInt(lobby.code);
-        const playerIndex = lobbies[code].players.findIndex(
-          (player) => player.id === userID
-        );
-        if (playerIndex >= 0) {
-          lobbies[code].players.splice(playerIndex, 1);
-          io.to(code).emit("updateLobby", lobbies[code]);
-        }
-      }
+  socket.on("disconnect", async () => {
+    const rawUserId = socket.handshake.query.user_id;
+    if (!rawUserId) {
+      console.log("No user_id in handshake query");
+      return;
     }
-    delete reconnects[userID];
+
+    const userID = parseInt(rawUserId);
+    if (isNaN(userID)) {
+      console.log("Invalid user_id format:", rawUserId);
+      return;
+    }
+
+    reconnects[userID] = setTimeout(async () => {
+      try {
+        // Felhasználó lobby_id lekérése
+        const user = await User.findOne({
+          where: { id: userID },
+          attributes: ['lobby_id']
+        });
+
+        if (!user) {
+          console.log("User not found:", userID);
+          return;
+        }
+
+        // Lobby keresése a user lobby_id alapján
+        const lobby = await Lobby.findOne({
+          where: { id: user.lobby_id }
+        });
+
+        if (!lobby) {
+          console.log("Lobby not found for user:", userID);
+          return;
+        }
+
+        const code = lobby.code;
+        console.log("Processing disconnect for lobby code:", code);
+
+        // User lobby_id nullázása
+        await User.update(
+          { lobby_id: null },
+          { where: { id: userID } }
+        );
+
+        if (lobbies[code]) {
+          // Játékos eltávolítása a memóriából
+          const playerIndex = lobbies[code].players.findIndex(
+            (player) => player.id === userID
+          );
+          
+          if (playerIndex >= 0) {
+            lobbies[code].players.splice(playerIndex, 1);
+            
+            // Ha üres a lobby, töröljük
+            if (lobbies[code].players.length === 0) {
+              console.log("Removing empty lobby:", code);
+              await Host.destroy({
+                where: {
+                  host_id: lobbies[code].host,
+                },
+              });
+              await Lobby.destroy({
+                where: {
+                  code: code,
+                },
+              });
+              delete lobbies[code];
+            }
+          }
+        }
+
+        io.to(code).emit("updateLobby", lobbies[code]);
+        console.log("Disconnected user:", userID);
+      } catch (error) {
+        console.log("Error during disconnect handling:", error);
+      }
     }, 5000);
-    io.to(code).emit("updateLobby", lobbies[code]);
-    console.log("Disconnected user:", userID);
   });
 
   socket.on("shuffleDrawDeck", (data) => {

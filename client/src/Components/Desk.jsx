@@ -12,9 +12,7 @@ function Desk({ socket }) {
   const [onHandSwapId, setOnHandSwapId] = useState(null);
   const [playFrom, setPlayFrom] = useState(null);
 
-  /* window.addEventListener("beforeunload", () => {
-    sessionStorage.setItem("refreshing", "true");
-  }); */
+  
 
   const navigate = useNavigate();
   if (!initialState.user_id) {

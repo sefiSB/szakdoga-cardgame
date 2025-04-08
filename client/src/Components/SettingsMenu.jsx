@@ -58,7 +58,7 @@ function SettingsMenu({ socket, isHost }) {
         <i class="fa fa-cog"></i>
       </button>
       {isOpen && (
-        <div className="absolute top-12 16 left-4 bg-white shadow-lg rounded p-4">
+        <div className="absolute top-12 16 left-4 bg-gray-700 shadow-lg rounded p-4">
           <ul className="menu menu-compact">
             {initialState.code ? (
               <>

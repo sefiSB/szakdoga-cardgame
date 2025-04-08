@@ -14,6 +14,10 @@ function JoinGame({socket}) {
   if(!initialState.user_id){
     navigate("/login");
   }
+  if(initialState.code) {
+    navigate("/desk");
+    console.log(initialState.code);
+  }
 
 
   const postCode = () => {

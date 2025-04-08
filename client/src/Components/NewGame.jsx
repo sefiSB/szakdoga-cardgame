@@ -26,6 +26,8 @@ function NewGame({ socket }) {
   if (!initialState.user_id) {
     navigate("/login");
   }
+  
+  
 
   const getPresets = async () => {
     const response = await fetch("http://127.0.0.1:3001/presets", {
@@ -401,6 +403,8 @@ function NewGame({ socket }) {
                     type="number"
                     placeholder="Place a number here"
                     value={revealedCards}
+                    min={0}
+                    max={10}
                     className="input input-bordered w-full max-w-xs"
                     onChange={(e) => {
                       setRevealedCards(parseInt(e.target.value));
@@ -418,6 +422,8 @@ function NewGame({ socket }) {
                     type="number"
                     placeholder="Place a number here"
                     value={hiddenCards}
+                    min={0}
+                    max={10}
                     className="input input-bordered w-full max-w-xs"
                     onChange={(e) => {
                       setHiddenCards(parseInt(e.target.value));

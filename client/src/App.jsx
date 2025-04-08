@@ -2,10 +2,11 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
 import "./App.css";
 import io from "socket.io-client";
-import { initialState } from "./Store/store";
+import { initialState, setItem } from "./Store/store";
 
-const socket = io.connect("http://127.0.0.1:3001",{
-  query:{user_id:initialState.user_id}
+
+const socket = io.connect("http://127.0.0.1:3001", {
+  query: { user_id: initialState.user_id },
 });
 
 import Login from "./Components/Login";
@@ -18,13 +19,17 @@ import Kicked from "./Components/Kicked";
 
 function App() {
 
+
   return (
     <>
       <Routes>
         <Route path="/" element={<Login socket={socket} />} />
         <Route path="/login" element={<Login socket={socket} />} />
         <Route path="/register" element={<Register socket={socket} />} />
-        <Route path="/createorjoin" element={<CreateOrJoin socket={socket}/>} />
+        <Route
+          path="/createorjoin"
+          element={<CreateOrJoin socket={socket} />}
+        />
         <Route path="/joingame" element={<JoinGame socket={socket} />} />
         <Route path="/newgame" element={<NewGame socket={socket} />} />
         <Route path="/desk" element={<Desk socket={socket} />} />
