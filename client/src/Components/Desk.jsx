@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import SettingsMenu from "./SettingsMenu";
 
 function Desk({ socket }) {
+  const BACKEND_URL = `http://${import.meta.env.VITE_SERVER_IP}:3001`;
+
   const [data, setData] = useState(null);
   const [selectedCard, setSelectedCard] = useState(null);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
@@ -135,7 +137,7 @@ function Desk({ socket }) {
   };
 
   const gameStart = async () => {
-    const response = await fetch("http://127.0.0.1:3001/gamestart", {
+    const response = await fetch(`${BACKEND_URL}/gamestart`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

@@ -6,6 +6,8 @@ import passwordValidator from "password-validator";
 
 
 function Register({ socket }) {
+  const BACKEND_URL = `http://${import.meta.env.VITE_SERVER_IP}:3001`;
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -30,7 +32,7 @@ function Register({ socket }) {
   const navigate = useNavigate();
 
   const postUser = async () => {
-    const response = await fetch("http://localhost:3001/adduser", {
+    const response = await fetch(`${BACKEND_URL}/adduser`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

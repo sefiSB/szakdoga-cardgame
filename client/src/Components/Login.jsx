@@ -4,13 +4,15 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 
 function Login({ socket }) {
+  const BACKEND_URL = `http://${import.meta.env.VITE_SERVER_IP}:3001`;
+
   const [name, setName] = useState("");
   const [error, setError] = useState(); // Tárolja a hibát, ha van
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
   const validateUser = () => {
-    const response = fetch("http://127.0.0.1:3001/loginuser", {
+    const response = fetch(`${BACKEND_URL}/loginuser`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

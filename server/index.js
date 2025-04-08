@@ -389,73 +389,67 @@ io.on("connection", (socket) => {
   });
 
   socket.on("leaveGame", async (data) => {
-    const { user_id, code } = data;
     try {
-      const lobby = lobbies[code];
-      const playerIndex = lobby.players.findIndex(
-        (player) => player.id === user_id
-      );
-
-      if (playerIndex < 0) {
-        return;
-      }
-      lobby.players.splice(playerIndex, 1);
-
+      console.log("Szerver megkapta a kódot");
       const user = await User.findOne({
-        where: {
-          id: user_id,
-        },
+        where: { id: data.user_id },
       });
+      
+      const checklobby = await Lobby.findOne({
+        where: { id: user.lobby_id },
+      })
 
-      if (lobby.players.length === 0) {
-        await Lobby.destroy({
-          where: {
-            code: code,
-          },
-        });
-        delete lobbies[code];
+      if (!user || !checklobby) {
+        console.log("User or Lobby not found");
         return;
       }
-
-      if (lobby.host === user_id) {
-        if (lobby.players.length > 0) {
-          const player_id = lobby.players[0].id;
-          const player = await User.findOne({
-            where: {
-              id: player_id,
-            },
-          });
-
-          const host = await Host.findOne({
-            where: {
-              host_id: lobby.host,
-            },
-          });
-          await host.update({ host_id: player_id });
-          lobby.host = player_id;
-        } else {
+  
+      const lobbyId = checklobby.id;
+      const code = checklobby.code;
+  
+      // 1. Először töröljük a Host bejegyzést, ha létezik
+      await Host.destroy({
+        where: {
+          lobby_id: lobbyId
+        }
+      });
+  
+      // 2. Nullázzuk a user lobby_id-ját
+      await User.update(
+        { lobby_id: null },
+        { 
+          where: { id: data.user_id }
+        }
+      );
+  
+      // 3. Eltávolítjuk a játékost a memóriából
+      if (lobbies[code]) {
+        const playerIndex = lobbies[code].players.findIndex(
+          (player) => player.id === data.user_id
+        );
+        
+        if (playerIndex >= 0) {
+          lobbies[code].players.splice(playerIndex, 1);
+          
+          // Ha üres a lobby, töröljük
+          if (lobbies[code].players.length === 0) {
+            // 4. Végül töröljük magát a Lobby-t
+            await Lobby.destroy({
+              where: {
+                id: lobbyId
+              }
+            });
+            
+            delete lobbies[code];
+          } else {
+            io.to(code).emit("updateLobby", lobbies[code]);
+          }
         }
       }
-      await user.update({ lobby_id: null });
-
-      lobbies[code] = lobby;
-
-      const existingHost = await Host.findOne({
-        where: {
-          host_id: lobby.host,
-        },
-      });
-
-      if (!existingHost) {
-        await Host.create({
-          host_id: lobby.host,
-          lobby_id: lobby.id,
-        });
-      }
-
-      io.to(code).emit("updateLobby", lobby);
+  
+      socket.leave(code);
     } catch (error) {
-      console.log("HIBA A LEAVEGAME-BEN:", error);
+      console.error("HIBA A LEAVEGAME-BEN:", error);
     }
   });
 
@@ -928,17 +922,43 @@ io.on("connection", (socket) => {
             // Ha üres a lobby, töröljük
             if (lobbies[code].players.length === 0) {
               console.log("Removing empty lobby:", code);
-              await Host.destroy({
-                where: {
-                  host_id: lobbies[code].host,
-                },
-              });
-              await Lobby.destroy({
-                where: {
-                  code: code,
-                },
-              });
-              delete lobbies[code];
+              try {
+                // Először keressük meg a lobby ID-t
+                const lobbyToDelete = await Lobby.findOne({
+                  where: { code: code }
+                });
+            
+                if (lobbyToDelete) {
+                  // Először töröljük a kapcsolódó Host rekordokat
+                  await Host.destroy({
+                    where: {
+                      lobby_id: lobbyToDelete.id
+                    }
+                  });
+            
+                  // Majd nullázzuk a felhasználók lobby_id-ját
+                  await User.update(
+                    { lobby_id: null },
+                    { 
+                      where: { 
+                        lobby_id: lobbyToDelete.id 
+                      } 
+                    }
+                  );
+            
+                  // Végül töröljük magát a Lobby-t
+                  await Lobby.destroy({
+                    where: {
+                      id: lobbyToDelete.id
+                    }
+                  });
+            
+                  // Töröljük a memóriából
+                  delete lobbies[code];
+                }
+              } catch (error) {
+                console.error("Error deleting lobby:", error);
+              }
             }
           }
         }
@@ -965,7 +985,7 @@ io.on("connection", (socket) => {
   });
 });
 
-server.listen(3001, "127.0.0.1", async () => {
+server.listen(3001, "0.0.0.0", async () => {
   console.log("SERVER IS RUNNING");
   console.log(server.address().address + ":" + server.address().port);
   await initLobbies();

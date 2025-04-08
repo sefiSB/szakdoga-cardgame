@@ -3,6 +3,8 @@ import { initialState } from "../Store/store";
 import { useNavigate } from "react-router-dom";
 
 function CreateOrJoin({socket}) {
+  const BACKEND_URL = `http://${import.meta.env.VITE_SERVER_IP}:3001`;
+
 
   const [userData, setUserData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -12,11 +14,11 @@ function CreateOrJoin({socket}) {
     navigate("/login");
   }
 
-  useEffect(() => {
+  /* useEffect(() => {
     const fetchUserData = async () => {
       try {
         const response = await fetch(
-          `http://localhost:3001/users/${initialState.user_id}`,
+          `${BACKEND_URL}/users/${initialState.user_id}`,
           {
             method: "GET",
             headers: {
@@ -39,7 +41,7 @@ function CreateOrJoin({socket}) {
       }
     };
     fetchUserData();
-  }, [navigate]);
+  }, [navigate]); */
 
   return (
     <>

@@ -5,8 +5,10 @@ import io from "socket.io-client";
 import { initialState, setItem } from "./Store/store";
 
 
-const socket = io.connect("http://127.0.0.1:3001", {
-  query: { user_id: initialState.user_id },
+const socket = io(`http://${import.meta.env.VITE_SERVER_IP}:3001`, {
+  query: {
+    user_id: initialState.user_id
+  }
 });
 
 import Login from "./Components/Login";

@@ -27,10 +27,10 @@ function NewGame({ socket }) {
     navigate("/login");
   }
   
-  
+  const BACKEND_URL = `http://${import.meta.env.VITE_SERVER_IP}:3001`;
 
   const getPresets = async () => {
-    const response = await fetch("http://127.0.0.1:3001/presets", {
+    const response = await fetch(`${BACKEND_URL}/presets`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -42,7 +42,7 @@ function NewGame({ socket }) {
   };
 
   const submitPreset = async () => {
-    const response = await fetch("http://localhost:3001/addpreset", {
+    const response = await fetch(`${BACKEND_URL}/addpreset`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -112,7 +112,7 @@ function NewGame({ socket }) {
     }
     setError(null);
 
-    const response = await fetch("http://localhost:3001/addlobby", {
+    const response = await fetch(`${BACKEND_URL}/addlobby`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
