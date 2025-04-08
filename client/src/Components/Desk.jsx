@@ -30,6 +30,11 @@ function Desk({ socket }) {
     setSelectedDeck(null);
   };
 
+  const shuffleDrawDeck = () => {
+    socket.emit("shuffleDrawDeck", { code: initialState.code });
+    setSelectedDeck(null);
+  }
+
   const kickPlayer = () => {
     socket.emit("kickPlayer", {
       code: initialState.code,
@@ -154,7 +159,6 @@ function Desk({ socket }) {
 
   useEffect(() => {
     gameStart();
-
 
     socket.on("connect", () => {
       console.log("Socket connected:", socket.id);
@@ -420,7 +424,11 @@ function Desk({ socket }) {
                   className={`absolute ${positionClasses[index]}`}
                 >
                   <div
-                    className="bg-blue-500 p-2 rounded-md shadow-md text-center"
+                    className={`bg-blue-500 p-2 rounded-md shadow-md text-center ${
+                      selectedPlayer === player.id
+                        ? "outline outline-4 outline-yellow-500"
+                        : ""
+                    }`}
                     onClick={(e) => {
                       if (selectedPlayer === player.id) {
                         setSelectedPlayer(null);
@@ -501,7 +509,7 @@ function Desk({ socket }) {
         {onHandSwapName !== null ? (
           <div
             role="alert"
-            className="alert alert-vertical sm:alert-horizontal absolute bottom-0 right-0 left-0 m-4 z-10"
+            className="alert alert-vertical sm:alert-horizontal absolute bottom-0 right-0 left-[10%] m-4 z-10 w-[80vw] "
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -551,7 +559,11 @@ function Desk({ socket }) {
             <div className="relative flex gap-4">
               {data.decks.drawDeck.length > 0 ? (
                 <img
-                  className="w-[5vh]"
+                  className={`w-[5vh] ${
+                    selectedDeck === "drawDeck"
+                      ? "outline outline-4 outline-yellow-500"
+                      : ""
+                  }`}
                   src={`assets/cards/${data.presetdata.cardType}/card_back.${
                     data.presetdata.cardType === "french" ? "svg" : "png"
                   }`}
@@ -579,16 +591,20 @@ function Desk({ socket }) {
               <div className="relative">
                 {data.decks.throwDeck.length > 0 ? (
                   <img
+                    className={`w-[5vh] ${
+                      selectedDeck === "throwDeck"
+                        ? "outline outline-4 outline-yellow-500"
+                        : ""
+                    }`}
                     src={
                       `/assets/cards/${data.presetdata.cardType}/` +
                       data.decks.throwDeck[data.decks.throwDeck.length - 1][1]
                     }
                     alt="throwDeck"
                     deckdata="throwDeck"
-                    style={{ width: "5vh" }}
                     onClick={(e) => {
+                      if (initialState.user_id !== data.host) return;
                       const deckType = e.target.getAttribute("deckdata");
-
                       if (selectedDeck === deckType) {
                         setSelectedDeck(null);
                       } else {
@@ -683,6 +699,11 @@ function Desk({ socket }) {
                     {data.host === initialState.user_id ? (
                       <>
                         <li>
+                          <a
+                            onClick={shuffleDrawDeck}
+                          >Shuffle draw deck</a>
+                        </li>
+                        <li>
                           <a>Give last card to player</a>
                           <ul className="menu menu-sm bg-base-200 rounded-box w-56 ml-4">
                             {data.players
@@ -713,9 +734,6 @@ function Desk({ socket }) {
 
                 {selectedDeck === "throwDeck" ? (
                   <>
-                    <li>
-                      <a>Idk yet</a>
-                    </li>
                     {data.host === initialState.user_id ? (
                       <>
                         <li>
@@ -822,7 +840,11 @@ function Desk({ socket }) {
                         setSelectedPlayer(player.id);
                       }
                     }}
-                    className="bg-blue-500 p-2 rounded-md shadow-md text-center"
+                    className={`bg-blue-500 p-2 rounded-md shadow-md text-center ${
+                      selectedPlayer === player.id
+                        ? "outline outline-4 outline-yellow-500"
+                        : ""
+                    }`}
                   >
                     {player.username}
                   </div>

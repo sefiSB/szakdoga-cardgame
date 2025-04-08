@@ -53,7 +53,7 @@ function SettingsMenu({ socket, isHost }) {
     <div className="relative z-10">
       <button
         onClick={toggleMenu}
-        className="absolute top-0 left-0 m-4 p-2 bg-gray-800 text-white rounded"
+        className="absolute top-0 left-0 m-4 p-2 bg-gray-800 text-white rounded w-10 h-10"
       >
         <i class="fa fa-cog"></i>
       </button>

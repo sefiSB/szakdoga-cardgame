@@ -41,6 +41,18 @@ const initLobbies = async () => {
         lobbies[lobby.code] = {
           name: lobby.name,
           code: lobby.code,
+          host: lobby.host,
+          presetdata: {
+            startingCards: 0,
+            host: lobby.host,
+            cardType: null,
+            packNumber: null,
+            usedCards: [],
+            maxplayers: 0,
+            hiddenCards: 0,
+            revealedCards: 0,
+            isCardsOnDesk: false,
+          },
           players: players.map((player) => {
             return {
               id: player.id,
@@ -881,6 +893,14 @@ io.on("connection", (socket) => {
     }, 5000);
     io.to(code).emit("updateLobby", lobbies[code]);
     console.log("Disconnected user:", userID);
+  });
+
+  socket.on("shuffleDrawDeck", (data) => {
+    const { code } = data;
+    const lobby = lobbies[code];
+    shuffleArray(lobby.decks.drawDeck);
+    lobbies[code] = lobby;
+    io.to(code).emit("updateLobby", lobby);
   });
 
   socket.on("gameStart", async (data) => {
