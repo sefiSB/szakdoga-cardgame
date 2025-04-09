@@ -1,7 +1,10 @@
 {
   "scripts": {
     "start": "nodemon index.js",
-    "db": "npx sequelize db:migrate:undo:all && npx sequelize db:migrate --debug && npx sequelize db:seed:all --debug"
+    "db": "npx sequelize db:migrate:undo:all && npx sequelize db:migrate --debug && npx sequelize db:seed:all --debug",
+    "test": "jest --detectOpenHandles",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
@@ -15,6 +18,15 @@
     "sqlite3": "^5.1.7"
   },
   "devDependencies": {
-    "sequelize-cli": "^6.6.2"
+    "jest": "^29.7.0",
+    "sequelize-cli": "^6.6.2",
+    "socket.io-client": "^4.8.1",
+    "supertest": "^6.3.4"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "setupFilesAfterEnv": [
+      "./tests/setup.js"
+    ]
   }
 }

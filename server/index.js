@@ -99,14 +99,14 @@ const io = new Server(server, {
 app.get("/users/:id", async (req, res) => {
   try {
     const userId = parseInt(req.params.id);
-    
+
     if (isNaN(userId)) {
       return res.status(400).json({ error: "Invalid user ID format" });
     }
 
     const user = await User.findOne({
       where: { id: userId },
-      attributes: ['id', 'username', 'lobby_id'], // csak a szükséges mezők
+      attributes: ["id", "username", "lobby_id"], // csak a szükséges mezők
     });
 
     if (!user) {
@@ -394,59 +394,61 @@ io.on("connection", (socket) => {
       const user = await User.findOne({
         where: { id: data.user_id },
       });
-      
+
       const checklobby = await Lobby.findOne({
         where: { id: user.lobby_id },
-      })
+      });
 
       if (!user || !checklobby) {
         console.log("User or Lobby not found");
         return;
       }
-  
-      const lobbyId = checklobby.id;
-      const code = checklobby.code;
-  
+
+      const lobbyId = parseInt(checklobby.id);
+      const code = parseInt(checklobby.code);
+
       // 1. Először töröljük a Host bejegyzést, ha létezik
       await Host.destroy({
         where: {
-          lobby_id: lobbyId
-        }
+          lobby_id: lobbyId,
+        },
       });
-  
+
       // 2. Nullázzuk a user lobby_id-ját
       await User.update(
         { lobby_id: null },
-        { 
-          where: { id: data.user_id }
+        {
+          where: { id: data.user_id },
         }
       );
-  
+
       // 3. Eltávolítjuk a játékost a memóriából
       if (lobbies[code]) {
         const playerIndex = lobbies[code].players.findIndex(
           (player) => player.id === data.user_id
         );
-        
+
         if (playerIndex >= 0) {
           lobbies[code].players.splice(playerIndex, 1);
-          
+
           // Ha üres a lobby, töröljük
           if (lobbies[code].players.length === 0) {
             // 4. Végül töröljük magát a Lobby-t
             await Lobby.destroy({
               where: {
-                id: lobbyId
-              }
+                id: lobbyId,
+              },
             });
-            
+
             delete lobbies[code];
+            console.log("üres");
           } else {
+            console.log(typeof code);
             io.to(code).emit("updateLobby", lobbies[code]);
           }
         }
       }
-  
+
       socket.leave(code);
     } catch (error) {
       console.error("HIBA A LEAVEGAME-BEN:", error);
@@ -883,7 +885,7 @@ io.on("connection", (socket) => {
         // Felhasználó lobby_id lekérése
         const user = await User.findOne({
           where: { id: userID },
-          attributes: ['lobby_id']
+          attributes: ["lobby_id"],
         });
 
         if (!user) {
@@ -893,7 +895,7 @@ io.on("connection", (socket) => {
 
         // Lobby keresése a user lobby_id alapján
         const lobby = await Lobby.findOne({
-          where: { id: user.lobby_id }
+          where: { id: user.lobby_id },
         });
 
         if (!lobby) {
@@ -901,58 +903,57 @@ io.on("connection", (socket) => {
           return;
         }
 
-        const code = lobby.code;
+        const code = parseInt(lobby.code);
         console.log("Processing disconnect for lobby code:", code);
 
         // User lobby_id nullázása
-        await User.update(
-          { lobby_id: null },
-          { where: { id: userID } }
-        );
+        await User.update({ lobby_id: null }, { where: { id: userID } });
 
         if (lobbies[code]) {
           // Játékos eltávolítása a memóriából
           const playerIndex = lobbies[code].players.findIndex(
             (player) => player.id === userID
           );
-          
+
           if (playerIndex >= 0) {
             lobbies[code].players.splice(playerIndex, 1);
-            
+            io.to(code).emit("updateLobby", lobbies[code]);
+            console.log(lobbies[code]);
+
             // Ha üres a lobby, töröljük
             if (lobbies[code].players.length === 0) {
               console.log("Removing empty lobby:", code);
               try {
                 // Először keressük meg a lobby ID-t
                 const lobbyToDelete = await Lobby.findOne({
-                  where: { code: code }
+                  where: { code: code },
                 });
-            
+
                 if (lobbyToDelete) {
                   // Először töröljük a kapcsolódó Host rekordokat
                   await Host.destroy({
                     where: {
-                      lobby_id: lobbyToDelete.id
-                    }
+                      lobby_id: lobbyToDelete.id,
+                    },
                   });
-            
+
                   // Majd nullázzuk a felhasználók lobby_id-ját
                   await User.update(
                     { lobby_id: null },
-                    { 
-                      where: { 
-                        lobby_id: lobbyToDelete.id 
-                      } 
+                    {
+                      where: {
+                        lobby_id: lobbyToDelete.id,
+                      },
                     }
                   );
-            
+
                   // Végül töröljük magát a Lobby-t
                   await Lobby.destroy({
                     where: {
-                      id: lobbyToDelete.id
-                    }
+                      id: lobbyToDelete.id,
+                    },
                   });
-            
+
                   // Töröljük a memóriából
                   delete lobbies[code];
                 }
@@ -963,7 +964,6 @@ io.on("connection", (socket) => {
           }
         }
 
-        io.to(code).emit("updateLobby", lobbies[code]);
         console.log("Disconnected user:", userID);
       } catch (error) {
         console.log("Error during disconnect handling:", error);
@@ -985,8 +985,12 @@ io.on("connection", (socket) => {
   });
 });
 
-server.listen(3001, "0.0.0.0", async () => {
-  console.log("SERVER IS RUNNING");
-  console.log(server.address().address + ":" + server.address().port);
-  await initLobbies();
-});
+if (process.env.NODE_ENV !== "test") {
+  server.listen(3001, "0.0.0.0", async () => {
+    console.log("SERVER IS RUNNING");
+    console.log(server.address().address + ":" + server.address().port);
+    await initLobbies();
+  });
+}
+
+module.exports = { app, server, io, User, Lobby, Preset, Host };
