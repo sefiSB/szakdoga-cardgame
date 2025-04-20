@@ -14,8 +14,6 @@ function Desk({ socket }) {
   const [onHandSwapId, setOnHandSwapId] = useState(null);
   const [playFrom, setPlayFrom] = useState(null);
 
-  
-
   const navigate = useNavigate();
   if (!initialState.user_id) {
     navigate("/login");
@@ -33,7 +31,7 @@ function Desk({ socket }) {
   const shuffleDrawDeck = () => {
     socket.emit("shuffleDrawDeck", { code: initialState.code });
     setSelectedDeck(null);
-  }
+  };
 
   const kickPlayer = () => {
     socket.emit("kickPlayer", {
@@ -223,9 +221,9 @@ function Desk({ socket }) {
 
         {selectedCard !== null ? (
           <div className="absolute top-1 right-1 bg-gray-700 rounded-lg z-50">
-            <h1 className="ml-3 mt-1">Card actions</h1>
+            <h1 className="ml-3 mt-1 font-bold text-white">Card actions</h1>
             <ul class="menu menu-sm bg-base-200 rounded-box w-56">
-              <li>
+              <li className="font-bold text-white">
                 <a
                   onClick={() => {
                     playCard(selectedCard, playFrom);
@@ -237,23 +235,23 @@ function Desk({ socket }) {
                   Play card (throwdeck)
                 </a>
               </li>
-              <li>
+              <li className="font-bold text-white">
                 <a onClick={revealCard}>Reveal card</a>
               </li>
-              <li>
+              <li className="font-bold text-white">
                 <a onClick={hideCard}>Hide card</a>
               </li>
-              <li>
+              <li className="font-bold text-white">
                 <a onClick={toOnHand}>Pick up to hand</a>
               </li>
               {data.host === initialState.user_id ? (
-                <li>
+                <li className="font-bold text-white">
                   <a>Give to other player</a>
                   <ul className="menu menu-sm bg-base-200 rounded-box w-56 ml-4">
                     {data.players
                       .filter((player) => player.id !== initialState.user_id)
                       .map((player) => (
-                        <li key={player.id}>
+                        <li key={player.id} className="font-bold text-white">
                           <a
                             onClick={() => {
                               giveCardToPlayer(player.id);
@@ -277,11 +275,11 @@ function Desk({ socket }) {
         )}
         {selectedDeck !== null ? (
           <div className="absolute top-1 right-1 bg-gray-700 rounded-lg z-50">
-            <h1 className="ml-3 mt-1">Deck actions</h1>
+            <h1 className="ml-3 mt-1 font-bold text-white">Deck actions</h1>
             <ul class="menu menu-sm bg-base-200 rounded-box w-56">
               {selectedDeck === "drawDeck" ? (
                 <>
-                  <li>
+                  <li className="font-bold text-white">
                     <a
                       onClick={() => {
                         drawOne();
@@ -294,7 +292,7 @@ function Desk({ socket }) {
 
                   {data.host === initialState.user_id ? (
                     <>
-                      <li>
+                      <li className="font-bold text-white">
                         <a>Give last card to player</a>
                         <ul className="menu menu-sm bg-base-200 rounded-box w-56 ml-4">
                           {data.players
@@ -302,7 +300,10 @@ function Desk({ socket }) {
                               (player) => player.id !== initialState.user_id
                             )
                             .map((player) => (
-                              <li key={player.id}>
+                              <li
+                                key={player.id}
+                                className="font-bold text-white"
+                              >
                                 <a
                                   onClick={() => {
                                     giveLastToPlayer(player.id);
@@ -327,12 +328,12 @@ function Desk({ socket }) {
                 <>
                   {data.host === initialState.user_id ? (
                     <>
-                      <li>
+                      <li className="font-bold text-white">
                         <a onClick={shuffleThrowDeckIn}>
                           Shuffle throw deck into draw deck
                         </a>
                       </li>
-                      <li>
+                      <li className="font-bold text-white">
                         <a>Give last card to player</a>
                         <ul className="menu menu-sm bg-base-200 rounded-box w-56 ml-4">
                           {data.players
@@ -340,7 +341,10 @@ function Desk({ socket }) {
                               (player) => player.id !== initialState.user_id
                             )
                             .map((player) => (
-                              <li key={player.id}>
+                              <li
+                                key={player.id}
+                                className="font-bold text-white"
+                              >
                                 <a
                                   onClick={() => {
                                     giveLastToPlayer(player.id);
@@ -368,17 +372,17 @@ function Desk({ socket }) {
 
         {selectedPlayer !== null && initialState.user_id === data.host ? (
           <div className="absolute top-1 right-1 bg-gray-700 rounded-lg z-50">
-            <h1 className="ml-3 mt-1">Player actions</h1>
+            <h1 className="ml-3 mt-1 font-bold text-white">Player actions</h1>
             <ul className="menu menu-sm bg-base-200 rounded-box w-56">
               {data.host === initialState.user_id ? (
-                <li>
+                <li className="font-bold text-white">
                   <a onClick={kickPlayer}>Kick player</a>
                 </li>
               ) : (
                 <></>
               )}
               {data.host === initialState.user_id ? (
-                <li>
+                <li className="font-bold text-white">
                   <a onClick={giveHost}>Give host</a>
                 </li>
               ) : (
@@ -627,9 +631,9 @@ function Desk({ socket }) {
 
           {selectedCard !== null ? (
             <div className="absolute top-1 right-1 bg-gray-700 rounded-lg z-50">
-              <h1 className="ml-3 mt-1">Card actions</h1>
+              <h1 className="ml-3 mt-1 font-bold text-white">Card actions</h1>
               <ul class="menu menu-sm bg-base-200 rounded-box w-56">
-                <li>
+                <li className="font-bold text-white">
                   <a
                     onClick={() => {
                       playCard(selectedCard, playFrom);
@@ -641,23 +645,23 @@ function Desk({ socket }) {
                     Play card (throwdeck)
                   </a>
                 </li>
-                <li>
+                <li className="font-bold text-white">
                   <a onClick={revealCard}>Reveal card</a>
                 </li>
-                <li>
+                <li className="font-bold text-white">
                   <a onClick={hideCard}>Hide card</a>
                 </li>
-                <li>
+                <li className="font-bold text-white">
                   <a onClick={toOnHand}>Pick up to hand</a>
                 </li>
                 {data.host === initialState.user_id ? (
-                  <li>
+                  <li className="font-bold text-white">
                     <a>Give to other player</a>
                     <ul className="menu menu-sm bg-base-200 rounded-box w-56 ml-4">
                       {data.players
                         .filter((player) => player.id !== initialState.user_id)
                         .map((player) => (
-                          <li key={player.id}>
+                          <li key={player.id} className="font-bold text-white">
                             <a
                               onClick={() => {
                                 giveCardToPlayer(player.id);
@@ -682,11 +686,11 @@ function Desk({ socket }) {
 
           {selectedDeck !== null ? (
             <div className="absolute top-1 right-1 bg-gray-700 rounded-lg z-50">
-              <h1 className="ml-3 mt-1">Deck actions</h1>
+              <h1 className="ml-3 mt-1 font-bold text-white">Deck actions</h1>
               <ul class="menu menu-sm bg-base-200 rounded-box w-56">
                 {selectedDeck === "drawDeck" ? (
                   <>
-                    <li>
+                    <li className="font-bold text-white">
                       <a
                         onClick={() => {
                           drawOne();
@@ -698,12 +702,10 @@ function Desk({ socket }) {
                     </li>
                     {data.host === initialState.user_id ? (
                       <>
-                        <li>
-                          <a
-                            onClick={shuffleDrawDeck}
-                          >Shuffle draw deck</a>
+                        <li className="font-bold text-white">
+                          <a onClick={shuffleDrawDeck}>Shuffle draw deck</a>
                         </li>
-                        <li>
+                        <li className="font-bold text-white">
                           <a>Give last card to player</a>
                           <ul className="menu menu-sm bg-base-200 rounded-box w-56 ml-4">
                             {data.players
@@ -711,7 +713,7 @@ function Desk({ socket }) {
                                 (player) => player.id !== initialState.user_id
                               )
                               .map((player) => (
-                                <li key={player.id}>
+                                <li key={player.id} className="font-bold text-white">
                                   <a
                                     onClick={() => {
                                       giveLastToPlayer(player.id);
@@ -736,12 +738,12 @@ function Desk({ socket }) {
                   <>
                     {data.host === initialState.user_id ? (
                       <>
-                        <li>
+                        <li className="font-bold text-white">
                           <a onClick={shuffleThrowDeckIn}>
                             Shuffle throw deck into draw deck
                           </a>
                         </li>
-                        <li>
+                        <li className="font-bold text-white">
                           <a>Give last card to player</a>
                           <ul className="menu menu-sm bg-base-200 rounded-box w-56 ml-4">
                             {data.players
@@ -749,7 +751,7 @@ function Desk({ socket }) {
                                 (player) => player.id !== initialState.user_id
                               )
                               .map((player) => (
-                                <li key={player.id}>
+                                <li key={player.id} className="font-bold text-white">
                                   <a
                                     onClick={() => {
                                       giveLastToPlayer(player.id);
@@ -777,9 +779,9 @@ function Desk({ socket }) {
 
           {selectedPlayer !== null ? (
             <div className="absolute top-1 right-1 bg-gray-700 rounded-lg z-50">
-              <h1 className="ml-3 mt-1">Player actions</h1>
+              <h1 className="ml-3 mt-1 font-bold text-white">Player actions</h1>
               <ul className="menu menu-sm bg-base-200 rounded-box w-56">
-                <li>
+                <li className="font-bold text-white">
                   <a
                     onClick={() => {
                       sendOnHandReq();
@@ -789,14 +791,14 @@ function Desk({ socket }) {
                   </a>
                 </li>
                 {data.host === initialState.user_id ? (
-                  <li>
+                  <li className="font-bold text-white">
                     <a onClick={kickPlayer}>Kick player</a>
                   </li>
                 ) : (
                   <></>
                 )}
                 {data.host === initialState.user_id ? (
-                  <li>
+                  <li className="font-bold text-white">
                     <a onClick={giveHost}>Give host</a>
                   </li>
                 ) : (

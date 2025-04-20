@@ -62,18 +62,18 @@ function SettingsMenu({ socket, isHost }) {
           <ul className="menu menu-compact">
             {initialState.code ? (
               <>
-                <li>
+                <li className="font-bold text-white">
                   <a onClick={leaveGame}>Leave game</a>
                 </li>
                 {isHost ? (
                   <>
-                    <li>
+                    <li className="font-bold text-white">
                       <a onClick={()=>{
                         socket.emit("restartGame",{code:initialState.code})
                         setIsOpen(false);
                       }}>Restart game</a>
                     </li>
-                    <li>
+                    <li className="font-bold text-white">
                       <a onClick={endGame}>End game</a>
                     </li>
                   </>
@@ -84,7 +84,7 @@ function SettingsMenu({ socket, isHost }) {
             ) : (
               <></>
             )}
-            <li>
+            <li className="font-bold text-white">
               <a onClick={logout}>Logout</a>
             </li>
           </ul>
