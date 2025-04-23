@@ -28,6 +28,9 @@ const shuffleArray = (array) => {
   }
 };
 
+/* const activeUsers = new Map();
+const userSockets = new Map(); */
+
 const initLobbies = async () => {
   try {
     const lobbylist = await Lobby.findAll();
@@ -259,6 +262,23 @@ const reconnects = {};
 io.on("connection", (socket) => {
   const userId = socket.handshake.query.user_id;
 
+  /* if (!isNaN(userId)) {
+    // Régi kapcsolat kezelése
+    const existingSocketId = activeUsers.get(userId);
+    if (existingSocketId && existingSocketId !== socket.id) {
+      const oldSocket = io.sockets.sockets.get(existingSocketId);
+      if (oldSocket) {
+        console.log(`Disconnecting old socket for user ${userId}`);
+        oldSocket.disconnect(true);
+      }
+    }
+
+    // Új kapcsolat rögzítése
+    activeUsers.set(userId, socket.id);
+    userSockets.set(socket.id, userId);
+    console.log(`User ${userId} connected with socket ${socket.id}`);
+  } */
+
   if (userId) {
     if (userId in reconnects) {
       clearTimeout(reconnects[userId]);
@@ -407,13 +427,6 @@ io.on("connection", (socket) => {
       const lobbyId = parseInt(checklobby.id);
       const code = parseInt(checklobby.code);
 
-      // 1. Először töröljük a Host bejegyzést, ha létezik
-      await Host.destroy({
-        where: {
-          lobby_id: lobbyId,
-        },
-      });
-
       // 2. Nullázzuk a user lobby_id-ját
       await User.update(
         { lobby_id: null },
@@ -433,7 +446,12 @@ io.on("connection", (socket) => {
 
           // Ha üres a lobby, töröljük
           if (lobbies[code].players.length === 0) {
-            // 4. Végül töröljük magát a Lobby-t
+            await Host.destroy({
+              where: {
+                lobby_id: lobbyId,
+              },
+            });
+
             await Lobby.destroy({
               where: {
                 id: lobbyId,
@@ -882,7 +900,7 @@ io.on("connection", (socket) => {
 
     reconnects[userID] = setTimeout(async () => {
       try {
-        // Felhasználó lobby_id lekérése
+        
         const user = await User.findOne({
           where: { id: userID },
           attributes: ["lobby_id"],

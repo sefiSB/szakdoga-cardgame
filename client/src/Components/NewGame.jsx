@@ -205,7 +205,7 @@ function NewGame({ socket }) {
               <span className="label-text">Type of cards</span>
             </div>
             <div className="flex gap-10">
-              <fieldset class="fieldset">
+              <fieldset className="fieldset">
                 <select
                   defaultValue="Pick a card type"
                   value={cardType}

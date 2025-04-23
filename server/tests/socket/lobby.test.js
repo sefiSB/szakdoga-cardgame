@@ -16,7 +16,7 @@ function waitFor(socket, event) {
   });
 }
 
-describe("Lobby Socket Tests", () => {
+describe("Lobby Tests", () => {
   let io, serverSocket, clientSocket, user;
   const TEST_PORT = 3002;
 
@@ -151,7 +151,7 @@ describe("Lobby Socket Tests", () => {
       ),
     ]);
 
-    // Check the result
+    
     expect(data.players).toMatchObject({
       id: user.id,
       username: "testuser",
@@ -160,6 +160,15 @@ describe("Lobby Socket Tests", () => {
 
 
   test("should create a lobby", async () => {
-
+    // Create a lobby first
+    const user = await User.findOne({ where: { username: "testuser" } });
+    const user2 = await User.findOne({ where: { username: "testuser2" } });
+    const lobby = await Lobby.create({
+      name: "Test Lobby",
+      host: user2.id,
+      code: 1234,
+      status: "waiting",
+    });
+    // Emit createLobby event
   },15000); 
 });

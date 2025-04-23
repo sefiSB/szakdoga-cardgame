@@ -1,5 +1,5 @@
 import { data, useNavigate } from "react-router-dom";
-import { initialState,setItem } from "../Store/store";
+import { initialState,removeItem,setItem } from "../Store/store";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
@@ -28,12 +28,23 @@ function Login({ socket }) {
           console.log(data.error);
           setError(data.error);
         } else {
+          initialState.user=null;
+          initialState.user_id=null;
+          removeItem("user_id");
+          removeItem("user");
+
+
+          initialState.user = name;
+          setItem("user",name);
           initialState.user_id = data.id;
           setItem("user_id",data.id);
           navigate("/createorjoin");
         }
       })
   }
+
+  console.log(initialState.user_id);
+  console.log(initialState.user);
 
   return (
     <>

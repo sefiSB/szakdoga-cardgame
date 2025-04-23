@@ -43,6 +43,10 @@ function CreateOrJoin({socket}) {
     fetchUserData();
   }, [navigate]); */
 
+  console.log(localStorage.getItem("user_id"));
+  console.log(initialState.user_id);
+  console.log(initialState.user);
+
   return (
     <>
       
