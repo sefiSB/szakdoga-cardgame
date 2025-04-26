@@ -33,11 +33,14 @@ function Login({ socket }) {
           removeItem("user_id");
           removeItem("user");
 
-
+          //socket.user_id = data.id;
           initialState.user = name;
           setItem("user",name);
           initialState.user_id = data.id;
           setItem("user_id",data.id);
+
+          socket.emit("updateUserID",{user_id:data.id});
+
           navigate("/createorjoin");
         }
       })

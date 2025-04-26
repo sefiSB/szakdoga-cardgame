@@ -18,6 +18,7 @@ const {
 } = require("./memory/lobbies");
 const { emit } = require("process");
 const { parse } = require("path");
+const { log } = require("console");
 
 const app = express();
 
@@ -28,8 +29,7 @@ const shuffleArray = (array) => {
   }
 };
 
-/* const activeUsers = new Map();
-const userSockets = new Map(); */
+const socket_user = new Map();
 
 const initLobbies = async () => {
   try {
@@ -262,24 +262,8 @@ const reconnects = {};
 io.on("connection", (socket) => {
   const userId = socket.handshake.query.user_id;
 
-  /* if (!isNaN(userId)) {
-    // Régi kapcsolat kezelése
-    const existingSocketId = activeUsers.get(userId);
-    if (existingSocketId && existingSocketId !== socket.id) {
-      const oldSocket = io.sockets.sockets.get(existingSocketId);
-      if (oldSocket) {
-        console.log(`Disconnecting old socket for user ${userId}`);
-        oldSocket.disconnect(true);
-      }
-    }
-
-    // Új kapcsolat rögzítése
-    activeUsers.set(userId, socket.id);
-    userSockets.set(socket.id, userId);
-    console.log(`User ${userId} connected with socket ${socket.id}`);
-  } */
-
   if (userId) {
+    socket_user.set(socket.id, userId);
     if (userId in reconnects) {
       clearTimeout(reconnects[userId]);
       delete reconnects[userId];
@@ -292,7 +276,15 @@ io.on("connection", (socket) => {
     console.log(`New connection without user_id ${socket.id}`);
   }
 
-  console.log(io.engine.clientsCount);
+  socket.on("updateUserID", (data) => {
+    if (data.user_id === null) {
+      socket_user.delete(socket.id);
+      console.log("aktívak:", socket_user.size);
+      return;
+    }
+    socket_user.set(socket.id, parseInt(data.user_id));
+    console.log(`User ID updated: ${data.user_id}, Socket ID: ${socket.id}`);
+  });
 
   socket.on("reconnectClient", (data) => {
     const { user_id, code } = data;
@@ -811,6 +803,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("joinLobby", async (data) => {
+    console.log("asdasdasdasd", socket.user_id);
     let { code, user, user_id } = data;
     code = parseInt(code);
     try {
@@ -886,21 +879,14 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", async () => {
-    const rawUserId = socket.handshake.query.user_id;
-    if (!rawUserId) {
-      console.log("No user_id in handshake query");
-      return;
+    const userID = socket_user.get(socket.id);
+    if (!userID) {
+      console.log("No user_id found for socket:", socket.id);
     }
-
-    const userID = parseInt(rawUserId);
-    if (isNaN(userID)) {
-      console.log("Invalid user_id format:", rawUserId);
-      return;
-    }
+    console.log("Disconnecting user:", socket_user.get(socket.id));
 
     reconnects[userID] = setTimeout(async () => {
       try {
-        
         const user = await User.findOne({
           where: { id: userID },
           attributes: ["lobby_id"],
@@ -918,69 +904,70 @@ io.on("connection", (socket) => {
 
         if (!lobby) {
           console.log("Lobby not found for user:", userID);
-          return;
-        }
+        } else {
+          const code = parseInt(lobby.code);
+          console.log("Processing disconnect for lobby code:", code);
 
-        const code = parseInt(lobby.code);
-        console.log("Processing disconnect for lobby code:", code);
+          // User lobby_id nullázása
+          await User.update({ lobby_id: null }, { where: { id: userID } });
 
-        // User lobby_id nullázása
-        await User.update({ lobby_id: null }, { where: { id: userID } });
+          if (lobbies[code]) {
+            // Játékos eltávolítása a memóriából
+            const playerIndex = lobbies[code].players.findIndex(
+              (player) => player.id === userID
+            );
 
-        if (lobbies[code]) {
-          // Játékos eltávolítása a memóriából
-          const playerIndex = lobbies[code].players.findIndex(
-            (player) => player.id === userID
-          );
+            if (playerIndex >= 0) {
+              lobbies[code].players.splice(playerIndex, 1);
+              io.to(code).emit("updateLobby", lobbies[code]);
+              console.log(lobbies[code]);
 
-          if (playerIndex >= 0) {
-            lobbies[code].players.splice(playerIndex, 1);
-            io.to(code).emit("updateLobby", lobbies[code]);
-            console.log(lobbies[code]);
-
-            // Ha üres a lobby, töröljük
-            if (lobbies[code].players.length === 0) {
-              console.log("Removing empty lobby:", code);
-              try {
-                // Először keressük meg a lobby ID-t
-                const lobbyToDelete = await Lobby.findOne({
-                  where: { code: code },
-                });
-
-                if (lobbyToDelete) {
-                  // Először töröljük a kapcsolódó Host rekordokat
-                  await Host.destroy({
-                    where: {
-                      lobby_id: lobbyToDelete.id,
-                    },
+              // Ha üres a lobby, töröljük
+              if (lobbies[code].players.length === 0) {
+                console.log("Removing empty lobby:", code);
+                try {
+                  // Először keressük meg a lobby ID-t
+                  const lobbyToDelete = await Lobby.findOne({
+                    where: { code: code },
                   });
 
-                  // Majd nullázzuk a felhasználók lobby_id-ját
-                  await User.update(
-                    { lobby_id: null },
-                    {
+                  if (lobbyToDelete) {
+                    // Először töröljük a kapcsolódó Host rekordokat
+                    await Host.destroy({
                       where: {
                         lobby_id: lobbyToDelete.id,
                       },
-                    }
-                  );
+                    });
 
-                  // Végül töröljük magát a Lobby-t
-                  await Lobby.destroy({
-                    where: {
-                      id: lobbyToDelete.id,
-                    },
-                  });
+                    // Majd nullázzuk a felhasználók lobby_id-ját
+                    await User.update(
+                      { lobby_id: null },
+                      {
+                        where: {
+                          lobby_id: lobbyToDelete.id,
+                        },
+                      }
+                    );
 
-                  // Töröljük a memóriából
-                  delete lobbies[code];
+                    // Végül töröljük magát a Lobby-t
+                    await Lobby.destroy({
+                      where: {
+                        id: lobbyToDelete.id,
+                      },
+                    });
+
+                    // Töröljük a memóriából
+                    delete lobbies[code];
+                  }
+                } catch (error) {
+                  console.error("Error deleting lobby:", error);
                 }
-              } catch (error) {
-                console.error("Error deleting lobby:", error);
               }
             }
           }
         }
+        socket_user.delete(socket.id);
+        console.log("aktívak:", socket_user.size);
 
         console.log("Disconnected user:", userID);
       } catch (error) {
