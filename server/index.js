@@ -134,6 +134,12 @@ app.post("/loginuser", async (req, res) => {
     if (!pwcmp) {
       return res.json({ error: "Password is incorrect!" });
     }
+
+    const isUserLoggedIn = Array.from(socket_user.values()).includes(user.id);
+    if (isUserLoggedIn) {
+      return res.json({ error: "User already logged in!" });
+    }
+
     res.json(user);
   } catch (error) {
     res.status(500).json({ error: "Database error", details: error.message });
