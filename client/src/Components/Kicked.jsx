@@ -1,15 +1,17 @@
 import { initialState, setItem } from "../Store/store";
 import { useNavigate } from "react-router-dom";
 
-
 import { useEffect } from "react";
 
 function Kicked(socket) {
   const navigate = useNavigate();
-  if (!initialState.user_id) {
-    navigate("/login");
-  }
-  //console.log("username" + initialState.user);
+
+  useEffect(() => {
+    if (!initialState.user_id) {
+      navigate("/login");
+    }
+  });
+ 
   return (
     <>
       <div className="flex flex-col justify-center items-center h-screen gap-6">
@@ -29,12 +31,12 @@ function Kicked(socket) {
           <button
             className="btn btn-secondary w-40"
             onClick={() => {
-            initialState.user=null;
-            setItem("user",null);
-            initialState.user_id=null;
-            setItem("user_id",null);
-            initialState.code=null;
-            setItem("code",null);
+              initialState.user = null;
+              setItem("user", null);
+              initialState.user_id = null;
+              setItem("user_id", null);
+              initialState.code = null;
+              setItem("code", null);
               setTimeout(() => navigate("/"), 0);
             }}
           >

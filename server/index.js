@@ -16,9 +16,6 @@ const {
   createLobby,
   canJoin,
 } = require("./memory/lobbies");
-const { emit } = require("process");
-const { parse } = require("path");
-const { log } = require("console");
 
 const app = express();
 
@@ -29,7 +26,7 @@ const shuffleArray = (array) => {
   }
 };
 
-const socket_user = new Map();
+const user_socket = new Map();
 
 const initLobbies = async () => {
   try {
@@ -135,7 +132,8 @@ app.post("/loginuser", async (req, res) => {
       return res.json({ error: "Password is incorrect!" });
     }
 
-    const isUserLoggedIn = Array.from(socket_user.values()).includes(user.id);
+    const isUserLoggedIn = user_socket.has(user.id);
+    console.log("connecteduser:",user.id);
     if (isUserLoggedIn) {
       return res.json({ error: "User already logged in!" });
     }
@@ -266,30 +264,37 @@ app.post("/gamestart", async (req, res) => {
 const reconnects = {};
 
 io.on("connection", (socket) => {
-  const userId = socket.handshake.query.user_id;
-
-  if (userId) {
-    socket_user.set(socket.id, userId);
-    if (userId in reconnects) {
-      clearTimeout(reconnects[userId]);
-      delete reconnects[userId];
+  const rawUserId = socket.handshake.query.user_id;
+  if (rawUserId) {
+    const userId = parseInt(rawUserId);
+    if (!isNaN(rawUserId)) {
+      user_socket.set(parseInt(userId), socket.id);
+      if (userId in reconnects) {
+        clearTimeout(reconnects[userId]);
+        delete reconnects[userId];
+      }
+      console.log(
+        `User connected/reconnected: ${userId}, Socket ID: ${socket.id}`
+      );
+      socket.emit("reconnectClient", { user_id: userId });
+    } else {
+      console.log(`New connection without user_id ${socket.id}`);
     }
-    console.log(
-      `User connected/reconnected: ${userId}, Socket ID: ${socket.id}`
-    );
-    socket.emit("reconnectClient", { user_id: userId });
-  } else {
-    console.log(`New connection without user_id ${socket.id}`);
   }
-
   socket.on("updateUserID", (data) => {
+    console.log("updateUserID:", data.user_id);
     if (data.user_id === null) {
-      socket_user.delete(socket.id);
-      console.log("aktívak:", socket_user.size);
+      const userToDelete = user_socket
+        .entries()
+        .find(([key, value]) => value === socket.id)?.[0];
+
+      user_socket.delete(userToDelete);
+      console.log("aktívak:", user_socket);
       return;
     }
-    socket_user.set(socket.id, parseInt(data.user_id));
+    user_socket.set(parseInt(data.user_id), socket.id);
     console.log(`User ID updated: ${data.user_id}, Socket ID: ${socket.id}`);
+    console.log("aktívak:", user_socket);
   });
 
   socket.on("reconnectClient", (data) => {
@@ -885,11 +890,17 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", async () => {
-    const userID = socket_user.get(socket.id);
+    let userID = null;
+    for (const [uid, sid] of user_socket.entries()) {
+      if (sid === socket.id) {
+        userID = uid;
+        break;
+      }
+    }
     if (!userID) {
       console.log("No user_id found for socket:", socket.id);
     }
-    console.log("Disconnecting user:", socket_user.get(socket.id));
+    console.log("Disconnecting user:", userID);
 
     reconnects[userID] = setTimeout(async () => {
       try {
@@ -972,8 +983,8 @@ io.on("connection", (socket) => {
             }
           }
         }
-        socket_user.delete(socket.id);
-        console.log("aktívak:", socket_user.size);
+        user_socket.delete(userID);
+        console.log("aktívak:", user_socket);
 
         console.log("Disconnected user:", userID);
       } catch (error) {

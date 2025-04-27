@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
 import "./App.css";
 import io from "socket.io-client";
-import { initialState, setItem } from "./Store/store";
+import { initialState, removeItem, setItem } from "./Store/store";
 
 
 const socket = io(`http://${import.meta.env.VITE_SERVER_IP}:3001`, {
@@ -21,6 +21,25 @@ import Kicked from "./Components/Kicked";
 
 function App() {
 
+window.addEventListener("beforeunload", function (event) {
+  //30 másodperc beállítása
+  setItem("expiration", Date.now() + 6 * 1000);
+  initialState.expiration = Date.now() + 6 * 1000;
+})
+
+socket.on("connect", () => {
+  console.log("Socket connected:", socket.id);
+  if(parseInt(initialState.expiration) < Date.now()){
+    console.log("Session expired...");
+    removeItem("user_id");
+    removeItem("user");
+    removeItem("code");
+    initialState.user_id = null;
+    initialState.user = null;
+    initialState.code = null;
+    socket.emit("updateUserID",{user_id:null});
+  }  
+})
 
   return (
     <>
