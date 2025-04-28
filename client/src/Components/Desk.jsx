@@ -482,7 +482,13 @@ function Desk({ socket }) {
             <div className="flex justify-center space-x-4 mt-4">
               <button
                 className="btn btn-primary"
-                onClick={() => navigate("/createorjoin")}
+                onClick={() => {
+                  socket.emit("leaveGame", {
+                    code: initialState.code,
+                    user_id: initialState.user_id,
+                  });
+                  navigate("/createorjoin");
+                }}
               >
                 Exit Game
               </button>
@@ -713,7 +719,10 @@ function Desk({ socket }) {
                                 (player) => player.id !== initialState.user_id
                               )
                               .map((player) => (
-                                <li key={player.id} className="font-bold text-white">
+                                <li
+                                  key={player.id}
+                                  className="font-bold text-white"
+                                >
                                   <a
                                     onClick={() => {
                                       giveLastToPlayer(player.id);
@@ -751,7 +760,10 @@ function Desk({ socket }) {
                                 (player) => player.id !== initialState.user_id
                               )
                               .map((player) => (
-                                <li key={player.id} className="font-bold text-white">
+                                <li
+                                  key={player.id}
+                                  className="font-bold text-white"
+                                >
                                   <a
                                     onClick={() => {
                                       giveLastToPlayer(player.id);

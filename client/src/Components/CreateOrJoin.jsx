@@ -20,7 +20,7 @@ function CreateOrJoin({socket}) {
     }
   })
 
-  console.log(localStorage.getItem("user_id"));
+  console.log(sessionStorage.getItem("user_id"));
   console.log(initialState.user_id);
   console.log(initialState.user);
 

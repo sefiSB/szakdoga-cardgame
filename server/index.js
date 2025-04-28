@@ -268,6 +268,13 @@ io.on("connection", (socket) => {
   if (rawUserId) {
     const userId = parseInt(rawUserId);
     if (!isNaN(rawUserId)) {
+      if(user_socket.has(userId)) {
+        const oldSocketId = user_socket.get(userId);
+        io.to(oldSocketId).emit("forceDisconnect", {
+          message: "Another device has connected with this user ID.",
+        });
+        user_socket.delete(userId);
+      }
       user_socket.set(parseInt(userId), socket.id);
       if (userId in reconnects) {
         clearTimeout(reconnects[userId]);
@@ -284,10 +291,14 @@ io.on("connection", (socket) => {
   socket.on("updateUserID", (data) => {
     console.log("updateUserID:", data.user_id);
     if (data.user_id === null) {
-      const userToDelete = user_socket
-        .entries()
-        .find(([key, value]) => value === socket.id)?.[0];
-
+      let userToDelete = null;
+    for (const [uid, sid] of user_socket.entries()) {
+      if (sid === socket.id) {
+        userToDelete = uid;
+        break;
+      }
+    }
+      console.log("userToDelete:", userToDelete);
       user_socket.delete(userToDelete);
       console.log("aktívak:", user_socket);
       return;
@@ -430,15 +441,34 @@ io.on("connection", (socket) => {
       const lobbyId = parseInt(checklobby.id);
       const code = parseInt(checklobby.code);
 
-      // 2. Nullázzuk a user lobby_id-ját
+      //nullázzuk a user lobby_id-ját
       await User.update(
         { lobby_id: null },
         {
           where: { id: data.user_id },
         }
       );
+      
+      //ha a játékos a host, akkor új hostot kell választani
+      if (lobbies[code].host === data.user_id) {
+        const newHost = lobbies[code].players.find(
+          (player) => player.id !== data.user_id
+        );
+        if (newHost) {
+          console.log("Új host:", newHost.username);
+          lobbies[code].host = newHost.id;
+          await Host.update(
+            { host_id: newHost.id },
+            {
+              where: { lobby_id: lobbyId },
+            }
+          );
+        } else {
+          console.log("Nincs új host!");
+        }
+      }
 
-      // 3. Eltávolítjuk a játékost a memóriából
+      //eltávolítjuk a játékost a memóriából
       if (lobbies[code]) {
         const playerIndex = lobbies[code].players.findIndex(
           (player) => player.id === data.user_id
@@ -728,7 +758,6 @@ io.on("connection", (socket) => {
     }
 
     lobby.decks.throwDeck.push(card);
-
     lobbies[code] = lobby;
     console.log(lobby.decks.throwDeck);
     console.log(lobby.players);
@@ -814,7 +843,6 @@ io.on("connection", (socket) => {
   });
 
   socket.on("joinLobby", async (data) => {
-    console.log("asdasdasdasd", socket.user_id);
     let { code, user, user_id } = data;
     code = parseInt(code);
     try {
@@ -928,6 +956,25 @@ io.on("connection", (socket) => {
           // User lobby_id nullázása
           await User.update({ lobby_id: null }, { where: { id: userID } });
 
+
+          //ha a játékos a host, akkor új hostot kell választani
+          if (lobbies[code].host === userID) {
+            const newHost = lobbies[code].players.find(
+              (player) => player.id !== userID
+            );
+            if (newHost) {
+              console.log("Új host:", newHost.username);
+              lobbies[code].host = newHost.id;
+              await Host.update(
+                { host_id: newHost.id },
+                {
+                  where: { lobby_id: user.lobby_id },
+                }
+              );
+            } else {
+              console.log("Nincs új host!");
+            }
+          }
           if (lobbies[code]) {
             // Játékos eltávolítása a memóriából
             const playerIndex = lobbies[code].players.findIndex(
