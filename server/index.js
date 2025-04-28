@@ -133,7 +133,7 @@ app.post("/loginuser", async (req, res) => {
     }
 
     const isUserLoggedIn = user_socket.has(user.id);
-    console.log("connecteduser:",user.id);
+    console.log("connecteduser:", user.id);
     if (isUserLoggedIn) {
       return res.json({ error: "User already logged in!" });
     }
@@ -268,7 +268,7 @@ io.on("connection", (socket) => {
   if (rawUserId) {
     const userId = parseInt(rawUserId);
     if (!isNaN(rawUserId)) {
-      if(user_socket.has(userId)) {
+      if (user_socket.has(userId)) {
         const oldSocketId = user_socket.get(userId);
         io.to(oldSocketId).emit("forceDisconnect", {
           message: "Another device has connected with this user ID.",
@@ -292,12 +292,12 @@ io.on("connection", (socket) => {
     console.log("updateUserID:", data.user_id);
     if (data.user_id === null) {
       let userToDelete = null;
-    for (const [uid, sid] of user_socket.entries()) {
-      if (sid === socket.id) {
-        userToDelete = uid;
-        break;
+      for (const [uid, sid] of user_socket.entries()) {
+        if (sid === socket.id) {
+          userToDelete = uid;
+          break;
+        }
       }
-    }
       console.log("userToDelete:", userToDelete);
       user_socket.delete(userToDelete);
       console.log("aktívak:", user_socket);
@@ -448,7 +448,7 @@ io.on("connection", (socket) => {
           where: { id: data.user_id },
         }
       );
-      
+
       //ha a játékos a host, akkor új hostot kell választani
       if (lobbies[code].host === data.user_id) {
         const newHost = lobbies[code].players.find(
@@ -956,7 +956,6 @@ io.on("connection", (socket) => {
           // User lobby_id nullázása
           await User.update({ lobby_id: null }, { where: { id: userID } });
 
-
           //ha a játékos a host, akkor új hostot kell választani
           if (lobbies[code].host === userID) {
             const newHost = lobbies[code].players.find(
@@ -1062,4 +1061,4 @@ if (process.env.NODE_ENV !== "test") {
   });
 }
 
-module.exports = { app, server, io, User, Lobby, Preset, Host };
+module.exports = { app, server, io, User, Lobby, Preset, Host, shuffleArray };
