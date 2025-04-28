@@ -1,6 +1,6 @@
 import { data, useNavigate } from "react-router-dom";
 import { initialState,removeItem,setItem } from "../Store/store";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 function Login({ socket }) {
@@ -10,6 +10,13 @@ function Login({ socket }) {
   const [error, setError] = useState(); // Tárolja a hibát, ha van
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+
+  useEffect(() => {
+    socket.on("forceDisconnect",(data)=>{
+      alert(data.message);
+      navigate("/login");
+    })
+  });
 
   const validateUser = () => {
     const response = fetch(`${BACKEND_URL}/loginuser`, {
@@ -33,11 +40,14 @@ function Login({ socket }) {
           removeItem("user_id");
           removeItem("user");
 
-
+          //socket.user_id = data.id;
           initialState.user = name;
           setItem("user",name);
           initialState.user_id = data.id;
           setItem("user_id",data.id);
+
+          socket.emit("updateUserID",{user_id:data.id});
+
           navigate("/createorjoin");
         }
       })

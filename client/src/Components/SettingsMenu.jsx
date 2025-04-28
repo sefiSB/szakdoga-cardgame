@@ -35,6 +35,7 @@ function SettingsMenu({ socket, isHost }) {
     initialState.code = null;
     setItem("code",null);
     navigate("/login");
+    socket.emit("updateUserID",{user_id:null});
     setIsOpen(false);
   };
 

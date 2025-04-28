@@ -52,6 +52,7 @@ function Register({ socket }) {
     } else {
       initialState.user_id = data.id;
       setItem("user_id",data.id);
+      socket.emit("updateUserID",{user_id:data.id});
       navigate("/createorjoin");
       console.log(data);
     }

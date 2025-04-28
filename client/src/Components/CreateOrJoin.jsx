@@ -14,36 +14,13 @@ function CreateOrJoin({socket}) {
     navigate("/login");
   }
 
-  /* useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const response = await fetch(
-          `${BACKEND_URL}/users/${initialState.user_id}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        const data = await response.json();
-        console.log(data);
-        if (data.code){
-          initialState.code = parseInt(data.code);
-          setItem("code",parseInt(data.code));
-          navigate("/desk");
-        }
-        setUserData(data);
-        setIsLoading(false);
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-        setIsLoading(false);
-      }
-    };
-    fetchUserData();
-  }, [navigate]); */
+  useEffect(() => {
+    if(!initialState.user_id){
+      navigate("/login");
+    }
+  })
 
-  console.log(localStorage.getItem("user_id"));
+  console.log(sessionStorage.getItem("user_id"));
   console.log(initialState.user_id);
   console.log(initialState.user);
 
