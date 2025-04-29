@@ -617,6 +617,10 @@ io.on("connection", (socket) => {
       console.log("vmi nemjo");
     }
 
+    if(player.cards.onHand.length==20){
+      return
+    }
+    
     let cardInd = -1;
     let card;
 
@@ -651,6 +655,9 @@ io.on("connection", (socket) => {
     const player = lobby.players.find((player) => player.id === player_id);
     if (!player || !lobby) {
       console.log("vmi nemjo");
+    }
+    if(player.cards.onHand.length==20){
+      return
     }
 
     let cardInd = -1;
@@ -783,6 +790,10 @@ io.on("connection", (socket) => {
       console.log("vmi nemjó");
     }
 
+    if(player.cards.onHand.length==20){
+      return
+    }
+
     let card;
     if (playFrom === "throwDeck") {
       card = lobby.decks.throwDeck.pop();
@@ -804,7 +815,9 @@ io.on("connection", (socket) => {
     if (!player || !lobby) {
       console.log("vmi nemjó");
     }
-
+    if(player.cards.onHand.length==20){
+      return
+    }
     player.cards.onHand.push(lobby.decks.drawDeck.pop());
 
     lobbies[code] = lobby;
@@ -1054,7 +1067,7 @@ io.on("connection", (socket) => {
 });
 
 if (process.env.NODE_ENV !== "test") {
-  server.listen(3001, "0.0.0.0", async () => {
+  server.listen(3001, "127.0.0.1", async () => {
     console.log("SERVER IS RUNNING");
     console.log(server.address().address + ":" + server.address().port);
     await initLobbies();
