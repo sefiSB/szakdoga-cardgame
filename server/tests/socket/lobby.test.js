@@ -504,6 +504,57 @@ describe("Lobby Tests", () => {
             io.to(code).emit("updateLobby", lobby);
           });
 
+
+
+
+          socket.on("leaveGame", async (data) => {
+            const {code,user_id}=data;
+            try {
+              
+              
+              //eltávolítjuk a játékost a memóriából
+              if (testlobbies[code]) {
+                const playerIndex = testlobbies[code].players.findIndex(
+                  (player) => player.id === user_id
+                );
+        
+                if (playerIndex >= 0) {
+                  testlobbies[code].players.splice(playerIndex, 1);
+        
+                  // Ha üres a lobby, töröljük
+                  if (testlobbies[code].players.length === 0) {
+                    delete testlobbies[code];
+                  } else {
+                    io.to(code).emit("updateLobby", testlobbies[code]);
+                  }
+                }
+              }
+        
+              console.log("Szerver megkapta a kódot");
+            } catch (error) {
+              console.error("HIBA A LEAVEGAME-BEN:", error);
+            }
+          });
+
+
+          socket.on("respondOnHandSwitch", (data) => {
+            const { from, to, code, isAccepted } = data;
+        
+            if (isAccepted) {
+              const lobby = testlobbies[code];
+              const fromPlayer = lobby.players.find((player) => player.id === from);
+        
+              const toPlayer = lobby.players.find((player) => player.id === to);
+        
+              const tmpFrom = [...fromPlayer.cards.onHand];
+              const tmpTo = [...toPlayer.cards.onHand];
+              fromPlayer.cards.onHand = tmpTo;
+              toPlayer.cards.onHand = tmpFrom;
+            }
+        
+            io.to(code).emit("updateLobby", testlobbies[code]);
+          });
+
           serverSocket = socket;
           resolve();
         });
@@ -950,4 +1001,136 @@ describe("Lobby Tests", () => {
     ]);
     expect(data.players[0].cards.onTableHidden.length).toBe(hiddencount + 1);
   });
+
+  test("should pick up a card", async () => {
+    const user = await User.findOne({
+      where: {
+        username: "testuser",
+      },
+    });
+
+    clientSocket.emit("toOnHand", {
+      player_id: user.id,
+      code: 1234,
+      cardNo: 6,
+      playFrom: "onTableVisible",
+    });
+    const handcount = testlobbies[1234].players[0].cards.onHand.length;
+    const data = await Promise.race([
+      waitFor(clientSocket, "updateLobby"),
+      new Promise((_, reject) => {
+        setTimeout(
+          () => reject(new Error("Timeout waiting for updateLobby")),
+          5000
+        );
+      }),
+    ]);
+    expect(data.players[0].cards.onHand.length).toBe(handcount + 1);
+  });
+
+  test("should leave lobby", async () => {
+    const user = await User.findOne({
+      where: {
+        username: "testuser",
+      },
+    });
+
+    const user2 = await User.findOne({
+      where: {
+        username: "testuser2",
+      },
+    });
+    addPLayer(1234,{id:user2.id});
+    clientSocket.emit("leaveGame", {
+      code: 1234,
+      user_id:user.id
+    });
+
+    const pcount = testlobbies[1234].players.length;
+    const data = await Promise.race([
+      waitFor(clientSocket, "updateLobby"),
+      new Promise((_, reject) => {
+        setTimeout(
+          () => reject(new Error("Timeout waiting for updateLobby")),
+          5000
+        );
+      }),
+    ]);
+   
+    expect(data.players.length).toBe(pcount - 1);
+  });
+
+
+  test("should swap cards", async () => {
+    const user = await User.findOne({
+      where: {
+        username: "testuser",
+      },
+    });
+
+    const user2 = await User.findOne({
+      where: {
+        username: "testuser2",
+      },
+    });
+    addPLayer(1234,{id:user2.id});
+
+    testlobbies[1234].players[0].cards.onHand[0].pop(); //eldobunk egy kártyát, hogy ne legyen ugyanaz a két kézben
+    const cardsp1=testlobbies[1234].players[0].cards.onHand
+    clientSocket.emit("respondOnHandSwitch", {
+      from:user.id,
+      to:user2.id,
+      code: 1234,
+      isAccepted:true,
+    });
+
+    const data = await Promise.race([
+      waitFor(clientSocket, "updateLobby"),
+      new Promise((_, reject) => {
+        setTimeout(
+          () => reject(new Error("Timeout waiting for updateLobby")),
+          5000
+        );
+      }),
+    ]);
+   
+    expect(data.players[1].cards.onHand).toMatchObject(cardsp1);
+  });
+
+  test("should not swap cards", async () => {
+    const user = await User.findOne({
+      where: {
+        username: "testuser",
+      },
+    });
+
+    const user2 = await User.findOne({
+      where: {
+        username: "testuser2",
+      },
+    });
+    addPLayer(1234,{id:user2.id});
+
+    testlobbies[1234].players[0].cards.onHand[0].pop(); //eldobunk egy kártyát, hogy ne legyen ugyanaz a két kézben
+    const cardsp2=testlobbies[1234].players[1].cards.onHand //csere előtti saját kártyával hasonlítom
+    clientSocket.emit("respondOnHandSwitch", {
+      from:user.id,
+      to:user2.id,
+      code: 1234,
+      isAccepted:false,
+    });
+
+    const data = await Promise.race([
+      waitFor(clientSocket, "updateLobby"),
+      new Promise((_, reject) => {
+        setTimeout(
+          () => reject(new Error("Timeout waiting for updateLobby")),
+          5000
+        );
+      }),
+    ]);
+   
+    expect(data.players[1].cards.onHand).toMatchObject(cardsp2);
+  });
+
 });

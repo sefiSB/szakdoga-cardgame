@@ -4,6 +4,7 @@ const { User } = require("../../models");
 const { testlobbies } = require("../testmemory/testlobbies");
 const bcrypt = require("bcryptjs");
 
+const TEST_PORT = 3002;
 describe("User API Tests", () => {
  
   beforeEach(async () => {
@@ -22,6 +23,8 @@ describe("User API Tests", () => {
       },
     });
   })
+
+  
 
   describe("GET /users/:id", () => {
     test("should return user data", async () => {
@@ -88,6 +91,11 @@ describe("User API Tests", () => {
         },
       });
     });
+    
+   /*  test("should log out", async ()=>{
+      
+      
+    }) */
 
   });
 });
