@@ -545,6 +545,9 @@ io.on("connection", (socket) => {
     if (!player || !lobby) {
       console.log("vmi nemjo");
     }
+    if(player.cards.onTableVisible.length==10){
+      return;
+    }
 
     let cardInd = -1;
     let card;
@@ -580,6 +583,10 @@ io.on("connection", (socket) => {
     const player = lobby.players.find((player) => player.id === player_id);
     if (!player || !lobby) {
       console.log("vmi nemjo");
+    }
+
+    if(player.cards.onTableHidden.length==10){
+      return;
     }
     let cardInd = -1;
     let card;
@@ -620,7 +627,7 @@ io.on("connection", (socket) => {
     if(player.cards.onHand.length==20){
       return
     }
-    
+
     let cardInd = -1;
     let card;
 
