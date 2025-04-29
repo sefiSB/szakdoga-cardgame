@@ -1,5 +1,5 @@
 import { data, useNavigate } from "react-router-dom";
-import { initialState,removeItem,setItem } from "../Store/store";
+import { initialState, removeItem, setItem } from "../Store/store";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
@@ -11,11 +11,19 @@ function Login({ socket }) {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
+  initialState.user_id = null;
+  setItem("user_id", null);
+  initialState.user = null;
+  setItem("user", null);
+  initialState.code = null;
+  setItem("code", null);
+  socket.emit("updateUserID", { user_id: null });
+
   useEffect(() => {
-    socket.on("forceDisconnect",(data)=>{
+    socket.on("forceDisconnect", (data) => {
       alert(data.message);
       navigate("/login");
-    })
+    });
   });
 
   const validateUser = () => {
@@ -35,23 +43,23 @@ function Login({ socket }) {
           console.log(data.error);
           setError(data.error);
         } else {
-          initialState.user=null;
-          initialState.user_id=null;
+          initialState.user = null;
+          initialState.user_id = null;
           removeItem("user_id");
           removeItem("user");
 
           //socket.user_id = data.id;
           initialState.user = name;
-          setItem("user",name);
+          setItem("user", name);
           initialState.user_id = data.id;
-          setItem("user_id",data.id);
+          setItem("user_id", data.id);
 
-          socket.emit("updateUserID",{user_id:data.id});
+          socket.emit("updateUserID", { user_id: data.id });
 
           navigate("/createorjoin");
         }
-      })
-  }
+      });
+  };
 
   console.log(initialState.user_id);
   console.log(initialState.user);
@@ -59,7 +67,6 @@ function Login({ socket }) {
   return (
     <>
       <div className="flex flex-col justify-center items-center h-screen gap-4">
-
         <label className="input input-bordered flex items-center gap-2">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -104,18 +111,21 @@ function Login({ socket }) {
           className="btn btn-outline btn-primary"
           onClick={() => {
             initialState.user = name;
-            setItem("user",name);
+            setItem("user", name);
             validateUser();
           }}
         >
           Log in
         </button>
 
-        <p>Still don't have an account? <Link className="link link-success" to="/register">Sign up!</Link></p>
+        <p>
+          Still don't have an account?{" "}
+          <Link className="link link-success" to="/register">
+            Sign up!
+          </Link>
+        </p>
 
-        {error && (
-          <div className="text-red-500">{error}</div>
-        )}
+        {error && <div className="text-red-500">{error}</div>}
       </div>
     </>
   );

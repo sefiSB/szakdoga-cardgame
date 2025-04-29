@@ -157,6 +157,9 @@ function NewGame({ socket }) {
   };
 
   useEffect(() => {
+    if(!initialState.user_id){
+      navigate("/login");
+    }
     getPresets();
     socket.on("presetAdded", () => {
       getPresets();
@@ -209,7 +212,7 @@ function NewGame({ socket }) {
                 <select
                   defaultValue="Pick a card type"
                   value={cardType}
-                  class="select select-secondary"
+                  className="select select-secondary"
                   onChange={(e) => setCardType(e.target.value)}
                 >
                   <option disabled={true}>Type of card</option>
@@ -364,6 +367,8 @@ function NewGame({ socket }) {
             </div>
             <input
               type="number"
+              min={0}
+              max={10}
               placeholder="Place a number here"
               className="input input-bordered w-full max-w-xs"
               value={startingCards}

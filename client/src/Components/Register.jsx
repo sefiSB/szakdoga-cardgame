@@ -31,6 +31,14 @@ function Register({ socket }) {
 
   const navigate = useNavigate();
 
+  initialState.user_id = null;
+  setItem("user_id", null);
+  initialState.user = null;
+  setItem("user", null);
+  initialState.code = null;
+  setItem("code", null);
+  socket.emit("updateUserID", { user_id: null });
+
   const postUser = async () => {
     const response = await fetch(`${BACKEND_URL}/adduser`, {
       method: "POST",
@@ -44,7 +52,7 @@ function Register({ socket }) {
       }),
     });
 
-  
+
     const data = await response.json();
     if (data.error) {
       setServerError(data.error);
@@ -218,7 +226,7 @@ function Register({ socket }) {
         </ul>
 
         <p>
-          Already have an account?{" "}
+          Already have an account?
           <Link className="link link-success" to="/login">
             Log in!
           </Link>

@@ -18,6 +18,9 @@ function Desk({ socket }) {
   if (!initialState.user_id) {
     navigate("/login");
   }
+  if (!initialState.code) {
+    navigate("/createorjoin");
+  }
 
   const giveLastToPlayer = (player_id) => {
     socket.emit("giveLastCard", {
@@ -157,6 +160,9 @@ function Desk({ socket }) {
 
   useEffect(() => {
     gameStart();
+    if(!initialState.user_id){
+      navigate("/login");
+    }
 
     socket.on("connect", () => {
       console.log("Socket connected:", socket.id);
@@ -222,7 +228,7 @@ function Desk({ socket }) {
         {selectedCard !== null ? (
           <div className="absolute top-1 right-1 bg-gray-700 rounded-lg z-50">
             <h1 className="ml-3 mt-1 font-bold text-white">Card actions</h1>
-            <ul class="menu menu-sm bg-base-200 rounded-box w-56">
+            <ul className="menu menu-sm bg-base-200 rounded-box w-56">
               <li className="font-bold text-white">
                 <a
                   onClick={() => {
@@ -276,7 +282,7 @@ function Desk({ socket }) {
         {selectedDeck !== null ? (
           <div className="absolute top-1 right-1 bg-gray-700 rounded-lg z-50">
             <h1 className="ml-3 mt-1 font-bold text-white">Deck actions</h1>
-            <ul class="menu menu-sm bg-base-200 rounded-box w-56">
+            <ul className="menu menu-sm bg-base-200 rounded-box w-56">
               {selectedDeck === "drawDeck" ? (
                 <>
                   <li className="font-bold text-white">
@@ -428,7 +434,7 @@ function Desk({ socket }) {
                   className={`absolute ${positionClasses[index]}`}
                 >
                   <div
-                    className={`bg-blue-500 p-2 rounded-md shadow-md text-center ${
+                    className={`bg-red-500 p-2 rounded-md font-bold text-white shadow-md text-center ${
                       selectedPlayer === player.id
                         ? "outline outline-4 outline-yellow-500"
                         : ""
@@ -454,7 +460,7 @@ function Desk({ socket }) {
           <>
             <div className="justify-center items-center flex gap-5">
               <button
-                class="btn btn-primary btn-xs sm:btn-sm md:btn-md lg:btn-lg xl:btn-xl"
+                className="btn btn-primary btn-xs sm:btn-sm md:btn-md lg:btn-lg xl:btn-xl"
                 onClick={startingGame}
               >
                 Start game
@@ -638,7 +644,7 @@ function Desk({ socket }) {
           {selectedCard !== null ? (
             <div className="absolute top-1 right-1 bg-gray-700 rounded-lg z-50">
               <h1 className="ml-3 mt-1 font-bold text-white">Card actions</h1>
-              <ul class="menu menu-sm bg-base-200 rounded-box w-56">
+              <ul className="menu menu-sm bg-base-200 rounded-box w-56">
                 <li className="font-bold text-white">
                   <a
                     onClick={() => {
@@ -693,7 +699,7 @@ function Desk({ socket }) {
           {selectedDeck !== null ? (
             <div className="absolute top-1 right-1 bg-gray-700 rounded-lg z-50">
               <h1 className="ml-3 mt-1 font-bold text-white">Deck actions</h1>
-              <ul class="menu menu-sm bg-base-200 rounded-box w-56">
+              <ul className="menu menu-sm bg-base-200 rounded-box w-56">
                 {selectedDeck === "drawDeck" ? (
                   <>
                     <li className="font-bold text-white">
@@ -854,7 +860,7 @@ function Desk({ socket }) {
                         setSelectedPlayer(player.id);
                       }
                     }}
-                    className={`bg-blue-500 p-2 rounded-md shadow-md text-center ${
+                    className={`bg-red-500 p-2 rounded-md font-bold text-white shadow-md text-center  ${
                       selectedPlayer === player.id
                         ? "outline outline-4 outline-yellow-500"
                         : ""

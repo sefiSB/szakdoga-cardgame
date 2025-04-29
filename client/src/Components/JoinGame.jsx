@@ -11,9 +11,7 @@ function JoinGame({socket}) {
   const [error, setError] = useState(null); // Tárolja a hibát, ha van
 
   const navigate = useNavigate();
-  if(!initialState.user_id){
-    navigate("/login");
-  }
+  
 
 
   const postCode = () => {
@@ -37,7 +35,11 @@ function JoinGame({socket}) {
   }
   
   useEffect(() => {
-    
+    if(!initialState.user_id){
+      navigate("/login");
+    }
+
+
     socket.on("updateLobby", (data) => {
       console.log("Lobby frissült:", data.players);
       initialState.code = parseInt(data.code);
