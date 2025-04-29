@@ -33,8 +33,8 @@ const createLobby = (data) => {
       isCardsOnDesk: data.presetdata.isCardsOnDesk,
     },
     decks: {
-      drawDeck: [],
-      throwDeck: [],
+      drawDeck: [["card0","jpg",0],["card1","jpg",1],["card2","jpg",2]],
+      throwDeck: [["card100","jpg",100]],
       onTable: [],
     },
   };
@@ -58,9 +58,9 @@ const addPLayer = (code, player) => {
     id: player.id,
     username: player.username,
     cards: {
-      onHand: [], //TEMPORARY
-      onTableVisible: [], //TEMPORARY
-      onTableHidden: [], //TEMPORARY
+      onHand: [["card3","jpg",3],["card4","jpg",4],["card5","jpg",5]], //TEMPORARY
+      onTableVisible: [["card6","jpg",6],["card7","jpg",7]], //TEMPORARY
+      onTableHidden: [],
     },
   });
   return true;
