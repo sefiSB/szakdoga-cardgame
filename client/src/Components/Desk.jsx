@@ -14,6 +14,16 @@ function Desk({ socket }) {
   const [onHandSwapId, setOnHandSwapId] = useState(null);
   const [playFrom, setPlayFrom] = useState(null);
 
+  window.addEventListener("popstate", function(event) {
+    initialState.code=null;
+    setItem("code",null);
+    socket.emit("leaveGame",{
+      user_id:initialState.user_id,
+      code:initialState.code,
+    });
+});
+
+
   const navigate = useNavigate();
   if (!initialState.user_id) {
     navigate("/login");

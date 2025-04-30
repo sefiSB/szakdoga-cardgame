@@ -19,6 +19,7 @@ const {
 
 const app = express();
 
+//legfőképp pakli keverésre használom
 const shuffleArray = (array) => {
   for (let i = array.length - 1; i >= 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -26,7 +27,10 @@ const shuffleArray = (array) => {
   }
 };
 
+
+//aktív userek tárolása mappel
 const user_socket = new Map();
+
 
 const initLobbies = async () => {
   try {
@@ -90,7 +94,6 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    //origin:"http://192.168.0.59:5173",
     origin: "*",
     methods: ["GET", "POST"],
   },
