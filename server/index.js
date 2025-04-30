@@ -133,7 +133,6 @@ app.post("/loginuser", async (req, res) => {
     }
 
     const isUserLoggedIn = user_socket.has(user.id);
-    console.log("connecteduser:", user.id);
     if (isUserLoggedIn) {
       return res.json({ error: "User already logged in!" });
     }
@@ -289,7 +288,6 @@ io.on("connection", (socket) => {
     }
   }
   socket.on("updateUserID", (data) => {
-    console.log("updateUserID:", data.user_id);
     if (data.user_id === null) {
       let userToDelete = null;
       for (const [uid, sid] of user_socket.entries()) {
@@ -298,25 +296,24 @@ io.on("connection", (socket) => {
           break;
         }
       }
-      console.log("userToDelete:", userToDelete);
       user_socket.delete(userToDelete);
-      console.log("aktívak:", user_socket);
+      console.log("actives:", user_socket);
       return;
     }
     user_socket.set(parseInt(data.user_id), socket.id);
     console.log(`User ID updated: ${data.user_id}, Socket ID: ${socket.id}`);
-    console.log("aktívak:", user_socket);
+    console.log("actives:", user_socket);
   });
 
   socket.on("reconnectClient", (data) => {
     const { user_id, code } = data;
     if (!code) {
-      console.log("A reconnectClient kérésben nincs code!");
+      console.log("No code in reconnect request!");
       return;
     }
 
     socket.join(code);
-    console.log(`Socket ${socket.id} belépett a ${code} szobába`);
+    console.log(`Socket ${socket.id} joined the ${code} room`);
 
     io.to(socket.id).emit("updateLobby", lobbies[code]);
   });
@@ -424,7 +421,7 @@ io.on("connection", (socket) => {
 
   socket.on("leaveGame", async (data) => {
     try {
-      console.log("Szerver megkapta a kódot");
+      console.log("Server got the code!");
       const user = await User.findOne({
         where: { id: data.user_id },
       });
@@ -455,7 +452,7 @@ io.on("connection", (socket) => {
           (player) => player.id !== data.user_id
         );
         if (newHost) {
-          console.log("Új host:", newHost.username);
+          console.log("New host:", newHost.username);
           lobbies[code].host = newHost.id;
           await Host.update(
             { host_id: newHost.id },
@@ -464,7 +461,7 @@ io.on("connection", (socket) => {
             }
           );
         } else {
-          console.log("Nincs új host!");
+          console.log("No new host!");
         }
       }
 
@@ -492,9 +489,8 @@ io.on("connection", (socket) => {
             });
 
             delete lobbies[code];
-            console.log("üres");
+            console.log("Empty lobby deleted");
           } else {
-            console.log(typeof code);
             io.to(code).emit("updateLobby", lobbies[code]);
           }
         }
@@ -543,7 +539,10 @@ io.on("connection", (socket) => {
     const lobby = lobbies[code];
     const player = lobby.players.find((player) => player.id === player_id);
     if (!player || !lobby) {
-      console.log("vmi nemjo");
+      console.log("Player or lobby not found");
+    }
+    if(player.cards.onTableVisible.length==10){
+      return;
     }
 
     let cardInd = -1;
@@ -579,7 +578,11 @@ io.on("connection", (socket) => {
 
     const player = lobby.players.find((player) => player.id === player_id);
     if (!player || !lobby) {
-      console.log("vmi nemjo");
+      console.log("Player or lobby not found");
+    }
+
+    if(player.cards.onTableHidden.length==10){
+      return;
     }
     let cardInd = -1;
     let card;
@@ -594,7 +597,7 @@ io.on("connection", (socket) => {
     }
 
     if (playFrom === "onHand") {
-      console.log("ON HAND");
+      
 
       cardInd = player.cards.onHand.findIndex(([__, _, cno]) => cno === cardNo);
       if (cardInd >= 0) {
@@ -614,7 +617,11 @@ io.on("connection", (socket) => {
     const lobby = lobbies[code];
     const player = lobby.players.find((player) => player.id === player_id);
     if (!player || !lobby) {
-      console.log("vmi nemjo");
+      console.log("Player or lobby not found");
+    }
+
+    if(player.cards.onHand.length==20){
+      return
     }
 
     let cardInd = -1;
@@ -650,7 +657,10 @@ io.on("connection", (socket) => {
     const lobby = lobbies[code];
     const player = lobby.players.find((player) => player.id === player_id);
     if (!player || !lobby) {
-      console.log("vmi nemjo");
+      console.log("Player or lobby not found");
+    }
+    if(player.cards.onHand.length==20){
+      return
     }
 
     let cardInd = -1;
@@ -725,9 +735,8 @@ io.on("connection", (socket) => {
     const { code, player_id, cardNo, playFrom } = data;
     const lobby = lobbies[code];
     const player = lobby.players.find((player) => player.id === player_id);
-    console.log(player.cards.onHand);
     if (!player || !lobby) {
-      console.log("vmi nemjo");
+      console.log("Player or lobby not found");
     }
 
     let cardIndex = -1;
@@ -754,13 +763,11 @@ io.on("connection", (socket) => {
     }
 
     if (cardIndex < 0) {
-      console.log("Nincs ilyen kártya");
+      console.log("No such card");
     }
 
     lobby.decks.throwDeck.push(card);
     lobbies[code] = lobby;
-    console.log(lobby.decks.throwDeck);
-    console.log(lobby.players);
     io.to(code).emit("updateLobby", lobby);
   });
 
@@ -776,11 +783,14 @@ io.on("connection", (socket) => {
 
   socket.on("giveLastCard", (data) => {
     const { code, player_id, playFrom } = data;
-    console.log(data);
     const lobby = lobbies[code];
     const player = lobby.players.find((player) => player.id === player_id);
     if (!player || !lobby) {
-      console.log("vmi nemjó");
+      console.log("Player or lobby not found");
+    }
+
+    if(player.cards.onHand.length==20){
+      return
     }
 
     let card;
@@ -790,7 +800,6 @@ io.on("connection", (socket) => {
     if (playFrom === "drawDeck") {
       card = lobby.decks.drawDeck.pop();
     }
-    console.log("ITTAKÁRTYA:", card);
     player.cards.onHand.push(card);
     lobbies[code] = lobby;
     io.to(code).emit("updateLobby", lobby);
@@ -802,9 +811,11 @@ io.on("connection", (socket) => {
     const player = lobby.players.find((player) => player.id === player_id);
 
     if (!player || !lobby) {
-      console.log("vmi nemjó");
+      console.log("Player or lobby not found");
     }
-
+    if(player.cards.onHand.length==20){
+      return
+    }
     player.cards.onHand.push(lobby.decks.drawDeck.pop());
 
     lobbies[code] = lobby;
@@ -962,7 +973,7 @@ io.on("connection", (socket) => {
               (player) => player.id !== userID
             );
             if (newHost) {
-              console.log("Új host:", newHost.username);
+              console.log("New host:", newHost.username);
               lobbies[code].host = newHost.id;
               await Host.update(
                 { host_id: newHost.id },
@@ -971,7 +982,7 @@ io.on("connection", (socket) => {
                 }
               );
             } else {
-              console.log("Nincs új host!");
+              console.log("No new host!");
             }
           }
           if (lobbies[code]) {
@@ -1030,7 +1041,7 @@ io.on("connection", (socket) => {
           }
         }
         user_socket.delete(userID);
-        console.log("aktívak:", user_socket);
+        console.log("actives:", user_socket);
 
         console.log("Disconnected user:", userID);
       } catch (error) {
@@ -1048,13 +1059,13 @@ io.on("connection", (socket) => {
   });
 
   socket.on("gameStart", async (data) => {
-    console.log("Szerver megkapta a kódot");
+    console.log("Server got the code!");
     io.to(data.code).emit("gameStart", lobbies[data.code]);
   });
 });
 
 if (process.env.NODE_ENV !== "test") {
-  server.listen(3001, "0.0.0.0", async () => {
+  server.listen(3001, "127.0.0.1", async () => {
     console.log("SERVER IS RUNNING");
     console.log(server.address().address + ":" + server.address().port);
     await initLobbies();

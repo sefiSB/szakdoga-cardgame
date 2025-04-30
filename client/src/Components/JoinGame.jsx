@@ -41,7 +41,6 @@ function JoinGame({socket}) {
 
 
     socket.on("updateLobby", (data) => {
-      console.log("Lobby frissült:", data.players);
       initialState.code = parseInt(data.code);
       setItem("code",parseInt(data.code));
       setError(null);
@@ -50,7 +49,7 @@ function JoinGame({socket}) {
 
     // Hallgatja a "codeError" eseményt
     socket.on("codeError", () => {
-      console.log("Hibás lobby kód!");
+      console.log("Invalid lobby code!");
       setError("Invalid lobby code!"); // Állapot frissítés hiba esetén
     });
 
@@ -86,7 +85,6 @@ function JoinGame({socket}) {
           className="btn btn-outline btn-primary"
           onClick={() => {
             postCode()
-            console.log("asd")
           }}
         >Join</button>
         {error && <div className="text-red-500">{error}</div>}

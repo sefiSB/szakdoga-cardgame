@@ -15,6 +15,15 @@ function Register({ socket }) {
   const [serverError, setServerError] = useState("");
   const [error, setError] = useState([]);
   var schema = new passwordValidator();
+
+  initialState.user_id = null;
+  setItem("user_id", null);
+  initialState.user = null;
+  setItem("user", null);
+  initialState.code = null;
+  setItem("code", null);
+  socket.emit("updateUserID", { user_id: null });
+
   schema
     .is().min(8)
     .is().max(20)
@@ -30,15 +39,6 @@ function Register({ socket }) {
       .has().not().spaces();
 
   const navigate = useNavigate();
-
-  initialState.user_id = null;
-  setItem("user_id", null);
-  initialState.user = null;
-  setItem("user", null);
-  initialState.code = null;
-  setItem("code", null);
-  socket.emit("updateUserID", { user_id: null });
-
   const postUser = async () => {
     const response = await fetch(`${BACKEND_URL}/adduser`, {
       method: "POST",
@@ -60,9 +60,10 @@ function Register({ socket }) {
     } else {
       initialState.user_id = data.id;
       setItem("user_id",data.id);
+      initialState.user=data.username;
+      setItem("user",data.username)
       socket.emit("updateUserID",{user_id:data.id});
       navigate("/createorjoin");
-      console.log(data);
     }
   };
 
@@ -75,7 +76,6 @@ function Register({ socket }) {
     let errors=[];
     if (!schema2.validate(name)) {
       const nameerrorlist = schema2.validate(name, { list: true });
-      console.log(nameerrorlist);
       nameerrorlist.forEach((e) => {
         if(e === "min") errors=[...errors, "Username must be at least 3 characters long"];
         if(e === "max") errors=[...errors, "Username must be at most 20 characters long"];

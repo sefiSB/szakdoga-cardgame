@@ -26,7 +26,7 @@ function NewGame({ socket }) {
   if (!initialState.user_id) {
     navigate("/login");
   }
-  
+
   const BACKEND_URL = `http://${import.meta.env.VITE_SERVER_IP}:3001`;
 
   const getPresets = async () => {
@@ -37,7 +37,6 @@ function NewGame({ socket }) {
       },
     });
     const resp = await response.json();
-    console.log(resp);
     setPresetsData(resp);
   };
 
@@ -102,9 +101,8 @@ function NewGame({ socket }) {
       maxplayers * (startingCards + hiddenCards + revealedCards);
 
     if (usedCards.length < neededCards) {
-      console.log(maxplayers, startingCards, hiddenCards, revealedCards);
-      console.log("Kártyák száma: ", usedCards.length);
-      console.log("Kellene: ", neededCards);
+      console.log("Number of cards: ", usedCards.length);
+      console.log("Needed cards: ", neededCards);
       setError(
         "The number of used cards are not enough for the given player count."
       );
@@ -157,7 +155,7 @@ function NewGame({ socket }) {
   };
 
   useEffect(() => {
-    if(!initialState.user_id){
+    if (!initialState.user_id) {
       navigate("/login");
     }
     getPresets();
@@ -252,8 +250,6 @@ function NewGame({ socket }) {
                                 className="btn btn-sm"
                                 onClick={() => {
                                   setNotUsed((prev) => [...prev, cardName]);
-                                  console.log(notUsed);
-                                  console.log(cardName);
                                 }}
                               >
                                 Remove
@@ -284,8 +280,6 @@ function NewGame({ socket }) {
                                 className="btn btn-sm"
                                 onClick={() => {
                                   setNotUsed((prev) => [...prev, cardName]);
-                                  console.log(notUsed);
-                                  console.log(cardName);
                                 }}
                               >
                                 Remove
@@ -316,8 +310,6 @@ function NewGame({ socket }) {
                                 className="btn btn-sm"
                                 onClick={() => {
                                   setNotUsed((prev) => [...prev, cardName]);
-                                  console.log(notUsed);
-                                  console.log(cardName);
                                 }}
                               >
                                 Remove

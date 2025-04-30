@@ -182,8 +182,6 @@ function Desk({ socket }) {
     });
 
     socket.on("updateLobby", (response) => {
-      console.log("Jött adat");
-      console.log(response);
       setData(response);
     });
 
@@ -233,7 +231,7 @@ function Desk({ socket }) {
                 <a
                   onClick={() => {
                     playCard(selectedCard, playFrom);
-                    console.log("kártya: ", selectedCard, playFrom);
+                    console.log("card: ", selectedCard, playFrom);
                     setSelectedCard(null);
                     setPlayFrom(null);
                   }}
@@ -649,7 +647,7 @@ function Desk({ socket }) {
                   <a
                     onClick={() => {
                       playCard(selectedCard, playFrom);
-                      console.log("kártya: ", selectedCard, playFrom);
+                      console.log("card: ", selectedCard, playFrom);
                       setSelectedCard(null);
                       setPlayFrom(null);
                     }}
@@ -940,7 +938,6 @@ function Desk({ socket }) {
                           setSelectedDeck(null);
                           setSelectedPlayer(null);
                           setSelectedCard(cardNo);
-                          console.log(cardNo);
                           setPlayFrom("onTableHidden");
                         }
                       }}
@@ -978,7 +975,6 @@ function Desk({ socket }) {
                           setSelectedPlayer(null);
                           setSelectedCard(cardNo);
                           setPlayFrom("onTableVisible");
-                          console.log(cardNo);
                         }
                       }}
                       className={`bg-red-500 p-0 rounded-lg ${
@@ -1011,9 +1007,6 @@ function Desk({ socket }) {
                               setSelectedPlayer(null);
                               setSelectedCard(cardNo);
                               setPlayFrom("onHand");
-                              console.log(cardname);
-                              console.log(cardNo);
-                              console.log(player.cards.onHand);
                             }
                           }}
                           key={index}

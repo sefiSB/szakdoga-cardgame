@@ -12,6 +12,8 @@ const { where } = require("sequelize");
 
 //const { request } = require("express");
 
+let timeout;
+
 function waitFor(socket, event) {
   return new Promise((resolve) => {
     socket.once(event, resolve);
@@ -23,6 +25,7 @@ describe("Lobby Tests", () => {
   const TEST_PORT = 3002;
 
   beforeEach(async () => {
+    timeout=null;
     const user = await User.create({
       username: "testuser",
       email: "test23@test.com",
@@ -68,6 +71,7 @@ describe("Lobby Tests", () => {
   });
 
   afterEach(async () => {
+    clearTimeout(timeout);
     await User.destroy({
       where: {
         username: "testuser",
@@ -718,7 +722,7 @@ describe("Lobby Tests", () => {
     const data = await Promise.race([
       waitFor(clientSocket, "updateLobby"),
       new Promise((_, reject) => {
-        setTimeout(
+        timeout=setTimeout(
           () => reject(new Error("Timeout waiting for updateLobby")),
           5000
         );
@@ -740,7 +744,7 @@ describe("Lobby Tests", () => {
     const data = await Promise.race([
       waitFor(clientSocket, "kicked"),
       new Promise((_, reject) => {
-        setTimeout(() => reject(new Error("Timeout waiting for kicked")), 5000);
+        timeout=setTimeout(() => reject(new Error("Timeout waiting for kicked")), 5000);
       }),
     ]);
     expect(data).toBe(user.id);
@@ -759,7 +763,7 @@ describe("Lobby Tests", () => {
     const data = await Promise.race([
       waitFor(clientSocket, "updateLobby"),
       new Promise((_, reject) => {
-        setTimeout(
+        timeout=setTimeout(
           () => reject(new Error("Timeout waiting for updateLobby")),
           5000
         );
@@ -775,7 +779,7 @@ describe("Lobby Tests", () => {
     const data = await Promise.race([
       waitFor(clientSocket, "updateLobby"),
       new Promise((_, reject) => {
-        setTimeout(
+        timeout=setTimeout(
           () => reject(new Error("Timeout waiting for updateLobby")),
           5000
         );
@@ -791,7 +795,7 @@ describe("Lobby Tests", () => {
     const data = await Promise.race([
       waitFor(clientSocket, "updateLobby"),
       new Promise((_, reject) => {
-        setTimeout(
+        timeout=setTimeout(
           () => reject(new Error("Timeout waiting for updateLobby")),
           5000
         );
@@ -814,7 +818,7 @@ describe("Lobby Tests", () => {
     const data = await Promise.race([
       waitFor(clientSocket, "updateLobby"),
       new Promise((_, reject) => {
-        setTimeout(
+        timeout=setTimeout(
           () => reject(new Error("Timeout waiting for updateLobby")),
           5000
         );
@@ -845,7 +849,7 @@ describe("Lobby Tests", () => {
     const data = await Promise.race([
       waitFor(clientSocket, "updateLobby"),
       new Promise((_, reject) => {
-        setTimeout(
+        timeout=setTimeout(
           () => reject(new Error("Timeout waiting for updateLobby")),
           5000
         );
@@ -867,7 +871,7 @@ describe("Lobby Tests", () => {
     const data = await Promise.race([
       waitFor(clientSocket, "updateLobby"),
       new Promise((_, reject) => {
-        setTimeout(
+        timeout=setTimeout(
           () => reject(new Error("Timeout waiting for updateLobby")),
           5000
         );
@@ -886,7 +890,7 @@ describe("Lobby Tests", () => {
     const data = await Promise.race([
       waitFor(clientSocket, "updateLobby"),
       new Promise((_, reject) => {
-        setTimeout(
+        timeout=setTimeout(
           () => reject(new Error("Timeout waiting for updateLobby")),
           5000
         );
@@ -912,7 +916,7 @@ describe("Lobby Tests", () => {
     const data = await Promise.race([
       waitFor(clientSocket, "updateLobby"),
       new Promise((_, reject) => {
-        setTimeout(
+        timeout=setTimeout(
           () => reject(new Error("Timeout waiting for updateLobby")),
           5000
         );
@@ -939,7 +943,7 @@ describe("Lobby Tests", () => {
     const data = await Promise.race([
       waitFor(clientSocket, "updateLobby"),
       new Promise((_, reject) => {
-        setTimeout(
+        timeout=setTimeout(
           () => reject(new Error("Timeout waiting for updateLobby")),
           5000
         );
@@ -967,7 +971,7 @@ describe("Lobby Tests", () => {
     const data = await Promise.race([
       waitFor(clientSocket, "updateLobby"),
       new Promise((_, reject) => {
-        setTimeout(
+        timeout=setTimeout(
           () => reject(new Error("Timeout waiting for updateLobby")),
           5000
         );
@@ -993,7 +997,7 @@ describe("Lobby Tests", () => {
     const data = await Promise.race([
       waitFor(clientSocket, "updateLobby"),
       new Promise((_, reject) => {
-        setTimeout(
+        timeout=setTimeout(
           () => reject(new Error("Timeout waiting for updateLobby")),
           5000
         );
@@ -1019,7 +1023,7 @@ describe("Lobby Tests", () => {
     const data = await Promise.race([
       waitFor(clientSocket, "updateLobby"),
       new Promise((_, reject) => {
-        setTimeout(
+        timeout=setTimeout(
           () => reject(new Error("Timeout waiting for updateLobby")),
           5000
         );
@@ -1050,7 +1054,7 @@ describe("Lobby Tests", () => {
     const data = await Promise.race([
       waitFor(clientSocket, "updateLobby"),
       new Promise((_, reject) => {
-        setTimeout(
+        timeout=setTimeout(
           () => reject(new Error("Timeout waiting for updateLobby")),
           5000
         );
@@ -1087,7 +1091,7 @@ describe("Lobby Tests", () => {
     const data = await Promise.race([
       waitFor(clientSocket, "updateLobby"),
       new Promise((_, reject) => {
-        setTimeout(
+        timeout=setTimeout(
           () => reject(new Error("Timeout waiting for updateLobby")),
           5000
         );
@@ -1123,7 +1127,7 @@ describe("Lobby Tests", () => {
     const data = await Promise.race([
       waitFor(clientSocket, "updateLobby"),
       new Promise((_, reject) => {
-        setTimeout(
+        timeout=setTimeout(
           () => reject(new Error("Timeout waiting for updateLobby")),
           5000
         );
