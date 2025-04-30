@@ -21,9 +21,6 @@ function CreateOrJoin({socket}) {
     }
   })
 
-  console.log(sessionStorage.getItem("user_id"));
-  console.log(initialState.user_id);
-  console.log(initialState.user);
 
   return (
     <>

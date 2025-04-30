@@ -5,11 +5,12 @@ import { useState } from "react";
 function SettingsMenu({ socket, isHost }) {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
-  console.log("host: ", isHost);
   console.log("code",initialState.code);
   if (!initialState.user_id) {
     navigate("/login");
   }
+
+  console.log(initialState.user)
 
   const endGame = () => {
     socket.emit("endGame", {
